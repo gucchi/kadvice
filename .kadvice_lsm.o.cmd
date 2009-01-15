@@ -406,7 +406,7 @@ deps_/home/gucchi/kadvice/kadvice_lsm.o := \
   include/linux/xfrm.h \
   include/net/flow.h \
   include/linux/in6.h \
-  /home/gucchi/kadvice/ka/ka.h \
+  /home/gucchi/kadvice/ka/kadvice_lsm.h \
   include/linux/unistd.h \
   include/asm/unistd.h \
   include/asm/unistd_32.h \

@@ -3,7 +3,7 @@
 #include <linux/init.h>
 #include <linux/security.h>
 
-#include "ka/kadvice_lsm.h"
+#include "ka/ka.h"
 
 MODULE_LICENSE("GPL");
 

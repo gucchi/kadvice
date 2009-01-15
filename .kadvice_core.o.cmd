@@ -423,6 +423,7 @@ deps_/home/gucchi/kadvice/kadvice_core.o := \
   /home/gucchi/kadvice/ka_proc.h \
   /home/gucchi/kadvice/ka_def.h \
   /home/gucchi/kadvice/ka_secops_str.h \
+  /home/gucchi/kadvice/ka/secops.h \
   /home/gucchi/kadvice/ka/security_ops.h \
   /home/gucchi/kadvice/ka/base.h \
 

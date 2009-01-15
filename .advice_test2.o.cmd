@@ -278,7 +278,7 @@ deps_/home/gucchi/kadvice/advice_test2.o := \
     $(wildcard include/config/mviac7.h) \
     $(wildcard include/config/mgeodegx1.h) \
     $(wildcard include/config/mgeode/lx.h) \
-  /home/gucchi/kadvice/ka/ka.h \
+  /home/gucchi/kadvice/ka/kadvice_lsm.h \
   include/linux/unistd.h \
   include/asm/unistd.h \
   include/asm/unistd_32.h \
@@ -336,6 +336,7 @@ deps_/home/gucchi/kadvice/advice_test2.o := \
     $(wildcard include/config/security/network/xfrm.h) \
     $(wildcard include/config/keys.h) \
   /home/gucchi/kadvice/ka/security_ops.h \
+  /home/gucchi/kadvice/ka/ka_advice.h \
 
 /home/gucchi/kadvice/advice_test2.o: $(deps_/home/gucchi/kadvice/advice_test2.o)
 
