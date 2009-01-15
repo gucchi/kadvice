@@ -1,0 +1,1 @@
+cmd_/home/gucchi/edu/cube_security/lsmacm.ko := ld -m elf_i386 -r -m elf_i386   -o /home/gucchi/edu/cube_security/lsmacm.ko /home/gucchi/edu/cube_security/lsmacm.o /home/gucchi/edu/cube_security/lsmacm.mod.o

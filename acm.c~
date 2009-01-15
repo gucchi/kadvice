@@ -1,0 +1,116 @@
+#include <linux/module.h>
+#include <linux/init.h>
+#include <linux/proc_fs.h>
+#include <linux/seq_file.h>
+
+#include "ka_proc.h"
+#include "ka_secops_str.h"
+
+
+MODULE_LICENSE("GPL");
+
+#define PROCNAME "allsecop"
+
+extern int lookup_module_symbol_name(unsigned long, char *);
+
+static void initacm(){
+  int i = 0;
+  for(i = 0; i < 32; i++){
+    int j = 31 - i;
+    acm[i] = (1<<j);
+  }
+}
+
+static void initacc(){
+  memset(lsm_acm, 0, 4*LSMIDMAX*AOIDMAX*FUNCMAX);
+}
+
+static void *ka_start(struct seq_file *m, loff_t *pos){
+  loff_t n = *pos;
+  int i;
+  if(n == 0){
+    seq_printf(m, "%-35s", "## access control cube ## aoid");
+    seq_puts(m, "\n\n");
+  }
+  
+  for(i = 0; lsm_acm[i][0] && secops_str[i]; i++){
+    n--;
+    if(n < 0)
+      return (void *)(i + 1);
+  }
+  return 0;
+}
+
+static void *ka_next(struct seq_file *m, void *p, loff_t *pos){
+  int n = (int)p;
+  (*pos)++;
+  if(lsm_acm[n-1][0] && secops_str[n-1]){
+    return (void *)(n + 1);
+  }
+  return 0;
+}
+
+static int ka_show(struct seq_file *m, void *p){
+  int n = (int)p-1;
+  int i;
+  seq_printf(m, "[%3d]", n);
+  for(i = 0; i < 8; i++){
+    if(lsm_acm[n][1][i] != NULL){
+      void *ptr = (void *)lsm_acm[n][1][i];
+      char buf[32];
+      lookup_module_symbol_name(ptr, buf);
+      seq_printf(m, " %s[%p]", buf, ptr);
+    }
+  }
+  seq_puts(m, "\n");
+  return 0;
+}
+
+static void ka_stop(struct seq_file *m, void *p){
+  seq_puts(m, "\n");
+}
+
+/* seq_file handler */
+static struct seq_operations lsmacm_seq_op = {
+  .start = ka_start,
+  .next = ka_next,
+  .stop = ka_stop,
+  .show = ka_show,
+};
+
+static int lsmacm_proc_open(struct inode *inode, struct file *file)
+{
+  return seq_open(file, &lsmacm_seq_op);
+}
+
+/* procfs handler */
+static struct file_operations lsmacm_file_ops = {
+  .open = lsmacm_proc_open,
+  .read = seq_read,
+  .llseek = seq_lseek,
+  .release = seq_release,
+};
+
+static int lsmacm_module_init(void)
+{
+  struct proc_dir_entry *parent, *entry;
+  parent = proc_mkdir("ka", NULL);
+  //initlsmacm();
+  //  initacc();
+  entry = create_proc_entry(PROCNAME, 0666, parent);
+  if (entry)
+    entry->proc_fops = &lsmacm_file_ops;
+  //    create_acmcontrol();
+  printk("driver loaded\n");
+  return 0;
+}
+
+static void lsmacm_module_exit(void)
+{
+  remove_proc_entry(PROCNAME, NULL);
+  printk(KERN_ALERT "driver unloaded\n");
+}
+
+module_init(lsmacm_module_init);
+module_exit(lsmacm_module_exit);
+
