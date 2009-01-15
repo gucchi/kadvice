@@ -1,7 +1,7 @@
-cmd_/home/gucchi/edu/cube_security/acm.o := gcc -m32 -Wp,-MD,/home/gucchi/edu/cube_security/.acm.o.d  -nostdinc -isystem /usr/lib/gcc/i686-momonga-linux/4.1.2/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -pipe -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2  -march=i686 -mtune=pentium4 -mtune=generic -ffreestanding -maccumulate-outgoing-args -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -Iinclude/asm-x86/mach-default -fno-omit-frame-pointer -fno-optimize-sibling-calls -g  -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign    -DMODULE -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(acm)"  -D"KBUILD_MODNAME=KBUILD_STR(lsmacm)" -c -o /home/gucchi/edu/cube_security/acm.o /home/gucchi/edu/cube_security/acm.c
+cmd_/home/gucchi/kadvice/acm.o := gcc -m32 -Wp,-MD,/home/gucchi/kadvice/.acm.o.d  -nostdinc -isystem /usr/lib/gcc/i686-momonga-linux/4.1.2/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -pipe -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2  -march=i686 -mtune=pentium4 -mtune=generic -ffreestanding -maccumulate-outgoing-args -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -Iinclude/asm-x86/mach-default -fno-omit-frame-pointer -fno-optimize-sibling-calls -g  -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign    -DMODULE -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(acm)"  -D"KBUILD_MODNAME=KBUILD_STR(lsmacm)" -c -o /home/gucchi/kadvice/acm.o /home/gucchi/kadvice/acm.c
 
-deps_/home/gucchi/edu/cube_security/acm.o := \
-  /home/gucchi/edu/cube_security/acm.c \
+deps_/home/gucchi/kadvice/acm.o := \
+  /home/gucchi/kadvice/acm.c \
   include/linux/module.h \
     $(wildcard include/config/modules.h) \
     $(wildcard include/config/modversions.h) \
@@ -322,10 +322,110 @@ deps_/home/gucchi/edu/cube_security/acm.o := \
   include/linux/err.h \
   include/linux/magic.h \
   include/linux/seq_file.h \
-  /home/gucchi/edu/cube_security/ka_proc.h \
-  /home/gucchi/edu/cube_security/ka_def.h \
-  /home/gucchi/edu/cube_security/ka_secops_str.h \
+  include/linux/security.h \
+    $(wildcard include/config/security/network.h) \
+    $(wildcard include/config/security/network/xfrm.h) \
+    $(wildcard include/config/keys.h) \
+  include/linux/binfmts.h \
+  include/linux/signal.h \
+  include/asm/signal.h \
+  include/asm-generic/signal.h \
+  include/asm/siginfo.h \
+  include/asm-generic/siginfo.h \
+  include/linux/resource.h \
+  include/asm/resource.h \
+  include/asm-generic/resource.h \
+  include/linux/sem.h \
+    $(wildcard include/config/sysvipc.h) \
+  include/linux/ipc.h \
+  include/asm/ipcbuf.h \
+  include/asm/sembuf.h \
+  include/linux/shm.h \
+  include/asm/shmparam.h \
+  include/asm/shmbuf.h \
+  include/linux/msg.h \
+  include/asm/msgbuf.h \
+  include/linux/sched.h \
+    $(wildcard include/config/sched/debug.h) \
+    $(wildcard include/config/no/hz.h) \
+    $(wildcard include/config/detect/softlockup.h) \
+    $(wildcard include/config/split/ptlock/cpus.h) \
+    $(wildcard include/config/bsd/process/acct.h) \
+    $(wildcard include/config/taskstats.h) \
+    $(wildcard include/config/audit.h) \
+    $(wildcard include/config/inotify/user.h) \
+    $(wildcard include/config/posix/mqueue.h) \
+    $(wildcard include/config/fair/user/sched.h) \
+    $(wildcard include/config/schedstats.h) \
+    $(wildcard include/config/task/delay/acct.h) \
+    $(wildcard include/config/fair/group/sched.h) \
+    $(wildcard include/config/blk/dev/io/trace.h) \
+    $(wildcard include/config/cc/stackprotector.h) \
+    $(wildcard include/config/rt/mutexes.h) \
+    $(wildcard include/config/cabi.h) \
+    $(wildcard include/config/task/xacct.h) \
+    $(wildcard include/config/cpusets.h) \
+    $(wildcard include/config/cgroups.h) \
+    $(wildcard include/config/futex.h) \
+    $(wildcard include/config/compat.h) \
+    $(wildcard include/config/fault/injection.h) \
+  include/asm/param.h \
+    $(wildcard include/config/hz.h) \
+  include/linux/timex.h \
+  include/asm/timex.h \
+  include/asm/tsc.h \
+    $(wildcard include/config/x86/tsc.h) \
+    $(wildcard include/config/x86/generic.h) \
+  include/linux/jiffies.h \
+  include/linux/calc64.h \
+  include/linux/rbtree.h \
+  include/linux/mm_types.h \
+  include/linux/auxvec.h \
+  include/linux/completion.h \
+  include/asm/cputime.h \
+  include/asm-generic/cputime.h \
+  include/linux/securebits.h \
+  include/linux/fs_struct.h \
+  include/linux/proportions.h \
+  include/linux/percpu_counter.h \
+  include/linux/seccomp.h \
+    $(wildcard include/config/seccomp.h) \
+  include/linux/futex.h \
+  include/linux/rtmutex.h \
+    $(wildcard include/config/debug/rt/mutexes.h) \
+  include/linux/plist.h \
+    $(wildcard include/config/debug/pi/list.h) \
+  include/linux/param.h \
+  include/linux/timer.h \
+    $(wildcard include/config/timer/stats.h) \
+  include/linux/ktime.h \
+    $(wildcard include/config/ktime/scalar.h) \
+  include/linux/hrtimer.h \
+    $(wildcard include/config/high/res/timers.h) \
+  include/linux/task_io_accounting.h \
+    $(wildcard include/config/task/io/accounting.h) \
+  include/linux/aio.h \
+  include/linux/workqueue.h \
+  include/linux/aio_abi.h \
+  include/linux/uio.h \
+  include/linux/key.h \
+  include/linux/xfrm.h \
+  include/net/flow.h \
+  include/linux/in6.h \
+  include/cabi/common.h \
+    $(wildcard include/config/cabi/cpu.h) \
+    $(wildcard include/config/cabi/mem.h) \
+    $(wildcard include/config/cabi/ayaka.h) \
+  include/linux/posix-timers.h \
+  include/cabi/debug.h \
+    $(wildcard include/config/kernel/asserts.h) \
+  include/cabi/error.h \
+  /home/gucchi/kadvice/ka_proc.h \
+  /home/gucchi/kadvice/ka_def.h \
+  /home/gucchi/kadvice/ka_secops_str.h \
+  /home/gucchi/kadvice/ka/security_ops.h \
+  /home/gucchi/kadvice/ka/base.h \
 
-/home/gucchi/edu/cube_security/acm.o: $(deps_/home/gucchi/edu/cube_security/acm.o)
+/home/gucchi/kadvice/acm.o: $(deps_/home/gucchi/kadvice/acm.o)
 
-$(deps_/home/gucchi/edu/cube_security/acm.o):
+$(deps_/home/gucchi/kadvice/acm.o):

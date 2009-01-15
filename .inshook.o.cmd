@@ -1,7 +1,7 @@
-cmd_/home/gucchi/edu/cube_security/inshook.o := gcc -m32 -Wp,-MD,/home/gucchi/edu/cube_security/.inshook.o.d  -nostdinc -isystem /usr/lib/gcc/i686-momonga-linux/4.1.2/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -pipe -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2  -march=i686 -mtune=pentium4 -mtune=generic -ffreestanding -maccumulate-outgoing-args -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -Iinclude/asm-x86/mach-default -fno-omit-frame-pointer -fno-optimize-sibling-calls -g  -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign    -DMODULE -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(inshook)"  -D"KBUILD_MODNAME=KBUILD_STR(inshook)" -c -o /home/gucchi/edu/cube_security/inshook.o /home/gucchi/edu/cube_security/inshook.c
+cmd_/home/gucchi/kadvice/inshook.o := gcc -m32 -Wp,-MD,/home/gucchi/kadvice/.inshook.o.d  -nostdinc -isystem /usr/lib/gcc/i686-momonga-linux/4.1.2/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -pipe -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2  -march=i686 -mtune=pentium4 -mtune=generic -ffreestanding -maccumulate-outgoing-args -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -Iinclude/asm-x86/mach-default -fno-omit-frame-pointer -fno-optimize-sibling-calls -g  -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign    -DMODULE -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(inshook)"  -D"KBUILD_MODNAME=KBUILD_STR(inshook)" -c -o /home/gucchi/kadvice/inshook.o /home/gucchi/kadvice/inshook.c
 
-deps_/home/gucchi/edu/cube_security/inshook.o := \
-  /home/gucchi/edu/cube_security/inshook.c \
+deps_/home/gucchi/kadvice/inshook.o := \
+  /home/gucchi/kadvice/inshook.c \
   include/linux/kernel.h \
     $(wildcard include/config/lbd.h) \
     $(wildcard include/config/preempt/voluntary.h) \
@@ -278,7 +278,7 @@ deps_/home/gucchi/edu/cube_security/inshook.o := \
     $(wildcard include/config/mviac7.h) \
     $(wildcard include/config/mgeodegx1.h) \
     $(wildcard include/config/mgeode/lx.h) \
-  /home/gucchi/edu/cube_security/ka/ka.h \
+  /home/gucchi/kadvice/ka/ka.h \
   include/linux/unistd.h \
   include/asm/unistd.h \
   include/asm/unistd_32.h \
@@ -331,12 +331,12 @@ deps_/home/gucchi/edu/cube_security/inshook.o := \
     $(wildcard include/config/sysctl.h) \
   include/linux/random.h \
   include/linux/sysctl.h \
-  /home/gucchi/edu/cube_security/ka/secops.h \
+  /home/gucchi/kadvice/ka/secops.h \
     $(wildcard include/config/security/network.h) \
     $(wildcard include/config/security/network/xfrm.h) \
     $(wildcard include/config/keys.h) \
-  /home/gucchi/edu/cube_security/ka/security_ops.h \
+  /home/gucchi/kadvice/ka/security_ops.h \
 
-/home/gucchi/edu/cube_security/inshook.o: $(deps_/home/gucchi/edu/cube_security/inshook.o)
+/home/gucchi/kadvice/inshook.o: $(deps_/home/gucchi/kadvice/inshook.o)
 
-$(deps_/home/gucchi/edu/cube_security/inshook.o):
+$(deps_/home/gucchi/kadvice/inshook.o):

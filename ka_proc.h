@@ -1,7 +1,7 @@
 #include "ka_def.h"
 #define KAOACM(i) acm[i]
 
-void  *lsm_acm[LSMIDMAX + 1][AOIDMAX][FUNCMAX];
+
 
 //lsm_acm_t lsm_acm[32][8];
 

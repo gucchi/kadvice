@@ -1,7 +1,7 @@
-cmd_/home/gucchi/edu/cube_security/addhook.mod.o := gcc -m32 -Wp,-MD,/home/gucchi/edu/cube_security/.addhook.mod.o.d  -nostdinc -isystem /usr/lib/gcc/i686-momonga-linux/4.1.2/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -pipe -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2  -march=i686 -mtune=pentium4 -mtune=generic -ffreestanding -maccumulate-outgoing-args -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -Iinclude/asm-x86/mach-default -fno-omit-frame-pointer -fno-optimize-sibling-calls -g  -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign    -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(addhook.mod)"  -D"KBUILD_MODNAME=KBUILD_STR(addhook)" -DMODULE -c -o /home/gucchi/edu/cube_security/addhook.mod.o /home/gucchi/edu/cube_security/addhook.mod.c
+cmd_/home/gucchi/kadvice/addhook.mod.o := gcc -m32 -Wp,-MD,/home/gucchi/kadvice/.addhook.mod.o.d  -nostdinc -isystem /usr/lib/gcc/i686-momonga-linux/4.1.2/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -pipe -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2  -march=i686 -mtune=pentium4 -mtune=generic -ffreestanding -maccumulate-outgoing-args -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -Iinclude/asm-x86/mach-default -fno-omit-frame-pointer -fno-optimize-sibling-calls -g  -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign    -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(addhook.mod)"  -D"KBUILD_MODNAME=KBUILD_STR(addhook)" -DMODULE -c -o /home/gucchi/kadvice/addhook.mod.o /home/gucchi/kadvice/addhook.mod.c
 
-deps_/home/gucchi/edu/cube_security/addhook.mod.o := \
-  /home/gucchi/edu/cube_security/addhook.mod.c \
+deps_/home/gucchi/kadvice/addhook.mod.o := \
+  /home/gucchi/kadvice/addhook.mod.c \
     $(wildcard include/config/module/unload.h) \
   include/linux/module.h \
     $(wildcard include/config/modules.h) \
@@ -281,6 +281,6 @@ deps_/home/gucchi/edu/cube_security/addhook.mod.o := \
   include/linux/vermagic.h \
   include/linux/utsrelease.h \
 
-/home/gucchi/edu/cube_security/addhook.mod.o: $(deps_/home/gucchi/edu/cube_security/addhook.mod.o)
+/home/gucchi/kadvice/addhook.mod.o: $(deps_/home/gucchi/kadvice/addhook.mod.o)
 
-$(deps_/home/gucchi/edu/cube_security/addhook.mod.o):
+$(deps_/home/gucchi/kadvice/addhook.mod.o):

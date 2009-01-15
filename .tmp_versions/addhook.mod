@@ -1,2 +1,2 @@
-/home/gucchi/edu/cube_security/addhook.ko
-/home/gucchi/edu/cube_security/addhook.o
+/home/gucchi/kadvice/addhook.ko
+/home/gucchi/kadvice/addhook.o

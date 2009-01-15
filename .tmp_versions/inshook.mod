@@ -1,2 +1,2 @@
-/home/gucchi/edu/cube_security/inshook.ko
-/home/gucchi/edu/cube_security/inshook.o
+/home/gucchi/kadvice/inshook.ko
+/home/gucchi/kadvice/inshook.o
