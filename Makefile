@@ -1,9 +1,9 @@
-CFILES = acm.c
-obj-m+=lsmacm.o
-obj-m+=addhook.o
-obj-m+=inshook.o
-obj-m+=hook2.o
-lsmacm-objs := $(CFILES:.c=.o)
+CFILES = kadvice_core.c
+obj-m+=kadvice.o
+obj-m+=kadvice_lsm.o
+obj-m+=advice_test2.o
+obj-m+=advice_test1.o
+kadvice-objs := $(CFILES:.c=.o)
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 clean:
