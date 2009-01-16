@@ -4,6 +4,7 @@ obj-m+=kadvice_lsm.o
 obj-m+=advice_test2.o
 obj-m+=advice_test1.o
 obj-m+=kadvice_proc_write.o
+obj-m+=kadvice_io.o
 kadvice-objs := $(CFILES:.c=.o)
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
