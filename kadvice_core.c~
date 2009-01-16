@@ -3,7 +3,6 @@
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <linux/security.h>
-
 #include <cabi/common.h>
 
 #include "ka_proc.h"
@@ -105,7 +104,7 @@ static void *ka_start(struct seq_file *m, loff_t *pos){
     seq_printf(m, "%-35s", "## access control cube ## aoid");	
     seq_puts(m, "\n\n");					
   }								
-  for(i = 0; lsm_acc[i][0] && secops_str[i]; i++){		
+  for(i = 0; lsm_acc[i][0] && lsm_secops_str[i]; i++){		
     n--;							
     if(n < 0)							
       return (void *)(i + 1);					
@@ -117,7 +116,7 @@ static void *ka_start(struct seq_file *m, loff_t *pos){
 static void *ka_next(struct seq_file *m, void *p, loff_t *pos){	
   int n = (int)p;						
   (*pos)++;							
-  if(lsm_acc[n-1][0] && secops_str[n-1]){				
+  if(lsm_acc[n-1][0] && lsm_secops_str[n-1]){				
     return (void *)(n + 1);					
   }								
   return 0;							
@@ -193,20 +192,18 @@ int kadvice_register_advice(int aoid, int lsmid, void *func, int priority){
   int i = priority;
   if(lsm_acc[lsmid][aoid][priority] == 0){
     lsm_acc[lsmid][aoid][priority] = (unsigned long)func;
-    printk("addhook lsmid:%d aoid:%d [%d] %p\n", lsmid, aoid, i, func);
+    printk("register advice lsmid:%d aoid:%d [%d] %p\n", lsmid, aoid, i, func);
     return 0;
   }
   for(i += 1; i < 8; i++){
     if(lsm_acc[lsmid][aoid][i] == 0){
       lsm_acc[lsmid][aoid][i] = (unsigned long)func;
-      printk("addhook lsmid:%d aoid:%d [%d] %p\n", lsmid, aoid, i, func);
+      printk("register advice lsmid:%d aoid:%d [%d] %p\n", lsmid, aoid, i, func);
       return 0;
     }
   }
   
   return -1;
-  
-  return 0;
 }
 
 int kadvice_unregister_advice(int aoid, int lsmid, void *func){
@@ -214,7 +211,7 @@ int kadvice_unregister_advice(int aoid, int lsmid, void *func){
   for(i = 0; i < 8; i++){
     if(lsm_acc[lsmid][aoid][i] == (unsigned long)func){
       lsm_acc[lsmid][aoid][i] = 0;
-      printk("remove hook %p", func);
+      printk("unregister advice %p", func);
     }
   }
   return 0;
@@ -225,7 +222,7 @@ int kadvice_clear_advice(int aoid, int lsmid){
   for(i = 0; i < 8; i++){
     lsm_acc[lsmid][aoid][i] = 0;
   }
-  printk("addhook clear\n");
+  printk("advice cleared\n");
   return 0;
 }
 
@@ -233,3 +230,39 @@ EXPORT_SYMBOL(kadvice_register_advice);
 EXPORT_SYMBOL(kadvice_unregister_advice);
 EXPORT_SYMBOL(kadvice_clear_advice);
 
+extern unsigned long kallsyms_lookup_name(const char *);
+
+int ka_find_lsmid_from_str(char *name){
+  int i;
+  for(i = 0; i < LSMIDMAX && lsm_secops_str[i]; i++){
+    if(strcmp(lsm_secops_str[i], name) == 0)
+      return i;
+  }
+  return -1;
+}
+
+int kadvice_put_advice(char *acc, char *weavepoint, int aoid, int priority, unsigned long func){
+  int lsmid = ka_find_lsmid_from_str(weavepoint);
+  printk("lsmid:%d\n",lsmid);
+  if(lsmid < 0)
+    return -1;
+  return kadvice_register_advice(aoid, lsmid, (void *)func, priority);
+}
+EXPORT_SYMBOL(kadvice_put_advice);
+
+
+int kadvice_put_advice_str(char *acc, char *weavepoint, int aoid, int priority, char *func){
+  unsigned long addr;
+  addr = kallsyms_lookup_name(func);
+  if(addr == 0)
+    return -ENOMEM;
+  printk("addr:%x\n", addr);
+  return kadvice_put_advice(acc, weavepoint, aoid, priority, func);
+}
+EXPORT_SYMBOL(kadvice_put_advice_str);
+
+
+  
+
+
+			 

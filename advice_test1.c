@@ -20,14 +20,14 @@ int hook_file_permission(struct file *file, int mask){
 }
 
 static int __init inshook_init(void){
-  kadvice_register_advice(1, __KA_inode_permission, &hook_inode_permission, 1);
-  kadvice_register_advice(1, __KA_file_permission, &hook_file_permission, 1);
+  //kadvice_register_advice(1, __KA_inode_permission, &hook_inode_permission, 1);
+  //kadvice_register_advice(1, __KA_file_permission, &hook_file_permission, 1);
   return 0;
 }
 
 static void __exit inshook_exit(void){
-  kadvice_unregister_advice(1, __KA_file_permission, &hook_file_permission);
-  kadvice_unregister_advice(1, __KA_inode_permission, &hook_inode_permission);
+  //kadvice_unregister_advice(1, __KA_file_permission, &hook_file_permission);
+  //kadvice_unregister_advice(1, __KA_inode_permission, &hook_inode_permission);
 }
 
 module_init(inshook_init);

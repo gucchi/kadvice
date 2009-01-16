@@ -1,0 +1,1 @@
+cmd_/home/gucchi/kadvice/kadvice_proc_write.ko := ld -m elf_i386 -r -m elf_i386   -o /home/gucchi/kadvice/kadvice_proc_write.ko /home/gucchi/kadvice/kadvice_proc_write.o /home/gucchi/kadvice/kadvice_proc_write.mod.o
