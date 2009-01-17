@@ -6,10 +6,6 @@
 #include <linux/list.h>
 #include <linux/slab.h>
 
-#define KADVICE_CHANNEL_PACKSIZE 4096
-#define KADVICE_CHANNEL_HEADERSIZE 12
-#define KADVICE_CHANNEL_DATASIZE_MAX KADVICE_CHANNEL_PACKSIZE - KADVICE_CHANNEL_HEADERSIZE
-
 struct list_head ka_datum_list;
 
 //INIT_LIST_HEAD(&ka_datum_list);
@@ -49,7 +45,8 @@ struct ka_ringbuffer {
   struct ka_ringbuffer *head;
 };
 
-struct ka_ringbuffer *rbuf;
+struct ka_ringbuffer *current_rbuf_write;
+struct ka_ringbuffer *current_rbuf_read;
 
 
 #endif /* __KADVICE_IO_H */

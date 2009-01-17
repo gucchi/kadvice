@@ -1,4 +1,3 @@
-
 /* 
  * Kadvice read interface
  * shinpei(c)ynu 2009
@@ -28,19 +27,22 @@ struct ka_datum *ka_new_datum(int type)
   switch (type) {
   case D_INT:
     d->typeinfo_len = sizeof("int");
-    d->typeinfo = (char *)kmalloc(sizeof(char) * d->typeinfo_len + 1, GFP_KERNEL);
+    d->typeinfo = (char *)kmalloc
+      (sizeof(char) * d->typeinfo_len + 1, GFP_KERNEL);
     strcpy(d->typeinfo, "int");
     d->typeinfo[d->typeinfo_len] = '\0';
     break;
   case D_CHAR:
     d->typeinfo_len = sizeof("char");
-    d->typeinfo = (char *)kmalloc(sizeof(char) * d->typeinfo_len + 1, GFP_KERNEL);
+    d->typeinfo = (char *)kmalloc
+      (sizeof(char) * d->typeinfo_len + 1, GFP_KERNEL);
     strcpy(d->typeinfo, "char");
     d->typeinfo[d->typeinfo_len] = '\0';
     break;
   case D_STRING:
     d->typeinfo_len = sizeof("string");
-    d->typeinfo = (char *)kmalloc(sizeof(char) * d->typeinfo_len + 1, GFP_KERNEL);
+    d->typeinfo = (char *)kmalloc
+      (sizeof(char) * d->typeinfo_len + 1, GFP_KERNEL);
     strcpy(d->typeinfo, "string");
     d->typeinfo[d->typeinfo_len] = '\0';
     break;
@@ -118,7 +120,7 @@ static void ka_datum_free_all (void)
 
 }
 
-static void ka_pack(void)
+static struct ka_packet *ka_pack(void)
 {
   struct ka_packet *hdr = (struct ka_packet *)kmalloc
     (sizeof(struct ka_packet), GFP_KERNEL);
@@ -150,9 +152,6 @@ static void ka_pack(void)
   cur[0] = '\0';
   DBG_P("%s", hdr->typeinfo_list);
   
-  /* write it into ringbuf */
-  // TODO : need LOCK
-  
   /* now pack datagram */
   cur = hdr->body;
   list_for_each(ptr, &ka_datum_list) {
@@ -161,34 +160,69 @@ static void ka_pack(void)
     cur += entry->size;
   }
   DBG_P("sizeof packet:%d", sizeof(struct ka_packet));
+  return hdr;
 }
 
-static void ka_init_ringbuffer(struct ka_ringbuffer *rbuf)
+static void ka_init_rbuf(struct ka_ringbuffer *write, struct ka_ringbuffer *read)
 {
   struct ka_ringbuffer *r;
   int i;
 
-  rbuf = (struct ka_ringbuffer *)kzalloc(sizeof(struct ka_ringbuffer), GFP_KERNEL);
-  r = rbuf;
+  write = (struct ka_ringbuffer *)kzalloc
+    (sizeof(struct ka_ringbuffer), GFP_KERNEL);
+  r = write;
   for (i = 1; i < RINGBUFFER_NUM; i++) {
-    r->head = (struct ka_ringbuffer *)kzalloc(sizeof(struct ka_ringbuffer), GFP_KERNEL);
+    r->head = (struct ka_ringbuffer *)kzalloc
+      (sizeof(struct ka_ringbuffer), GFP_KERNEL);
     r = r->head;
   }
-  r->head = rbuf;
+  r->head = write;
+  DBG_P("cur_write:%p", write);
+  read = write;
 }
 
-static void ka_write_ringbuffer(struct ka_ringbuffer *rbuf)
+
+static inline void ka_rbuf_lotate(struct ka_ringbuffer *rbuf)
 {
+  rbuf = rbuf->head;
+}
 
 
+/* ka_write_rbuf_packet
+ * write packet to rbuf;
+ * 
+ */
+static void ka_write_rbuf_packet(struct ka_packet *packet)
+{
+  DBG_P("%p %p", current_rbuf_write, packet);
+  memcpy(current_rbuf_write->buffer, packet, RINGBUFFER_SIZE);
+  ka_rbuf_lotate(current_rbuf_write);
 }
 
 
 
 static int ka_read_proc (char *page, char **start, off_t off,
-			 int count, int *eof, void *data) {
-  ka_pack();
-  return 0;
+			 int count, int *eof, void *data)
+{
+  int len = 0;
+  struct ka_packet *packet;
+  packet = ka_pack();
+  if (packet == NULL) {
+    *eof = 1;
+    DBG_P("cannot pack.");
+    return 0;
+  }
+  
+  ka_write_rbuf_packet(packet);
+  DBG_P("bbb");
+  /* this is original code for read_proc */
+  
+  DBG_P("hi");
+  memcpy(page, current_rbuf_read->buffer, RINGBUFFER_SIZE);
+  DBG_P("bye");
+  len = RINGBUFFER_SIZE;
+
+  return len;
 
 }
 
@@ -199,10 +233,15 @@ static int ka_proc_init(void)
   if (entry == NULL)
     return -ENOMEM;
   entry->read_proc = ka_read_proc;
+
   INIT_LIST_HEAD(&ka_datum_list);
-  ka_init_ringbuffer(rbuf);
+  ka_init_rbuf(current_rbuf_write, current_rbuf_read);
+
+
   kadvice_int_put(3);
   kadvice_string_put("hello, world");
+
+
   return 0;
 }
 
