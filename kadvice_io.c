@@ -1,10 +1,15 @@
-#include <linux/moduel.h>
-#include <linux/kernel.h>
-#include <linux/security.h>
+
+/* 
+ * Kadvice read interface
+ * shinpei(c)ynu 2009
+ *
+ *
+ *
+ */
 
 #include "kadvice_io.h"
-
-
+#include <linux/kernel.h>
+#include "kadvice_debug.h"
 
 
 struct kadvice_channel* ka_channel_new()
@@ -20,9 +25,21 @@ struct kadvice_channel_header* ka_channel_hearer_new ()
 /* kadvice_int_put 
  *
  */
+struct ka_datum *ka_new_datum(int type)
+{
+  struct ka_datum *d = (struct ka_datum *)kmalloc(sizeof(struct ka_datum));
+  if (d == NULL) {
+    DBG_P("cannot allocate");
+  return (struct ka_datum *)kmalloc(sizeof(struct ka_datum));
+}
+
 int kadvice_int_put(int n)
 {
   struct kadvice_datum *d;
+  d = ka_new_datum(D_INT);
+  strcpy(d->typeinfo, "int");
+  d->typeinfo[sizeof("int")] = "\0";
+  d->
   
 }
 EXPORT_SYMBOL(kadvice_int_put);

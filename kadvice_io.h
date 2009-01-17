@@ -1,16 +1,20 @@
-#ifudef __KADVICE_IO_H
+#ifndef __KADVICE_IO_H
 #define __KADVICE_IO_H
 
-#include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/security.h>
 
 #define KADVICE_CHANNEL_PACKSIZE 4096
 #define KADVICE_CHANNEL_HEADERSIZE 12
 #define KADVICE_CHANNEL_DATASIZE_MAX KADVICE_CHANNEL_PACKSIZE - KADVICE_CHANNEL_HEADERSIZE
 
-
+enum ka_datum_type {
+  D_INT,
+  D_CHAR,
+D_STRING
+};
 struct ka_dutum {
-  const char* typeinfo;
+  const char* typeinfo[16];
   size_t size;
   char *value;
 };
