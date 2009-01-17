@@ -21,11 +21,32 @@ enum ka_datum_type {
 };
 
 struct ka_datum {
+  size_t typeinfo_len;
   char *typeinfo;
   size_t size;
   void *value;
   struct list_head list;
 };
+
+struct ka_packet_header {
+  size_t typeinfo_len;
+  char *typeinfo_list;
+  size_t size;
+};
+
+struct ka_packet_body {
+  void *body;
+};
+
+#define RINGBUFFER_SIZE 4096
+#define RINGBUFFER_NUM 4
+
+struct ka_ringbuffer {
+  char buffre[RINGBUFFER_SIZE];
+  struct ka_ringbuffer *head;
+};
+
+struct ka_ringbuffer *rbuf;
 
 
 #endif /* __KADVICE_IO_H */
