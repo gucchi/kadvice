@@ -3,20 +3,28 @@
 
 #include <linux/module.h>
 #include <linux/security.h>
+#include <linux/list.h>
+
 
 #define KADVICE_CHANNEL_PACKSIZE 4096
 #define KADVICE_CHANNEL_HEADERSIZE 12
 #define KADVICE_CHANNEL_DATASIZE_MAX KADVICE_CHANNEL_PACKSIZE - KADVICE_CHANNEL_HEADERSIZE
 
+struct list_head ka_datum_list;
+INIT_LIST_HEAD(&ka_datum_list);
+
 enum ka_datum_type {
   D_INT,
   D_CHAR,
-D_STRING
+  D_STRING
 };
+
 struct ka_dutum {
+  struct list_head list;
   const char* typeinfo[16];
   size_t size;
   void *value;
+  
 };
 
 

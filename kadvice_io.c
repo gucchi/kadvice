@@ -13,7 +13,6 @@
 #include "kadvice_io.h"
 #include "kadvice_debug.h"
 
-
 struct kadvice_channel* ka_channel_new()
 {
   return (struct kadvice_channel)kmalloc(sizeof(struct kadvice_channel));
@@ -98,8 +97,6 @@ static void ka_chanenel_pack()
 {
 
 }
-
-
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Shinpei Nakata");
