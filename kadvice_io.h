@@ -16,7 +16,7 @@ D_STRING
 struct ka_dutum {
   const char* typeinfo[16];
   size_t size;
-  char *value;
+  void *value;
 };
 
 
