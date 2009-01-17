@@ -48,6 +48,7 @@ int kadvice_int_put(int n)
   d->value = kmalloc(d->size, GFP_KERNEL);
   memcpy(d->value, &n, d->size);
   /* insert datum list. */
+  list_add(&d->list, &ka_datum_list);
   
   return 0;
 }
@@ -62,6 +63,7 @@ int kadvice_char_put(char c)
   memcpy(d->value,(void *)&c, d->size);
   
   /* insert datum list */
+  list_add(&d->list, &ka_datum_list);
   return 0;
 }
 EXPORT_SYMBOL(kadvice_char_put);
@@ -76,6 +78,7 @@ int kadvice_string_put(char* str)
   memcpy(d->value, (void *)str, d->size);
   
   /* insert datum list */
+  list_add(&d->list, &ka_datum_list);
   return 0;
   
 }

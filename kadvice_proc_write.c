@@ -69,6 +69,8 @@ int ka_proc_write(struct file *file, const char *buffer, unsigned long count, vo
   return len;
 }
 
+
+
 static int ka_proc_init(void){
   struct proc_dir_entry *entry;
   entry = create_proc_entry(PROCNAME, 0666, NULL);

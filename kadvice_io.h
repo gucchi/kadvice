@@ -21,10 +21,10 @@ enum ka_datum_type {
 };
 
 struct ka_datum {
-  //struct list_head list;
   char *typeinfo;
   size_t size;
   void *value;
+  struct list_head list;
 };
 
 
