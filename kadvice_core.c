@@ -202,8 +202,15 @@ int kadvice_register_advice(int aoid, int lsmid, void *func, int priority){
       return 0;
     }
   }
-  
   return -1;
+}
+
+int kadvice_register_advice_over(int aoid, int lsmid, void *func, int priority){
+  if(lsm_acc[lsmid][aoid][priority] == 0)
+    return -1;
+  lsm_acc[lsmid][aoid][priority] = (unsigned long)func;
+  printk("register advice lsmid:%d aoid:%d [%d] %p\n", lsmid, aoid, priority, func);
+  return 0;
 }
 
 int kadvice_unregister_advice(int aoid, int lsmid, void *func){
@@ -212,8 +219,14 @@ int kadvice_unregister_advice(int aoid, int lsmid, void *func){
     if(lsm_acc[lsmid][aoid][i] == (unsigned long)func){
       lsm_acc[lsmid][aoid][i] = 0;
       printk("unregister advice %p", func);
+      return 0;
     }
   }
+  return -1;
+}
+
+int kadvice_unregister_advice_point(int aoid, int lsmid, int priority){
+  lsm_acc[lsmid][aoid][priority] = 0;
   return 0;
 }
 
@@ -241,28 +254,63 @@ int ka_find_lsmid_from_str(char *name){
   return -1;
 }
 
-int kadvice_put_advice(char *acc, char *weavepoint, int aoid, int priority, unsigned long func){
-  int lsmid = ka_find_lsmid_from_str(weavepoint);
-  printk("lsmid:%d\n",lsmid);
+int kadvice_post_advice(struct ka_query *query){
+  int lsmid = ka_find_lsmid_from_str(query->weavepoint);
   if(lsmid < 0)
     return -1;
-  return kadvice_register_advice(aoid, lsmid, (void *)func, priority);
+  return kadvice_register_advice(query->aoid, lsmid, (void *)query->funcaddr, query->priority);
+}
+EXPORT_SYMBOL(kadvice_post_advice);
+
+
+int kadvice_post_advice_str(struct ka_query *query){
+  unsigned long addr;
+  addr = kallsyms_lookup_name(query->funcname);
+  if(addr == 0)
+    return -ENOMEM;
+  query->funcaddr = addr;
+  return kadvice_post_advice(query);
+}
+EXPORT_SYMBOL(kadvice_post_advice_str);
+
+
+int kadvice_delete_advice(struct ka_query *query){
+  int lsmid = ka_find_lsmid_from_str(query->weavepoint);
+  if(lsmid < 0)
+    return -1;
+  return kadvice_unregister_advice_point(query->aoid, lsmid, query->priority);
+}
+EXPORT_SYMBOL(kadvice_delete_advice);
+
+/*
+int kadvice_delete_advice_str(struct ka_query *query){
+  unsigned long addr;
+  addr = kallsyms_lookup_name(query->funcname);
+  if(addr == 0)
+    return -ENOMEM;
+  query->funcaddr = addr;
+  return kadvice_delete_advice(query);
+}
+EXPORT_SYMBOL(kadvice_delete_advice_str);
+*/
+
+int kadvice_put_advice(struct ka_query *query){
+  int lsmid = ka_find_lsmid_from_str(query->weavepoint);
+  if(lsmid < 0)
+    return -1;
+  return kadvice_register_advice_over(query->aoid, lsmid, (void *)query->funcaddr, query->priority);
 }
 EXPORT_SYMBOL(kadvice_put_advice);
 
 
-int kadvice_put_advice_str(char *acc, char *weavepoint, int aoid, int priority, char *func){
+int kadvice_put_advice_str(struct ka_query *query){
   unsigned long addr;
-  addr = kallsyms_lookup_name(func);
-  if(addr == 0)
+  addr = kallsyms_lookup_name(query->funcname);
+  if(addr == 0){
+    printk("error \n");
     return -ENOMEM;
-  printk("addr:%x\n", addr);
-  return kadvice_put_advice(acc, weavepoint, aoid, priority, addr);
+  }
+  query->funcaddr = addr;
+  return kadvice_put_advice(query);
 }
 EXPORT_SYMBOL(kadvice_put_advice_str);
-
-
-  
-
-
-			 
