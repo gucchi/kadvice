@@ -1,3 +1,4 @@
+
 /* 
  * Kadvice read interface
  * shinpei(c)ynu 2009
@@ -125,23 +126,29 @@ static void ka_pack()
   struct ka_datum *entry;
   
   size_t len = 0;
-  char *cur = hdr->typeinfo_list;
+  char *cur;
   list_for_each(ptr, &ka_datum_list) {
     entry = list_entry(ptr, struct ka_datum, list);
     len += entry->typeinfo_len;
   }
   DBG_P("len of typeinfo:%d", len);
   hdr->typeinfo_len = len;
-  hdr->typeinfo_list = (char *)kmalloc
-    ((sizeof(char) + sizeof(",")) * len, GFP_KERNEL);
-
+   hdr->typeinfo_list = (char *)kmalloc
+    (sizeof(char) * len + 1, GFP_KERNEL);
+  
   /* make typeinfo_list into hdr->typeinfo_list */
+  cur = hdr->typeinfo_list;
   
   list_for_each(ptr, &ka_datum_list) {
     entry = list_entry(ptr, struct ka_datum, list);
+    DBG_P("hehehe");
     memcpy(cur, entry->typeinfo, sizeof(char) * entry->typeinfo_len);
     cur += entry->typeinfo_len;
+    DBG_P("hi");
+    cur[-1] = ',';
   }
+  DBG_P("hi");
+  cur[0] = '\0';
   DBG_P("%s", hdr->typeinfo_list);
   
 }
@@ -160,6 +167,14 @@ static void ka_init_ringbuffer(struct ka_ringbuffer *rbuf)
   r->head = rbuf;
 }
 
+static void ka_write_ringbuffer(struct ka_ringbuffer *rbuf)
+{
+
+
+}
+
+
+
 static int ka_read_proc (char *page, char **start, off_t off,
 			 int count, int *eof, void *data) {
   ka_pack();
@@ -175,7 +190,7 @@ static int ka_proc_init(void)
     return -ENOMEM;
   entry->read_proc = ka_read_proc;
   INIT_LIST_HEAD(&ka_datum_list);
-  ka_init_ringbuffer(rbuf);
+  //ka_init_ringbuffer(rbuf);
   kadvice_int_put(3);
   kadvice_string_put("hello, world");
   return 0;
