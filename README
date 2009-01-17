@@ -1,1 +1,14 @@
-hehehehellodrisejf;';;;;;;:::""";:::
+Kadvice - dynamic kernel configuration tool
+
+Satoshi Kobayashi <...>
+Shinpei Nakata <shinpei@ynu.ac.jp>
+
+Updated: 13 Jan 2009
+
+Copyright (c) 2009 Satoshi Kobayashi
+Copyright (c) 2009 Shinpei Nakata
+Copyright (c) 2009 Yokohama National University
+
+0. Introduction
+
+Kadvice is a dynamic function insert tool with a

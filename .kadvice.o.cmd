@@ -1,1 +1,1 @@
-cmd_/home/gucchi/kadvice/kadvice.o := ld -m elf_i386 -m elf_i386   -r -o /home/gucchi/kadvice/kadvice.o /home/gucchi/kadvice/kadvice_core.o
+cmd_/usr/src/linux-2.6.24-ayaka_20081209/drivers/kadvice/kadvice.o := ld -m elf_i386 -m elf_i386   -r -o /usr/src/linux-2.6.24-ayaka_20081209/drivers/kadvice/kadvice.o /usr/src/linux-2.6.24-ayaka_20081209/drivers/kadvice/kadvice_core.o

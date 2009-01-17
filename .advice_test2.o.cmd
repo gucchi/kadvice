@@ -1,7 +1,7 @@
-cmd_/home/gucchi/kadvice/advice_test2.o := gcc -m32 -Wp,-MD,/home/gucchi/kadvice/.advice_test2.o.d  -nostdinc -isystem /usr/lib/gcc/i686-momonga-linux/4.1.2/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -pipe -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2  -march=i686 -mtune=pentium4 -mtune=generic -ffreestanding -maccumulate-outgoing-args -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -Iinclude/asm-x86/mach-default -fno-omit-frame-pointer -fno-optimize-sibling-calls -g  -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign    -DMODULE -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(advice_test2)"  -D"KBUILD_MODNAME=KBUILD_STR(advice_test2)" -c -o /home/gucchi/kadvice/advice_test2.o /home/gucchi/kadvice/advice_test2.c
+cmd_/usr/src/linux-2.6.24-ayaka_20081209/drivers/kadvice/advice_test2.o := gcc -m32 -Wp,-MD,/usr/src/linux-2.6.24-ayaka_20081209/drivers/kadvice/.advice_test2.o.d  -nostdinc -isystem /usr/lib/gcc/i686-momonga-linux/4.1.2/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -pipe -msoft-float -mregparm=3 -freg-struct-return -mpreferred-stack-boundary=2  -march=i686 -mtune=pentium4 -mtune=generic -ffreestanding -maccumulate-outgoing-args -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -Iinclude/asm-x86/mach-default -fno-omit-frame-pointer -fno-optimize-sibling-calls -g  -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign    -DMODULE -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(advice_test2)"  -D"KBUILD_MODNAME=KBUILD_STR(advice_test2)" -c -o /usr/src/linux-2.6.24-ayaka_20081209/drivers/kadvice/advice_test2.o /usr/src/linux-2.6.24-ayaka_20081209/drivers/kadvice/advice_test2.c
 
-deps_/home/gucchi/kadvice/advice_test2.o := \
-  /home/gucchi/kadvice/advice_test2.c \
+deps_/usr/src/linux-2.6.24-ayaka_20081209/drivers/kadvice/advice_test2.o := \
+  /usr/src/linux-2.6.24-ayaka_20081209/drivers/kadvice/advice_test2.c \
   include/linux/kernel.h \
     $(wildcard include/config/lbd.h) \
     $(wildcard include/config/preempt/voluntary.h) \
@@ -278,7 +278,7 @@ deps_/home/gucchi/kadvice/advice_test2.o := \
     $(wildcard include/config/mviac7.h) \
     $(wildcard include/config/mgeodegx1.h) \
     $(wildcard include/config/mgeode/lx.h) \
-  /home/gucchi/kadvice/ka/kadvice_lsm.h \
+  /usr/src/linux-2.6.24-ayaka_20081209/drivers/kadvice/ka/kadvice_lsm.h \
   include/linux/unistd.h \
   include/asm/unistd.h \
   include/asm/unistd_32.h \
@@ -331,13 +331,13 @@ deps_/home/gucchi/kadvice/advice_test2.o := \
     $(wildcard include/config/sysctl.h) \
   include/linux/random.h \
   include/linux/sysctl.h \
-  /home/gucchi/kadvice/ka/secops.h \
+  /usr/src/linux-2.6.24-ayaka_20081209/drivers/kadvice/ka/secops.h \
     $(wildcard include/config/security/network.h) \
     $(wildcard include/config/security/network/xfrm.h) \
     $(wildcard include/config/keys.h) \
-  /home/gucchi/kadvice/ka/security_ops.h \
-  /home/gucchi/kadvice/ka/ka_advice.h \
+  /usr/src/linux-2.6.24-ayaka_20081209/drivers/kadvice/ka/security_ops.h \
+  /usr/src/linux-2.6.24-ayaka_20081209/drivers/kadvice/ka/ka_advice.h \
 
-/home/gucchi/kadvice/advice_test2.o: $(deps_/home/gucchi/kadvice/advice_test2.o)
+/usr/src/linux-2.6.24-ayaka_20081209/drivers/kadvice/advice_test2.o: $(deps_/usr/src/linux-2.6.24-ayaka_20081209/drivers/kadvice/advice_test2.o)
 
-$(deps_/home/gucchi/kadvice/advice_test2.o):
+$(deps_/usr/src/linux-2.6.24-ayaka_20081209/drivers/kadvice/advice_test2.o):
