@@ -13,22 +13,10 @@
 #include "kadvice_io.h"
 #include "kadvice_debug.h"
 
-struct kadvice_channel* ka_channel_new()
-{
-  return (struct kadvice_channel)kmalloc(sizeof(struct kadvice_channel));
-}
-
-struct kadvice_channel_header* ka_channel_hearer_new ()
-{
-  return (struct kadvice_channel_header*)kmalloc(sizeof(struct kadvice_channel_header));
-}
-
-/* kadvice_int_put 
- *
- */
 struct ka_datum *ka_new_datum(int type)
 {
-  struct ka_datum *d = (struct ka_datum *)kmalloc(sizeof(struct ka_datum));
+  struct ka_datum *d;
+  d = (struct ka_datum *)kmalloc(sizeof(struct ka_datum), GFP_KERNEL);
   if (d == NULL) {
     DBG_P("cannot allocate");
   }
@@ -57,11 +45,11 @@ int kadvice_int_put(int n)
   struct ka_datum *d;
   d = ka_new_datum(D_INT);
   d->size = sizeof(int);
-  d->value = kmalloc(d->size);
-  memcpy(d->value, n, d->size);
+  d->value = kmalloc(d->size, GFP_KERNEL);
+  memcpy(d->value, &n, d->size);
   /* insert datum list. */
   
-  
+  return 0;
 }
 EXPORT_SYMBOL(kadvice_int_put);
 
@@ -70,11 +58,11 @@ int kadvice_char_put(char c)
   struct ka_datum *d;
   d = ka_new_datum(D_CHAR);
   d->size = sizeof(char);
-  d->value = kmalloc(d->size);
-  memcpy(d->value, c, d->size);
+  d->value = kmalloc(d->size, GFP_KERNEL);
+  memcpy(d->value,(void *)&c, d->size);
   
   /* insert datum list */
-
+  return 0;
 }
 EXPORT_SYMBOL(kadvice_char_put);
 
@@ -84,11 +72,11 @@ int kadvice_string_put(char* str)
   struct ka_datum *d;
   d = ka_new_datum(D_STRING);
   d->size = strlen(str) + 1;
-  d->value = kmalloc(d->size);
-  memcpy(d->value, str, d->size);
+  d->value = kmalloc(d->size, GFP_KERNEL);
+  memcpy(d->value, (void *)str, d->size);
   
   /* insert datum list */
-
+  return 0;
   
 }
 EXPORT_SYMBOL(kadvice_string_put);
