@@ -6,8 +6,12 @@
 
 #define DBG_P(fmt, ...) \
   printk("[%s:%d](%s)", __FILE__, __LINE__, __FUNCTION__); \
-  printk(fmt, ##__VA_ARGS); \
-  printk("\n");
+  printk(fmt, ##__VA_ARGS__); \
+  printk("\n"); \
 
 
-#endif
+#endif  /* __KADVICE_DEBUG_H */
+
+
+
+
