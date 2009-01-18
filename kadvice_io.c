@@ -16,6 +16,8 @@
 
 static struct ka_kadvice kadvice;
 
+
+
 struct ka_datum *ka_new_datum(int type)
 {
   struct ka_datum *d;
@@ -79,7 +81,6 @@ int kadvice_char_put(char c)
   return 0;
 }
 EXPORT_SYMBOL(kadvice_char_put);
-
 
 int kadvice_string_put(char* str)
 {
