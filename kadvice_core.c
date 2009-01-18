@@ -1,3 +1,5 @@
+#include "ka/secops.h"
+
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/proc_fs.h>
@@ -8,7 +10,7 @@
 #include "ka_proc.h"
 #include "ka_security_str_lsm.h"
 #include "ka_def.h"
-#include "ka/secops.h"
+
 #include "ka/base.h"
 
 unsigned long lsm_acc[LSMIDMAX + 1][AOIDMAX][FUNCMAX];
@@ -495,4 +497,4 @@ FUNC3INT(lsm_acc, xfrm_state_pol_flow_match, struct xfrm_state *, x, struct xfrm
 FUNC3INT(lsm_acc, xfrm_decode_session, struct sk_buff *, skb, u32 *, secid, int, ckall);
 FUNC3INT(lsm_acc, key_alloc, struct key *, key, struct task_struct *, tsk, unsigned long, flags);
 FUNC1VOID(lsm_acc, key_free, struct key *, key);
-//FUNC3INT(lsm_acc, key_permission, key_ref_t, key_ref, struct task_struct *, context, key_perm_t, perm);
+FUNC3INT(lsm_acc, key_permission, key_ref_t, key_ref, struct task_struct *, context, key_perm_t, perm);

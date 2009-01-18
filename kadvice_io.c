@@ -15,6 +15,8 @@
 
 static struct ka_kadvice kadvice;
 
+
+
 struct ka_datum *ka_new_datum(int type)
 {
   struct ka_datum *d;
