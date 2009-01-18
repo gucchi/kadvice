@@ -1,4 +1,3 @@
-
 /* 
  * Kadvice read interface
  * shinpei(c)ynu 2009
@@ -79,7 +78,6 @@ int kadvice_char_put(char c)
   return 0;
 }
 EXPORT_SYMBOL(kadvice_char_put);
-
 
 int kadvice_string_put(char* str)
 {
