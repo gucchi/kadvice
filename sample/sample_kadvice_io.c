@@ -18,16 +18,10 @@ struct ka_packet {
 };
 
 struct ka_typeinfo {
-  char typename[];
+  char *typename;
   size_t size;
 };
 
-void process_type(char *buf)
-{
-  
-
-
-}
 
 int main (void)
 {

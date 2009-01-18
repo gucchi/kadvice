@@ -6,9 +6,8 @@
 #include <linux/list.h>
 #include <linux/slab.h>
 
-struct list_head ka_datum_list;
+//struct list_head ka_datum_list;
 
-//INIT_LIST_HEAD(&ka_datum_list);
 #define RINGBUFFER_SIZE 4096
 #define RINGBUFFER_NUM 4
 
@@ -41,11 +40,23 @@ struct ka_ringbuffer {
   struct ka_ringbuffer *head;
 };
 
+
+struct ka_packet_operations {
+  // for packing operation
+  struct ka_packet *(*pack)(struct list_head *);
+};
+
 struct ka_kadvice {
   struct proc_dir_entry *ka_proc_entry;
   struct ka_ringbuffer *read;
   struct ka_ringbuffer *write;
+  struct ka_packet_operations pops;
+  /* ka_datum_list is for datum list; */
+  struct list_head ka_datum_list;
 };
+
+
+
 
 #endif /* __KADVICE_IO_H */
 
