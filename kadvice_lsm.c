@@ -20,6 +20,7 @@ static int test_file_permission(struct file *file, int mask){
   return ret;
 }
 
+
 struct security_operations addhookbase_security_ops = {
   .inode_permission = test_inode_permission,
   .file_permission = test_file_permission,
