@@ -239,6 +239,22 @@ int kadvice_clear_advice(int aoid, int lsmid){
   return 0;
 }
 
+int kadvice_clear_func(unsigned long addr){
+  int i, j, k;
+  for(i = 0; i < LSMIDMAX; i++){
+    for(j = 0; j < AOIDMAX; j++){
+      for(k = 0; k < FUNCMAX; k++){
+	if(lsm_acc[i][j][k] == addr){
+	  lsm_acc[i][j][k] = 0;
+	  printk("clear func\n");
+	}
+      }
+    }
+  }
+  return 0;
+}
+EXPORT_SYMBOL(kadvice_clear_func);
+
 EXPORT_SYMBOL(kadvice_register_advice);
 EXPORT_SYMBOL(kadvice_unregister_advice);
 EXPORT_SYMBOL(kadvice_clear_advice);

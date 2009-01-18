@@ -15,8 +15,13 @@ extern int lookup_module_symbol_attrs(unsigned long, unsigned long *, unsigned l
     cabiid = cabi_ac->cabi_id;						\
     for(i = 0; i < 8; i++){						\
       if(acc[__KA_##name][cabiid][i] != 0){				\
+	char symname[128];						\
 	printk(#name "security check\n");				\
 	p = (void *)acc[__KA_##name][cabiid][i];			\
+	if(lookup_module_symbol_name((unsigned long)p, symname) != 0){	\
+	  acc[__KA_##name][cabiid][i] = 0;				\
+	  return 0;							\
+	}								\
 	if(p(arg1) != 0)						\
 	  return -1;							\
       }									\
@@ -36,8 +41,13 @@ extern int lookup_module_symbol_attrs(unsigned long, unsigned long *, unsigned l
     cabiid = cabi_ac->cabi_id;						\
     for(i = 0; i < 8; i++){						\
       if(acc[__KA_##name][cabiid][i] != 0){				\
+	char symname[128];						\
 	printk(#name "security check\n");				\
 	p = (void *)acc[__KA_##name][cabiid][i];			\
+	if(lookup_module_symbol_name((unsigned long)p, symname) != 0){	\
+	  acc[__KA_##name][cabiid][i] = 0;				\
+	  return 0;							\
+	}								\
 	if(p(arg1, arg2) != 0)						\
 	  return -1;							\
       }									\
@@ -51,14 +61,19 @@ extern int lookup_module_symbol_attrs(unsigned long, unsigned long *, unsigned l
   {									\
     struct cabi_account *cabi_ac;					\
     int cabiid, i;							\
-    int (*p)(type1 arg1, type2 arg2, type3 arg3);			\
+    type (*p)(type1 arg1, type2 arg2, type3 arg3);			\
     if(!(cabi_ac = (struct cabi_account *)(current->cabi_info)))	\
       return 0;								\
     cabiid = cabi_ac->cabi_id;						\
     for(i = 0; i < 8; i++){						\
       if(acc[__KA_##name][cabiid][i] != 0){				\
+	char symname[128];						\
 	printk(#name "security check\n");				\
 	p = (void *)acc[__KA_##name][cabiid][i];			\
+	if(lookup_module_symbol_name((unsigned long)p, symname) != 0){	\
+	  acc[__KA_##name][cabiid][i] = 0;				\
+	  return 0;							\
+	}								\
 	if(p(arg1, arg2, arg3) != 0)					\
 	  return -1;							\
       }									\
@@ -79,15 +94,17 @@ extern int lookup_module_symbol_attrs(unsigned long, unsigned long *, unsigned l
     cabiid = cabi_ac->cabi_id;						\
     for(i = 0; i < 8; i++){						\
       if(acc[__KA_##name][cabiid][i] != 0){				\
+	char symname[128];						\
 	printk(#name "security check\n");				\
 	p = (void *)acc[__KA_##name][cabiid][i];			\
-	ret[i] = p(arg1, arg2, arg3, arg4);					\
+	if(lookup_module_symbol_name((unsigned long)p, symname) != 0){	\
+	  acc[__KA_##name][cabiid][i] = 0;				\
+	  return 0;							\
+	}								\
+	if(p(arg1, arg2, arg3, arg4) != 0)				\
+	  return -1;							\
       }									\
-      if(ret[0] || ret[1] || ret[2] || ret[3] || ret[4] || ret[5] || ret[6] || ret[7]){	\
-	printk("access denied\n");					\
-	return -1;							\
-      }									\
-    }									\
+     }									\
     return 0;								\
   }									\
   EXPORT_SYMBOL(ka_check_##name)			       
@@ -104,13 +121,15 @@ extern int lookup_module_symbol_attrs(unsigned long, unsigned long *, unsigned l
     cabiid = cabi_ac->cabi_id;						\
     for(i = 0; i < 8; i++){						\
       if(acc[__KA_##name][cabiid][i] != 0){				\
+	char symname[128];						\
 	printk(#name "security check\n");				\
 	p = (void *)acc[__KA_##name][cabiid][i];			\
-	ret[i] = p(arg1, arg2, arg3, arg4, arg5);			\
-      }									\
-      if(ret[0] || ret[1] || ret[2] || ret[3] || ret[4] || ret[5] || ret[6] || ret[7]){	\
-	printk("access denied\n");					\
-	return -1;							\
+	if(lookup_module_symbol_name((unsigned long)p, symname) != 0){	\
+	  acc[__KA_##name][cabiid][i] = 0;				\
+	  return 0;							\
+	}								\
+	if(p(arg1, arg2, arg3, arg4, arg5) != 0)			\
+	  return -1;							\
       }									\
     }									\
     return 0;								\
@@ -129,13 +148,15 @@ extern int lookup_module_symbol_attrs(unsigned long, unsigned long *, unsigned l
     cabiid = cabi_ac->cabi_id;						\
     for(i = 0; i < 8; i++){						\
       if(acc[__KA_##name][cabiid][i] != 0){				\
+	char symname[128];						\
 	printk(#name "security check\n");				\
 	p = (void *)acc[__KA_##name][cabiid][i];			\
-	ret[i] = p(arg1, arg2, arg3, arg4, arg5, arg6);			\
-      }									\
-      if(ret[0] || ret[1] || ret[2] || ret[3] || ret[4] || ret[5] || ret[6] || ret[7]){	\
-	printk("access denied\n");					\
-	return -1;							\
+	if(lookup_module_symbol_name((unsigned long)p, symname) != 0){	\
+	  acc[__KA_##name][cabiid][i] = 0;				\
+	  return 0;							\
+	}								\
+	if(p(arg1, arg2, arg3, arg4, arg5, arg6) != 0)			\
+	  return -1;							\
       }									\
     }									\
     return 0;								\
