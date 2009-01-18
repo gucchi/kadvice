@@ -15,7 +15,7 @@
 #include "kadvice_io.h"
 #include "kadvice_debug.h"
 
-
+static struct ka_kadvice kadvice;
 
 struct ka_datum *ka_new_datum(int type)
 {
@@ -129,19 +129,26 @@ static struct ka_packet *ka_pack(void)
   
   size_t len = 0;
   size_t size = 0;
-  char *cur;
+  char *tcur = hdr->typeinfo_list;
+  char *bcur = hdr->body;
   list_for_each(ptr, &ka_datum_list) {
     entry = list_entry(ptr, struct ka_datum, list);
     len += entry->typeinfo_len;
     size += entry->size;
+    memcpy(tcur, entry->typeinfo, sizeof(char) * entry->typeinfo_len);
+    tcur += entry->typeinfo_len;
+    memcpy(bcur, entry->value, entry->size);
+    bcur += entry->size;
   }
   DBG_P("len of typeinfo:%d", len);
   hdr->typeinfo_len = len;
-   hdr->typeinfo_list = (char *)kmalloc
+  /*
+    hdr->typeinfo_list = (char *)kmalloc
     (sizeof(char) * len + 1, GFP_KERNEL);
-  
-  /* make typeinfo_list into hdr->typeinfo_list */
-  cur = hdr->typeinfo_list;
+  */
+#if 0
+  if (len > TYPEINFO_SIE || size > PACKET_SIZE)
+    return NULL /* error */
   
   list_for_each(ptr, &ka_datum_list) {
     entry = list_entry(ptr, struct ka_datum, list);
@@ -159,26 +166,28 @@ static struct ka_packet *ka_pack(void)
     memcpy(cur, entry->value, entry->size);
     cur += entry->size;
   }
+  #endif
   DBG_P("sizeof packet:%d", sizeof(struct ka_packet));
   return hdr;
 }
 
-static void ka_init_rbuf(struct ka_ringbuffer *write, struct ka_ringbuffer *read)
+static void ka_init_rbuf(struct ka_kadvice *k)
 {
   struct ka_ringbuffer *r;
   int i;
 
-  write = (struct ka_ringbuffer *)kzalloc
+  k->write = (struct ka_ringbuffer *)kzalloc
     (sizeof(struct ka_ringbuffer), GFP_KERNEL);
-  r = write;
+  r = k->write;
   for (i = 1; i < RINGBUFFER_NUM; i++) {
     r->head = (struct ka_ringbuffer *)kzalloc
       (sizeof(struct ka_ringbuffer), GFP_KERNEL);
     r = r->head;
   }
-  r->head = write;
-  DBG_P("cur_write:%p", write);
-  read = write;
+  r->head = k->write;
+  k->read = k->write;
+  DBG_P("write:%p read:%p", k->write, k->read);
+
 }
 
 
@@ -192,11 +201,12 @@ static inline void ka_rbuf_lotate(struct ka_ringbuffer *rbuf)
  * write packet to rbuf;
  * 
  */
-static void ka_write_rbuf_packet(struct ka_packet *packet)
+static void ka_write_rbuf_packet(struct ka_ringbuffer *rbuf,
+				 struct ka_packet *packet)
 {
-  DBG_P("%p %p", current_rbuf_write, packet);
-  memcpy(current_rbuf_write->buffer, packet, RINGBUFFER_SIZE);
-  ka_rbuf_lotate(current_rbuf_write);
+  DBG_P("%p %p",rbuf, packet);
+  memcpy(rbuf, packet, RINGBUFFER_SIZE);
+  ka_rbuf_lotate(rbuf);
 }
 
 
@@ -206,6 +216,8 @@ static int ka_read_proc (char *page, char **start, off_t off,
 {
   int len = 0;
   struct ka_packet *packet;
+  struct ka_kadvice *k = (struct ka_kadvice *)data;
+  struct ka_ringbuffer *readbuf = k->read;
   packet = ka_pack();
   if (packet == NULL) {
     *eof = 1;
@@ -213,12 +225,11 @@ static int ka_read_proc (char *page, char **start, off_t off,
     return 0;
   }
   
-  ka_write_rbuf_packet(packet);
+  ka_write_rbuf_packet(readbuf, packet);
   DBG_P("bbb");
   /* this is original code for read_proc */
   
-  DBG_P("hi");
-  memcpy(page, current_rbuf_read->buffer, RINGBUFFER_SIZE);
+  memcpy(page, readbuf->buffer, RINGBUFFER_SIZE);
   DBG_P("bye");
   len = RINGBUFFER_SIZE;
 
@@ -226,21 +237,24 @@ static int ka_read_proc (char *page, char **start, off_t off,
 
 }
 
+static struct proc_dir_entry *ka_proc_entry;
+
 static int ka_proc_init(void)
 {
-  struct proc_dir_entry *entry;
-  entry = create_proc_entry(PROCNAME, 0666, NULL);
-  if (entry == NULL)
+  kadvice.ka_proc_entry = create_proc_entry(PROCNAME, 0666, NULL);
+  if (kadvice.ka_proc_entry == NULL)
     return -ENOMEM;
-  entry->read_proc = ka_read_proc;
 
   INIT_LIST_HEAD(&ka_datum_list);
-  ka_init_rbuf(current_rbuf_write, current_rbuf_read);
+  ka_init_rbuf(&kadvice);
+  DBG_P("write:%p, read:%p", kadvice.write, kadvice.read);
+  kadvice.ka_proc_entry->data = (void *)&kadvice;
+  DBG_P("data:%p rbuf:%p", kadvice.ka_proc_entry->data, 
+	kadvice.write);
+  kadvice.ka_proc_entry->read_proc = ka_read_proc;
 
-
-  kadvice_int_put(3);
+  //  kadvice_int_put(3);
   kadvice_string_put("hello, world");
-
 
   return 0;
 }

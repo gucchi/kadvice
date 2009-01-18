@@ -26,15 +26,13 @@ struct ka_datum {
   void *value;
   struct list_head list;
 };
-
+#define TYPEINFO_SIZE 128
 #define PACKET_SIZE \
-  RINGBUFFER_SIZE - sizeof(size_t) - sizeof(char *) \
-  - sizeof(size_t)  
+  RINGBUFFER_SIZE -  TYPEINFO_SIZE - sizeof(size_t)  
 
 struct ka_packet{
   size_t typeinfo_len;
-  char *typeinfo_list;
-  size_t size;
+  char typeinfo_list[TYPEINFO_SIZE];
   char body[PACKET_SIZE];
 };
 
@@ -45,9 +43,11 @@ struct ka_ringbuffer {
   struct ka_ringbuffer *head;
 };
 
-struct ka_ringbuffer *current_rbuf_write;
-struct ka_ringbuffer *current_rbuf_read;
-
+struct ka_kadvice {
+  struct proc_dir_entry *ka_proc_entry;
+  struct ka_ringbuffer *read;
+  struct ka_ringbuffer *write;
+};
 
 #endif /* __KADVICE_IO_H */
 
