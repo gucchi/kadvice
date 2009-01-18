@@ -1,8 +1,7 @@
+
 /* 
  * Kadvice read interface
  * shinpei(c)ynu 2009
- *
- *
  *
  */
 
@@ -96,10 +95,10 @@ int kadvice_string_put(char* str)
 }
 EXPORT_SYMBOL(kadvice_string_put);
 
-/* ka_pack
+/* ka_datum_free_all
  * 
- * pack ka_datum_list entry and make packet.
- * packet layout, see struct ka_packet.
+ * delete all entry from ka_datum_list
+ * once its writed into buffer, this could occur.
  */
 
 static void ka_datum_free_all (void)
@@ -119,6 +118,13 @@ static void ka_datum_free_all (void)
     DBG_P("emptified datum list");
 
 }
+
+/* ka_pack
+ *
+ * pack all datum entry form ka_datum_list and make ka_packet.
+ * make sure that this function is called once at the end of
+ * ka_(types)_write.
+ */
 
 static struct ka_packet *ka_pack(void)
 {
@@ -166,7 +172,7 @@ static struct ka_packet *ka_pack(void)
     memcpy(cur, entry->value, entry->size);
     cur += entry->size;
   }
-  #endif
+#endif
   DBG_P("sizeof packet:%d", sizeof(struct ka_packet));
   return hdr;
 }
@@ -187,15 +193,17 @@ static void ka_init_rbuf(struct ka_kadvice *k)
   r->head = k->write;
   k->read = k->write;
   DBG_P("write:%p read:%p", k->write, k->read);
-
 }
 
+/* ka_rbuf_lotate
+ * 
+ * lotate rbuf. 
+ */
 
 static inline void ka_rbuf_lotate(struct ka_ringbuffer *rbuf)
 {
   rbuf = rbuf->head;
 }
-
 
 /* ka_write_rbuf_packet
  * write packet to rbuf;
@@ -204,12 +212,9 @@ static inline void ka_rbuf_lotate(struct ka_ringbuffer *rbuf)
 static void ka_write_rbuf_packet(struct ka_ringbuffer *rbuf,
 				 struct ka_packet *packet)
 {
-  DBG_P("%p %p",rbuf, packet);
   memcpy(rbuf, packet, RINGBUFFER_SIZE);
   ka_rbuf_lotate(rbuf);
 }
-
-
 
 static int ka_read_proc (char *page, char **start, off_t off,
 			 int count, int *eof, void *data)
@@ -268,7 +273,6 @@ static void ka_proc_fini(void)
 module_init(ka_proc_init);
 module_exit(ka_proc_fini);
   
-
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Shinpei Nakata");
 MODULE_DESCRIPTION("Kadvice io interface");

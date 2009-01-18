@@ -12,7 +12,6 @@ struct list_head ka_datum_list;
 #define RINGBUFFER_SIZE 4096
 #define RINGBUFFER_NUM 4
 
-
 enum ka_datum_type {
   D_INT,
   D_CHAR,
@@ -26,6 +25,7 @@ struct ka_datum {
   void *value;
   struct list_head list;
 };
+
 #define TYPEINFO_SIZE 128
 #define PACKET_SIZE \
   RINGBUFFER_SIZE -  TYPEINFO_SIZE - sizeof(size_t)  
@@ -35,8 +35,6 @@ struct ka_packet{
   char typeinfo_list[TYPEINFO_SIZE];
   char body[PACKET_SIZE];
 };
-
-
 
 struct ka_ringbuffer {
   char buffer[RINGBUFFER_SIZE];
