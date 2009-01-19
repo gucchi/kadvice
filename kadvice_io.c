@@ -128,6 +128,13 @@ static void ka_datum_free_all (void)
 static struct ka_packet *ka_pack_modified (struct list_head
 					   *ka_datum_list)
 {
+  /* 
+   * we knows that client should know memory layout.
+   *____________________________________
+   * size ! bytes    ! size !  bytes    !
+   * ------------------------------------
+   *   
+   */
   struct ka_packet *p = (struct ka_packet *)kmalloc
     (sizeof(struct ka_packet), GFP_KERNEL);
   struct list_head *ptr;
@@ -138,11 +145,21 @@ static struct ka_packet *ka_pack_modified (struct list_head
   char *tcur = p->typeinfo_list;
   char *bcur = p->body;
 
+  list_for_each(ptr, ka_datum_list) {
+    entry = list_entry(ptr, struct ka_datum, list);
+    snprintf();
+    memcpy(bcur, entry->value, entry->size);
 }
 
 
 static struct ka_packet *ka_pack(struct list_head *ka_datum_list)
 {
+  /* __________________________________________
+   * typesize !type, type, type                
+   * ------------------------------------------
+   * bytesize ! bytes 
+   * -----------------------------------------
+   */
   struct ka_packet *hdr = (struct ka_packet *)kmalloc
     (sizeof(struct ka_packet), GFP_KERNEL);
   struct list_head *ptr;
