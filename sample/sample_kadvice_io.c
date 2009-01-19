@@ -17,6 +17,18 @@ struct ka_packet {
   char body[PACKET_SIZE];
 };
 
+struct ka_typeinfo {
+  char typename[];
+  size_t size;
+};
+
+void process_type(char *buf)
+{
+  
+
+
+}
+
 int main (void)
 {
   FILE *fp;
