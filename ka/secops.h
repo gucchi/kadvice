@@ -10,4 +10,4 @@
 #define CONFIG_KEYS
 #endif
 
-#include "security_ops.h"
+#include "kadvice_security_lsm.h"
