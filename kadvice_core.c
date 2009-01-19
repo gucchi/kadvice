@@ -162,7 +162,7 @@ module_init(lsmacc_module_init);
 module_exit(lsmacc_module_exit);
 
 //FUNC2(lsm_acc, int, file_permission, struct file *, file, int, mask);
-//FUNC3(lsm_acc, int, inode_permission, struct inode *, inode, int, mask, struct nameidata *, nd);
+//FUNC3INT(lsm_acc, inode_permission, struct inode *, inode, int, mask, struct nameidata *, nd);
 //FUNC3(lsm_acc, int, socket_sendmsg, struct socket *, sock, struct msghdr *, msg, int, size);
 
 /*

@@ -162,11 +162,11 @@ extern int lookup_module_symbol_attrs(unsigned long, unsigned long *, unsigned l
 
 
 #define FUNC0VOID(acc, name, type1)						\
-  void FUNCNAME(name)(type1)					\
+  void FUNCNAME(name)(void)					\
   {									\
     struct cabi_account *cabi_ac;					\
     int cabiid, i;							\
-    void (*func)();						\
+    void (*func)(void);						\
     if(!(cabi_ac = (struct cabi_account *)(current->cabi_info)))	\
       return;								\
     cabiid = cabi_ac->cabi_id;						\
