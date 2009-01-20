@@ -31,8 +31,8 @@ struct ka_datum {
 struct ka_datum *unpack(char *segment_head)
 {
   struct ka_datum *d = (struct ka_datum *)malloc(sizeof(struct ka_datum));
-  d->size = (size_t)segment_head[0];
-  segment_head++;
+  memcpy(&(d->size), segment_head, sizeof(size_t));
+  segment_head += sizeof(size_t);
   d->ptr = malloc(sizeof(char) * d->size);
   memcpy(d->ptr, segment_head, d->size);
   if (d->size == 0) return NULL;
@@ -71,8 +71,9 @@ int main (void)
       break;
     printf("%s\n", d->ptr);
     readsize += d->size;
+    cur += sizeof(size_t) + d->size;
   }
-  printf("process end...");
+  printf("process end...\n");
   return 0;
 
 }
