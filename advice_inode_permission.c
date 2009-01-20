@@ -13,7 +13,7 @@ MODULE_LICENSE("GPL");
 
 int sample_inode_permission(struct inode *inode, int mask, struct nameidata *nd){
   printk("sample advice\n");
-  kadvice_string_put("sample advice\n");
+  //kadvice_string_put("sample advice\n");
   return -1;	 
 }
 

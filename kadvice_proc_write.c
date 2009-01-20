@@ -7,6 +7,7 @@
 
 #define PROCNAME "kadvice"
 
+MODULE_LICENSE("GPL");
 
 extern int kadvice_put_advice_str(struct ka_query *);
 extern int kadvice_post_advice_str(struct ka_query *);

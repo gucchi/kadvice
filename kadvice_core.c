@@ -168,13 +168,12 @@ module_exit(lsmacc_module_exit);
 //FUNC3(lsm_acc, int, socket_sendmsg, struct socket *, sock, struct msghdr *, msg, int, size);
 
 /*
-int ka_check_inode_permission(struct inode * inode, int mask, struct nameidata * nd)
+int ka_check_inode_permission(struct inode * inode, int mask, struct nameidata * nd, struct cabi_account *cabi)
 {									
-  struct cabi_account *cabi_ac;					
-  int cabiid, i;								
-  if(!(cabi_ac = (struct cabi_account *)(current->cabi_info)))	
+  int cabiid, i;
+  if(!cabi)	
     return 0;					
-  cabiid = cabi_ac->cabi_id;						
+  cabiid = cabi->cabi_id;						
   int (*p)(struct inode *inode, int mask, struct nameidata *nd);
   for(i = 0; i < 8; i++){			
     if(lsm_acc[__KA_inode_permission][cabiid][i] != 0){

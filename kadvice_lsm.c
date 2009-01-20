@@ -2,28 +2,31 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/security.h>
-
+#include <cabi/common.h>
 #include "ka/kadvice_lsm.h"
 
 MODULE_LICENSE("GPL");
 
-extern int addhook(int, int, void *);
-
-
 static int test_inode_permission(struct inode *inode, int mask, struct nameidata *nd){
-  int ret = ka_check_inode_permission(inode, mask, nd);
+  struct cabi_account *cabi;
+  int ret = 0;
+  if((cabi = (struct cabi_account *)(current->cabi_info)))
+    ret = ka_check_inode_permission(inode, mask, nd, cabi);
   return ret;
 }
-
+/*
 static int test_file_permission(struct file *file, int mask){
-  int ret = ka_check_file_permission(file, mask);
+  struct cabi_account *cabi;
+  int ret = 0;
+  if(cabi = (struct cabi_account *)(current->cabi_info))
+    ret = ka_check_file_permission(file, mask, cabi);
   return ret;
 }
-
+*/
 
 struct security_operations addhookbase_security_ops = {
   .inode_permission = test_inode_permission,
-  .file_permission = test_file_permission,
+  //  .file_permission = test_file_permission,
 };
 
 
