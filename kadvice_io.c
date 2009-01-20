@@ -15,8 +15,6 @@
 
 static struct ka_kadvice kadvice;
 
-
-
 struct ka_datum *ka_new_datum(int type)
 {
   struct ka_datum *d;
@@ -61,7 +59,7 @@ int kadvice_int_put(int n)
   d->value = kmalloc(d->size, GFP_KERNEL);
   memcpy(d->value, &n, d->size);
   /* insert datum list. */
-  list_add(&d->list, &ka_datum_list);
+  list_add(&d->list, &(kadvice.ka_datum_list));
   
   return 0;
 }
@@ -76,7 +74,7 @@ int kadvice_char_put(char c)
   memcpy(d->value,(void *)&c, d->size);
   
   /* insert datum list */
-  list_add(&d->list, &ka_datum_list);
+  list_add(&d->list, &(kadvice.ka_datum_list));
   return 0;
 }
 EXPORT_SYMBOL(kadvice_char_put);
@@ -90,7 +88,7 @@ int kadvice_string_put(char* str)
   memcpy(d->value, (void *)str, d->size);
   
   /* insert datum list */
-  list_add(&d->list, &ka_datum_list);
+  list_add(&d->list, &(kadvice.ka_datum_list));
   return 0;
 }
 EXPORT_SYMBOL(kadvice_string_put);
@@ -106,7 +104,7 @@ static void ka_datum_free_all (void)
   struct list_head *ptr;
   struct ka_datum *entry;
   struct list_head *next;
-  list_for_each_safe(ptr, next, &ka_datum_list) {
+  list_for_each_safe(ptr, next, &(kadvice.ka_datum_list)) {
     entry = list_entry(ptr, struct ka_datum, list);
     list_del(ptr);
     DBG_P("typeinfo:%s %d", entry->typeinfo, entry->typeinfo_len);
@@ -114,7 +112,7 @@ static void ka_datum_free_all (void)
     kfree(entry->value);
     kfree(entry);
   }
-  if (list_empty(&ka_datum_list))
+  if (list_empty(&(kadvice.ka_datum_list)))
     DBG_P("emptified datum list");
 
 }
@@ -126,7 +124,23 @@ static void ka_datum_free_all (void)
  * ka_(types)_write.
  */
 
-static struct ka_packet *ka_pack(void)
+static struct ka_packet *ka_pack_modified (struct list_head
+					   *ka_datum_list)
+{
+  struct ka_packet *p = (struct ka_packet *)kmalloc
+    (sizeof(struct ka_packet), GFP_KERNEL);
+  struct list_head *ptr;
+  struct ka_datum *entry;
+
+  size_t len = 0;
+  size_t size = 0;
+  char *tcur = p->typeinfo_list;
+  char *bcur = p->body;
+
+}
+
+
+static struct ka_packet *ka_pack(struct list_head *ka_datum_list)
 {
   struct ka_packet *hdr = (struct ka_packet *)kmalloc
     (sizeof(struct ka_packet), GFP_KERNEL);
@@ -137,7 +151,8 @@ static struct ka_packet *ka_pack(void)
   size_t size = 0;
   char *tcur = hdr->typeinfo_list;
   char *bcur = hdr->body;
-  list_for_each(ptr, &ka_datum_list) {
+
+  list_for_each(ptr, ka_datum_list) {
     entry = list_entry(ptr, struct ka_datum, list);
     len += entry->typeinfo_len;
     size += entry->size;
@@ -156,7 +171,7 @@ static struct ka_packet *ka_pack(void)
   if (len > TYPEINFO_SIE || size > PACKET_SIZE)
     return NULL /* error */
   
-  list_for_each(ptr, &ka_datum_list) {
+  list_for_each(ptr, ka_datum_list) {
     entry = list_entry(ptr, struct ka_datum, list);
     memcpy(cur, entry->typeinfo, sizeof(char) * entry->typeinfo_len);
     cur += entry->typeinfo_len;
@@ -167,7 +182,7 @@ static struct ka_packet *ka_pack(void)
   
   /* now pack datagram */
   cur = hdr->body;
-  list_for_each(ptr, &ka_datum_list) {
+  list_for_each(ptr, ka_datum_list) {
     entry = list_entry(ptr, struct ka_datum, list);
     memcpy(cur, entry->value, entry->size);
     cur += entry->size;
@@ -223,7 +238,8 @@ static int ka_read_proc (char *page, char **start, off_t off,
   struct ka_packet *packet;
   struct ka_kadvice *k = (struct ka_kadvice *)data;
   struct ka_ringbuffer *readbuf = k->read;
-  packet = ka_pack();
+  //  packet = ka_pack();
+  packet = k->pops.pack(&(k->ka_datum_list));
   if (packet == NULL) {
     *eof = 1;
     DBG_P("cannot pack.");
@@ -250,14 +266,15 @@ static int ka_proc_init(void)
   if (kadvice.ka_proc_entry == NULL)
     return -ENOMEM;
 
-  INIT_LIST_HEAD(&ka_datum_list);
+  //  INIT_LIST_HEAD(&ka_datum_list);
+  INIT_LIST_HEAD(&(kadvice.ka_datum_list));
   ka_init_rbuf(&kadvice);
   DBG_P("write:%p, read:%p", kadvice.write, kadvice.read);
   kadvice.ka_proc_entry->data = (void *)&kadvice;
   DBG_P("data:%p rbuf:%p", kadvice.ka_proc_entry->data, 
 	kadvice.write);
   kadvice.ka_proc_entry->read_proc = ka_read_proc;
-
+  kadvice.pops.pack = ka_pack;
   //  kadvice_int_put(3);
   kadvice_string_put("hello, world");
 
