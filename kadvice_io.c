@@ -1,7 +1,7 @@
 /* 
  * Kadvice read interface
  * shinpei(c)ynu 2009
-o *
+ *
  */
 
 #include <asm/uaccess.h>
@@ -218,6 +218,20 @@ static struct ka_packet *ka_pack(struct list_head *ka_datum_list)
   return hdr;
 }
 
+static void ka_fini_rbuf(struct ka_kadvice *k)
+{
+  struct ka_ringbuffer *prev, *cur;
+  int i;
+  
+  prev = cur = k->write;
+  for (i = 0; i < RINGBUFFER_NUM; i++) {
+    cur = cur->head;
+    kfree(prev);
+    prev = cur;
+  }
+  DBG_P("buffer finishment.");
+}
+
 static void ka_init_rbuf(struct ka_kadvice *k)
 {
   struct ka_ringbuffer *r;
@@ -250,6 +264,7 @@ static inline void ka_rbuf_lotate(struct ka_ringbuffer *rbuf)
  * write packet to rbuf;
  * 
  */
+
 static void ka_write_rbuf_packet(struct ka_ringbuffer *rbuf,
 				 struct ka_packet *packet)
 {
@@ -275,16 +290,13 @@ static int ka_read_proc (char *page, char **start, off_t off,
   ka_write_rbuf_packet(readbuf, packet);
   DBG_P("bbb");
   /* this is original code for read_proc */
-  
+
   memcpy(page, readbuf->buffer, RINGBUFFER_SIZE);
   DBG_P("bye");
   len = RINGBUFFER_SIZE;
 
   return len;
-
 }
-
-//static struct proc_dir_entry *ka_proc_entry;
 
 static int ka_proc_init(void)
 {
@@ -303,7 +315,7 @@ static int ka_proc_init(void)
   kadvice.pops.pack = ka_pack_modified;
   //  kadvice_int_put(3);
   kadvice_string_put("hello, world");
-
+  kadvice_string_put("goodbye, world");
   return 0;
 }
 
@@ -311,6 +323,7 @@ static void ka_proc_fini(void)
 {
   remove_proc_entry(PROCNAME, NULL);
   ka_datum_free_all();
+  ka_fini_rbuf(&kadvice);
 }
 
 module_init(ka_proc_init);
