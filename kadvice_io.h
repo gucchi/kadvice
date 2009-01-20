@@ -25,13 +25,12 @@ struct ka_datum {
   struct list_head list;
 };
 
-#define TYPEINFO_SIZE 128
+#define TYPEINFO_SIZE 0
 #define PACKET_SIZE \
   RINGBUFFER_SIZE -  TYPEINFO_SIZE - sizeof(size_t)  
 
 struct ka_packet{
   size_t typeinfo_len;
-  char typeinfo_list[TYPEINFO_SIZE];
   char body[PACKET_SIZE];
 };
 

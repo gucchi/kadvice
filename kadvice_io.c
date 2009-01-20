@@ -162,9 +162,9 @@ static struct ka_packet *ka_pack(struct list_head *ka_datum_list)
 
   size_t len = 0;
   size_t size = 0;
-
-  char *tcur = hdr->typeinfo_list;
-  char *bcur = hdr->body;
+  const unsigned int typeinfo_list_len = 128;
+  char *tcur = hdr->body;
+  char *bcur = &(hdr->body[typeinfo_list_len]);
 
   list_for_each(ptr, ka_datum_list) {
     entry = list_entry(ptr, struct ka_datum, list);
