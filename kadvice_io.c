@@ -1,7 +1,7 @@
 /* 
  * Kadvice read interface
  * shinpei(c)ynu 2009
- *
+o *
  */
 
 #include <asm/uaccess.h>
@@ -128,7 +128,7 @@ static struct ka_packet *ka_pack_modified (struct list_head
 					   *ka_datum_list)
 {
   /* 
-   * we knows that client should know memory layout.
+   * assuming client(who insert filtering module) would know memory layout.
    *____________________________________
    * size ! bytes    ! size !  bytes    !
    * ------------------------------------
@@ -139,13 +139,25 @@ static struct ka_packet *ka_pack_modified (struct list_head
   struct list_head *ptr;
   struct ka_datum *entry;
 
-  size_t len = 0;
   size_t size = 0;
   char *bcur = p->body;
+  
+  DBG_P("hi");
+  list_for_each(ptr, ka_datum_list) {
+    entry = list_entry(ptr, struct ka_datum, list);
+    memcpy(bcur, (char*)&(entry->size), sizeof(size_t));
+    bcur += sizeof(size_t);
+    memcpy(bcur, entry->value, entry->size);
+    bcur += entry->size;
+    size += entry->size;
+  }
+  DBG_P("size %d", size);
+  if (size < PACKET_SIZE)
+    memset(bcur, 0, PACKET_SIZE - size);
 
- 
+
+  return p;
 }
-
 
 static struct ka_packet *ka_pack(struct list_head *ka_datum_list)
 {
@@ -272,7 +284,7 @@ static int ka_read_proc (char *page, char **start, off_t off,
 
 }
 
-static struct proc_dir_entry *ka_proc_entry;
+//static struct proc_dir_entry *ka_proc_entry;
 
 static int ka_proc_init(void)
 {
@@ -288,7 +300,7 @@ static int ka_proc_init(void)
   DBG_P("data:%p rbuf:%p", kadvice.ka_proc_entry->data, 
 	kadvice.write);
   kadvice.ka_proc_entry->read_proc = ka_read_proc;
-  kadvice.pops.pack = ka_pack;
+  kadvice.pops.pack = ka_pack_modified;
   //  kadvice_int_put(3);
   kadvice_string_put("hello, world");
 

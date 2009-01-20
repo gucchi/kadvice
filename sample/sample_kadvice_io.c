@@ -7,13 +7,13 @@
 
 #define BUFSZ 4096
 
-#define TYPEINFO_SIZE 128
+#define TYPEINFO_SIZE 0
 #define PACKET_SIZE \
   BUFSZ - TYPEINFO_SIZE - sizeof(size_t)
 
 struct ka_packet {
   size_t typeinfo_len;
-  char typeinfo_list[TYPEINFO_SIZE];
+  //  char typeinfo_list[TYPEINFO_SIZE];
   char body[PACKET_SIZE];
 };
 
@@ -21,6 +21,23 @@ struct ka_typeinfo {
   char *typename;
   size_t size;
 };
+
+struct ka_datum {
+  size_t size;
+  void *ptr;
+};
+
+
+struct ka_datum *unpack(char *segment_head)
+{
+  struct ka_datum *d = (struct ka_datum *)malloc(sizeof(struct ka_datum));
+  d->size = (size_t)segment_head[0];
+  segment_head++;
+  d->ptr = malloc(sizeof(char) * d->size);
+  memcpy(d->ptr, segment_head, d->size);
+  if (d->size == 0) return NULL;
+  return d;
+}
 
 
 int main (void)
@@ -39,10 +56,23 @@ int main (void)
   fclose(fp);
   
   /* start parsing */
+#if 0
   struct ka_packet *p = (struct ka_packet *)buf;
   printf("%d %d %d\n", p->typeinfo_len, sizeof(int), sizeof(char));
   printf("%s\n", p->typeinfo_list);
   printf("%s\n", p->body);
+#endif
+  struct ka_packet *p = (struct ka_packet *)buf;
+  size_t readsize = 0;
+  char *cur = p->body;
+  while (readsize < PACKET_SIZE) {
+    struct ka_datum *d = unpack(cur);
+    if (d == NULL)
+      break;
+    printf("%s\n", d->ptr);
+    readsize += d->size;
+  }
+  printf("process end...");
   return 0;
 
 }
