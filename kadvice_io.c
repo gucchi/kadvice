@@ -141,13 +141,9 @@ static struct ka_packet *ka_pack_modified (struct list_head
 
   size_t len = 0;
   size_t size = 0;
-  char *tcur = p->typeinfo_list;
   char *bcur = p->body;
 
-  list_for_each(ptr, ka_datum_list) {
-    entry = list_entry(ptr, struct ka_datum, list);
-    snprintf();
-    memcpy(bcur, entry->value, entry->size);
+ 
 }
 
 
@@ -163,9 +159,10 @@ static struct ka_packet *ka_pack(struct list_head *ka_datum_list)
     (sizeof(struct ka_packet), GFP_KERNEL);
   struct list_head *ptr;
   struct ka_datum *entry;
-  
+
   size_t len = 0;
   size_t size = 0;
+
   char *tcur = hdr->typeinfo_list;
   char *bcur = hdr->body;
 
