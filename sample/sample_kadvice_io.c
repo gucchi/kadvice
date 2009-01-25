@@ -38,19 +38,18 @@ struct ka_datum *unpack(char *segment_head)
   return d;
 }
 
-
 int main (void)
 {
   FILE *fp;
   char *filename = "/proc/kkk";
-  
+  char  buf[BUFSZ];
+
   fp = fopen(filename, "rb");
   if (fp == NULL) {
     perror("open failed");
     exit(1);
   }
   
-  char buf[BUFSZ];
   fread(buf, BUFSZ, 1, fp);
   fclose(fp);
   

@@ -39,7 +39,6 @@ struct ka_ringbuffer {
   struct ka_ringbuffer *head;
 };
 
-
 struct ka_packet_operations {
   // for packing operation
   struct ka_packet *(*pack)(struct list_head *);
