@@ -49,6 +49,8 @@ struct ka_kadvice {
   struct ka_ringbuffer *read;
   struct ka_ringbuffer *write;
   struct ka_packet_operations pops;
+  void (*rlotate)(struct ka_kadvice *);
+  void (*wlotate)(struct ka_kadvice *);
   /* ka_datum_list is for datum list; */
   struct list_head ka_datum_list;
 };

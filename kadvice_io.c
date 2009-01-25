@@ -1,8 +1,6 @@
-
 /* 
  * Kadvice read interface
  * shinpei(c)ynu 2009
- *
  */
 
 #include <asm/uaccess.h>
@@ -284,14 +282,6 @@ static void ka_init_rbuf(struct ka_kadvice *k)
   DBG_P("write:%p read:%p", k->write, k->read);
 }
 
-/* ka_rbuf_lotate
- *
- * lotate rbuf. 
- */
-static inline void ka_rbuf_lotate(struct ka_ringbuffer *rbuf)
-{
-  rbuf = rbuf->head;
-}
 
 /* ka_write_rbuf_packet
  * write packet to rbuf;
@@ -301,7 +291,7 @@ static void ka_write_rbuf_packet(struct ka_ringbuffer *rbuf,
 				 struct ka_packet *packet)
 {
   memcpy(rbuf, packet, RINGBUFFER_SIZE);
-  ka_rbuf_lotate(rbuf);
+  //  ka_rbuf_lotate(rbuf);
 }
 
 static int ka_read_proc (char *page, char **start, off_t off,
@@ -321,15 +311,31 @@ static int ka_read_proc (char *page, char **start, off_t off,
   }
   
   ka_write_rbuf_packet(readbuf, packet);
+  k->rlotate(k);
+  DBG_P("rbuf:%p", k->read);
   /* this is original code for read_proc */
   memcpy(page, readbuf->buffer, RINGBUFFER_SIZE);
   len = RINGBUFFER_SIZE;
   kfree(packet);
+  ka_datum_free_all();
   return len;
+}
+
+static void lotate_read(struct ka_kadvice *k)
+{
+  k->read = k->read->head;
+}
+
+static void lotate_write(struct ka_kadvice *k)
+{
+  k->write = k->write->head;
+
 }
 
 static int ka_proc_init(void)
 {
+  kadvice.rlotate = lotate_read; 
+  kadvice.wlotate = lotate_write;
   kadvice.ka_proc_entry = create_proc_entry(PROCNAME, 0666, NULL);
   if (kadvice.ka_proc_entry == NULL)
     return -ENOMEM;
@@ -343,9 +349,9 @@ static int ka_proc_init(void)
   kadvice.ka_proc_entry->read_proc = ka_read_proc;
   kadvice.pops.pack = ka_pack_modified;
   
-  kadvice_string_put("hello, world");
-  kadvice_string_put("goodbye, world");
-  return 0;
+  //  kadvice_string_put("goodbye, world");
+  kadvice_string_put("test.k");
+return 0;
 }
 
 static void ka_proc_fini(void)
