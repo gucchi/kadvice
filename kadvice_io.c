@@ -103,6 +103,8 @@ static void ka_datum_free_all (void)
   struct list_head *ptr;
   struct ka_datum *entry;
   struct list_head *next;
+  if (list_empty(&(kadvice.ka_datum_list)))
+    return ;
   list_for_each_safe(ptr, next, &(kadvice.ka_datum_list)) {
     entry = list_entry(ptr, struct ka_datum, list);
     list_del(ptr);
@@ -131,17 +133,20 @@ static struct ka_packet *ka_pack_URL_included (struct list_head
    * size     |    bytes
    * --------------------------------------------
    */
+  struct ka_packet *p;
+  struct list_head *ptr;
+  struct ka_datum *entry;
+  
+  const unsigned int uri_len = 128;
+  char *uri_cur;
+  char *bcur;
   if(list_empty(ka_datum_list)) 
     return NULL;
 
-  struct ka_packet *p = (struct ka_packet *)kmalloc
+  p = (struct ka_packet *)kmalloc
     (sizeof(struct ka_packet), GFP_KERNEL);
-  struct list_head *ptr;
-  struct ka_datum *entry;
-
-  const unsigned int uri_len = 128;
-  char *uri_cur = p->body;
-  char *bcur = &(p->body[uri_len]);
+  uri_cur = p->body;
+  bcur = &(p->body[uri_len]);
   
   // now, implement URI into packet.
   
@@ -170,16 +175,19 @@ static struct ka_packet *ka_pack_modified (struct list_head
    * size ! bytes    ! size !  bytes    !
    * ------------------------------------
    */
-  if (list_empty(ka_datum_list))
-    return NULL;
-  struct ka_packet *p = (struct ka_packet *)kmalloc
-    (sizeof(struct ka_packet), GFP_KERNEL);
+  struct ka_packet *p;
   struct list_head *ptr;
   struct ka_datum *entry;
-
   size_t size = 0;
-  char *bcur = p->body;
+  char *bcur;
+
+  if (list_empty(ka_datum_list))
+    return NULL;
   
+
+  p = (struct ka_packet *)kmalloc
+    (sizeof(struct ka_packet), GFP_KERNEL);
+  bcur = p->body;
   list_for_each(ptr, ka_datum_list) {
     entry = list_entry(ptr, struct ka_datum, list);
     memcpy(bcur, (char*)&(entry->size), sizeof(size_t));
@@ -188,15 +196,22 @@ static struct ka_packet *ka_pack_modified (struct list_head
     bcur += entry->size;
     size += entry->size;
   }
-
-  if (size < PACKET_SIZE)
+  
+  if (size < PACKET_SIZE) {
+    DBG_P("size of padding:%d", PACKET_SIZE - size);
     memset(bcur, 0, PACKET_SIZE - size);
-
+  }
   
   return p;
 }
 
-static struct ka_packet *ka_pack(struct list_head *ka_datum_list)
+/* ka_pack_typeinfo
+ * 
+ * including typeinformation. in the case that 
+ * user mode program wouldn't know the layout of
+ * struct (means, packet);
+ */
+static struct ka_packet *ka_pack_typeinfo(struct list_head *ka_datum_list)
 {
   /* __________________________________________
    * typesize !type, type, type                
@@ -255,6 +270,32 @@ static struct ka_packet *ka_pack(struct list_head *ka_datum_list)
   return p;
 }
 
+static void ka_write_rbuf_packet(struct ka_ringbuffer *rbuf,
+				 struct ka_packet *packet)
+{
+  memcpy(rbuf, packet, RINGBUFFER_SIZE);
+
+}
+
+/*
+ * kadvice_send()
+ *
+ * this is exported symbol for other kernel functions
+ */
+
+void kadvice_send(void)
+{
+  struct ka_packet *packet;
+  packet = kadvice.pops.pack(&(kadvice.ka_datum_list));
+  ka_write_rbuf_packet(kadvice.write, packet);
+  DBG_P("shinpei:%p %p", kadvice.write, kadvice.read);
+  kadvice.wlotate(&kadvice);
+  DBG_P("shinpei:%p %p", kadvice.write, kadvice.read);
+  
+}
+
+EXPORT_SYMBOL(kadvice_send);
+
 static void ka_fini_rbuf(struct ka_kadvice *k)
 {
   struct ka_ringbuffer *prev, *cur;
@@ -292,12 +333,7 @@ static void ka_init_rbuf(struct ka_kadvice *k)
  * write packet to rbuf;
  */
 
-static void ka_write_rbuf_packet(struct ka_ringbuffer *rbuf,
-				 struct ka_packet *packet)
-{
-  memcpy(rbuf, packet, RINGBUFFER_SIZE);
-  //  ka_rbuf_lotate(rbuf);
-}
+
 
 static int ka_read_proc (char *page, char **start, off_t off,
 			 int count, int *eof, void *data)
@@ -308,6 +344,7 @@ static int ka_read_proc (char *page, char **start, off_t off,
   struct ka_kadvice *k = (struct ka_kadvice *)data;
   struct ka_ringbuffer *readbuf = k->read;
   //  packet = ka_pack();
+#if 0
   packet = k->pops.pack(&(k->ka_datum_list));
   if (packet == NULL) {
     *eof = 1;
@@ -319,9 +356,19 @@ static int ka_read_proc (char *page, char **start, off_t off,
   k->rlotate(k);
   DBG_P("rbuf:%p", k->read);
   /* this is original code for read_proc */
+#endif
+  if (list_empty(&(k->ka_datum_list))) {
+    *eof = 1;
+    return 0;
+  }
   memcpy(page, readbuf->buffer, RINGBUFFER_SIZE);
+  /* clean up buffer before lotate */
+  memset(readbuf->buffer, 0, RINGBUFFER_SIZE);
+  printk("before:%p\t", k->read);
+  k->rlotate(k);
+  printk("after:%p\n", k->read);
   len = RINGBUFFER_SIZE;
-  kfree(packet);
+  //  kfree(packet);
   ka_datum_free_all();
   return len;
 }
@@ -334,7 +381,7 @@ static void lotate_read(struct ka_kadvice *k)
 static void lotate_write(struct ka_kadvice *k)
 {
   k->write = k->write->head;
-
+  
 }
 
 static int ka_proc_init(void)
@@ -347,15 +394,14 @@ static int ka_proc_init(void)
 
   INIT_LIST_HEAD(&(kadvice.ka_datum_list));
   ka_init_rbuf(&kadvice);
-  DBG_P("write:%p, read:%p", kadvice.write, kadvice.read);
+
   kadvice.ka_proc_entry->data = (void *)&kadvice;
-  DBG_P("data:%p rbuf:%p", kadvice.ka_proc_entry->data, 
-	kadvice.write);
   kadvice.ka_proc_entry->read_proc = ka_read_proc;
   kadvice.pops.pack = ka_pack_modified;
   
   //  kadvice_string_put("goodbye, world");
   kadvice_string_put("test.k");
+  kadvice_send();
 return 0;
 }
 
