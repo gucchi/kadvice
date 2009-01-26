@@ -106,13 +106,12 @@ static void ka_datum_free_all (void)
   list_for_each_safe(ptr, next, &(kadvice.ka_datum_list)) {
     entry = list_entry(ptr, struct ka_datum, list);
     list_del(ptr);
-    DBG_P("typeinfo:%s %d", entry->typeinfo, entry->typeinfo_len);
     kfree(entry->typeinfo);
     kfree(entry->value);
     kfree(entry);
   }
   if (list_empty(&(kadvice.ka_datum_list)))
-    DBG_P("emptified datum list");
+    DBG_P("emprified");
 }
 
 /* ka_pack
@@ -132,6 +131,8 @@ static struct ka_packet *ka_pack_URL_included (struct list_head
    * size     |    bytes
    * --------------------------------------------
    */
+  if(list_empty(ka_datum_list)) 
+    return NULL;
 
   struct ka_packet *p = (struct ka_packet *)kmalloc
     (sizeof(struct ka_packet), GFP_KERNEL);
@@ -169,6 +170,8 @@ static struct ka_packet *ka_pack_modified (struct list_head
    * size ! bytes    ! size !  bytes    !
    * ------------------------------------
    */
+  if (list_empty(ka_datum_list))
+    return NULL;
   struct ka_packet *p = (struct ka_packet *)kmalloc
     (sizeof(struct ka_packet), GFP_KERNEL);
   struct list_head *ptr;
@@ -188,6 +191,8 @@ static struct ka_packet *ka_pack_modified (struct list_head
 
   if (size < PACKET_SIZE)
     memset(bcur, 0, PACKET_SIZE - size);
+
+  
   return p;
 }
 
@@ -279,7 +284,7 @@ static void ka_init_rbuf(struct ka_kadvice *k)
   }
   r->head = k->write;
   k->read = k->write;
-  DBG_P("write:%p read:%p", k->write, k->read);
+  //  DBG_P("write:%p read:%p", k->write, k->read);
 }
 
 
@@ -306,10 +311,10 @@ static int ka_read_proc (char *page, char **start, off_t off,
   packet = k->pops.pack(&(k->ka_datum_list));
   if (packet == NULL) {
     *eof = 1;
-    DBG_P("cannot pack.");
+    //    DBG_P("no entry for pack");
     return 0;
   }
-  
+  k->wlotate(k);
   ka_write_rbuf_packet(readbuf, packet);
   k->rlotate(k);
   DBG_P("rbuf:%p", k->read);
