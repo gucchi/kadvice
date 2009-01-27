@@ -9,7 +9,7 @@
 
 #define PROCNAME "kkk"
 
-#include "kadvice_io.h"
+#include "kadvice_io.h"o
 #include "kadvice_debug.h"
 
 static struct ka_kadvice kadvice;
@@ -112,7 +112,6 @@ int kadvice_uri_put(char *uri)
 }
 EXPORT_SYMBOL(kadvice_uri_put);
 
-
 static inline int ka_rbuf_isdirty(struct ka_ringbuffer *rbuf)
 {
   return rbuf->dirty;
@@ -133,7 +132,6 @@ static inline void ka_rbuf_setclean(struct ka_ringbuffer *rbuf)
  * delete all entry from ka_datum_list
  * once its writed into buffer, this could occur.
  */
-
 static void ka_datum_free_all (void)
 {
   struct list_head *ptr;
@@ -157,16 +155,15 @@ static void ka_datum_free_all (void)
  * URI included packet.
  * 
  */
-
 static struct ka_packet *ka_pack_URI_included (struct list_head
 					    *ka_datum_list)
 {
   /*
    * URI included packet
    * ____________________________________________
-   *               URI                 
+   *               URI (128bytes)            
    * --------------------------------------------
-   * size     |    bytes
+   * size | bytes | size | bytes | 
    * --------------------------------------------
    */
   struct ka_packet *p;
@@ -192,17 +189,17 @@ static struct ka_packet *ka_pack_URI_included (struct list_head
     entry = list_entry(ptr, struct ka_datum, list);
     if (entry->typeinfo_len == sizeof("uri") && 
 	(strcmp(entry->typeinfo, "uri")) == 0) {
-      memcpy(uri_cur, entry->value, entry->size);
-      continue;
+      memcpy(uri_cur, entry->value, sizeof(char) * entry->size);
+    } else {
+      memcpy(bcur, (char*)&(entry->size), sizeof(size_t));
+      bcur += sizeof(size_t);
+      memcpy(bcur, entry->value, entry->size);
+      bcur += entry->size;
+      size += entry->size;
     }
-    memcpy(bcur, (char*)&(entry->size), sizeof(size_t));
-    bcur += sizeof(size_t);
-    memcpy(bcur, entry->value, entry->size);
-    bcur += entry->size;
-    size += entry->size;
   }
   if (size + uri_len < PACKET_SIZE) {
-    memset(bcur, 0, PACKET_SIZE - size);
+    memset(bcur, 0, PACKET_SIZE - (size+uri_len));
   }
 
   return p;

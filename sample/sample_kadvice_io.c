@@ -4,15 +4,15 @@
 #include <errno.h>
 #include <unistd.h>
 
-#define BUFSZ 4096
+#define BUFSZ 1023
+#define HEAD_SIZE 128
 
 #define TYPEINFO_SIZE 0
 #define PACKET_SIZE \
   BUFSZ - TYPEINFO_SIZE - sizeof(size_t)
 
 struct ka_packet {
-  size_t typeinfo_len;
-  //  char typeinfo_list[TYPEINFO_SIZE];
+  size_t size;
   char body[PACKET_SIZE];
 };
 
@@ -25,7 +25,6 @@ struct ka_datum {
   size_t size;
   void *ptr;
 };
-
 
 struct ka_datum *unpack(char *segment_head)
 {
@@ -43,23 +42,24 @@ int main (void)
   FILE *fp;
   char *filename = "/proc/kkk";
   char  buf[BUFSZ];
-
+  struct ka_packet *p;
+  memset(buf, 0, BUFSZ);
   fp = fopen(filename, "rb");
   if (fp == NULL) {
     perror("open failed");
     exit(1);
   }
   
-  fread(buf, BUFSZ, 1, fp);
+  int len = fread(buf, BUFSZ, 1, fp);
   fclose(fp);
-  
+
   /* start parsing */
+
+  p = (struct ka_packet *)buf;
+  
+  printf("invoking...http://%s\n", p->body);
+  printf("%s\n", &(p->body[HEAD_SIZE]) + sizeof(size_t));
 #if 0
-  struct ka_packet *p = (struct ka_packet *)buf;
-  printf("%d %d %d\n", p->typeinfo_len, sizeof(int), sizeof(char));
-  printf("%s\n", p->typeinfo_list);
-  printf("%s\n", p->body);
-#endif
   struct ka_packet *p = (struct ka_packet *)buf;
   size_t readsize = 0;
   char *cur = p->body;
@@ -71,6 +71,7 @@ int main (void)
     readsize += d->size;
     cur += sizeof(size_t) + d->size;
   }
+#endif
   printf("process end...\n");
   return 0;
 }
