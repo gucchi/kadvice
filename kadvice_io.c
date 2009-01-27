@@ -1,5 +1,5 @@
 /* 
- * Kadvice read interface
+ * Kadvice readinterface
  * shinpei(c)ynu 2009
  */
 
@@ -41,6 +41,13 @@ struct ka_datum *ka_new_datum(int type)
     d->typeinfo = (char *)kmalloc
       (sizeof(char) * d->typeinfo_len + 1, GFP_KERNEL);
     strcpy(d->typeinfo, "string");
+    d->typeinfo[d->typeinfo_len] = '\0';
+    break;
+  case D_URI:
+    d->typeinfo_len = sizeof("uri");
+    d->typeinfo = (char *)kmalloc
+      (sizeof(char) * d->typeinfo_len + 1, GFP_KERNEL);
+    strcpy(d->typeinfo, "uri");
     d->typeinfo[d->typeinfo_len] = '\0';
     break;
   default:
@@ -92,6 +99,35 @@ int kadvice_string_put(char* str)
 }
 EXPORT_SYMBOL(kadvice_string_put);
 
+int kadvice_uri_put(char *uri)
+{
+  struct ka_datum *d;
+  d = ka_new_datum(D_URI);
+  d->size = strlen(uri) + 1;
+  d->value = kmalloc(d->size, GFP_KERNEL);
+  memcpy(d->value, (void *)uri, d->size);
+  
+  list_add(&d->list, &(kadvice.ka_datum_list));
+  return 0;
+}
+EXPORT_SYMBOL(kadvice_uri_put);
+
+
+static inline int ka_rbuf_isdirty(struct ka_ringbuffer *rbuf)
+{
+  return rbuf->dirty;
+}
+
+static inline void ka_rbuf_setdirty(struct ka_ringbuffer *rbuf)
+{
+  rbuf->dirty = BUFFER_DIRTY;
+}
+
+static inline void ka_rbuf_setclean(struct ka_ringbuffer *rbuf)
+{
+  rbuf->dirty = BUFFER_CLEAN;
+}
+
 /* ka_datum_free_all
  * 
  * delete all entry from ka_datum_list
@@ -112,17 +148,17 @@ static void ka_datum_free_all (void)
     kfree(entry->value);
     kfree(entry);
   }
-  if (list_empty(&(kadvice.ka_datum_list)))
-    DBG_P("emprified");
+  //  if (list_empty(&(kadvice.ka_datum_list)))
+  //DBG_P("emprified");
 }
 
-/* ka_pack
+/* ka_pack_URI_included
  *
  * URI included packet.
  * 
  */
 
-static struct ka_packet *ka_pack_URL_included (struct list_head
+static struct ka_packet *ka_pack_URI_included (struct list_head
 					    *ka_datum_list)
 {
   /*
@@ -140,6 +176,8 @@ static struct ka_packet *ka_pack_URL_included (struct list_head
   const unsigned int uri_len = 128;
   char *uri_cur;
   char *bcur;
+  size_t size = 0;
+
   if(list_empty(ka_datum_list)) 
     return NULL;
 
@@ -152,9 +190,19 @@ static struct ka_packet *ka_pack_URL_included (struct list_head
   
   list_for_each(ptr, ka_datum_list) {
     entry = list_entry(ptr, struct ka_datum, list);
-    
+    if (entry->typeinfo_len == sizeof("uri") && 
+	(strcmp(entry->typeinfo, "uri")) == 0) {
+      memcpy(uri_cur, entry->value, entry->size);
+      continue;
+    }
     memcpy(bcur, (char*)&(entry->size), sizeof(size_t));
-    
+    bcur += sizeof(size_t);
+    memcpy(bcur, entry->value, entry->size);
+    bcur += entry->size;
+    size += entry->size;
+  }
+  if (size + uri_len < PACKET_SIZE) {
+    memset(bcur, 0, PACKET_SIZE - size);
   }
 
   return p;
@@ -183,7 +231,6 @@ static struct ka_packet *ka_pack_modified (struct list_head
 
   if (list_empty(ka_datum_list))
     return NULL;
-  
 
   p = (struct ka_packet *)kmalloc
     (sizeof(struct ka_packet), GFP_KERNEL);
@@ -198,7 +245,6 @@ static struct ka_packet *ka_pack_modified (struct list_head
   }
   
   if (size < PACKET_SIZE) {
-    DBG_P("size of padding:%d", PACKET_SIZE - size);
     memset(bcur, 0, PACKET_SIZE - size);
   }
   
@@ -219,17 +265,24 @@ static struct ka_packet *ka_pack_typeinfo(struct list_head *ka_datum_list)
    * bytesize ! bytes 
    * -----------------------------------------
    */
-  struct ka_packet *p = (struct ka_packet *)kmalloc
-    (sizeof(struct ka_packet), GFP_KERNEL);
+  struct ka_packet *p;
   struct list_head *ptr;
   struct ka_datum *entry;
+  char *tcur;
+  char *bcur;
 
   size_t len = 0;
   size_t size = 0;
   const unsigned int typeinfo_list_len = 128;
-  char *tcur = p->body;
-  char *bcur = &(p->body[typeinfo_list_len]);
 
+  if (list_empty(ka_datum_list))
+    return NULL;
+
+  p = (struct ka_packet *)kmalloc
+    (sizeof(struct ka_packet), GFP_KERNEL);
+  tcur = p->body;
+  bcur = &(p->body[typeinfo_list_len]);  
+  
   list_for_each(ptr, ka_datum_list) {
     entry = list_entry(ptr, struct ka_datum, list);
     len += entry->typeinfo_len;
@@ -270,10 +323,12 @@ static struct ka_packet *ka_pack_typeinfo(struct list_head *ka_datum_list)
   return p;
 }
 
+
 static void ka_write_rbuf_packet(struct ka_ringbuffer *rbuf,
 				 struct ka_packet *packet)
 {
-  memcpy(rbuf, packet, RINGBUFFER_SIZE);
+  
+  memcpy(rbuf->buffer, packet, RINGBUFFER_SIZE);
 
 }
 
@@ -286,14 +341,15 @@ static void ka_write_rbuf_packet(struct ka_ringbuffer *rbuf,
 void kadvice_send(void)
 {
   struct ka_packet *packet;
+  printk("writing at %p\n", kadvice.write);
   packet = kadvice.pops.pack(&(kadvice.ka_datum_list));
   ka_write_rbuf_packet(kadvice.write, packet);
-  DBG_P("shinpei:%p %p", kadvice.write, kadvice.read);
-  kadvice.wlotate(&kadvice);
-  DBG_P("shinpei:%p %p", kadvice.write, kadvice.read);
-  
-}
 
+  ka_rbuf_setdirty(kadvice.write);
+
+  kadvice.wlotate(&kadvice);
+ 
+}
 EXPORT_SYMBOL(kadvice_send);
 
 static void ka_fini_rbuf(struct ka_kadvice *k)
@@ -321,55 +377,60 @@ static void ka_init_rbuf(struct ka_kadvice *k)
   for (i = 1; i < RINGBUFFER_NUM; i++) {
     r->head = (struct ka_ringbuffer *)kzalloc
       (sizeof(struct ka_ringbuffer), GFP_KERNEL);
+    ka_rbuf_setclean(r);
     r = r->head;
   }
+  ka_rbuf_setclean(r);
   r->head = k->write;
   k->read = k->write;
-  //  DBG_P("write:%p read:%p", k->write, k->read);
-}
+  r = k->read;
+  for(i = 0; i < RINGBUFFER_NUM + 1; i++) {
+    printk("%p %d ",k->read,  k->read->dirty);
+    k->rlotate(k);
+  }
+  printk("\n");
+  for(i = 0; i < RINGBUFFER_NUM + 1; i++) {
+    printk("%p %d ",k->write,  k->write->dirty);
+    k->wlotate(k);
+  }
+  printk("kadvice:%p\n", k);
 
+}
 
 /* ka_write_rbuf_packet
  * write packet to rbuf;
  */
-
-
-
 static int ka_read_proc (char *page, char **start, off_t off,
 			 int count, int *eof, void *data)
 {
   
   int len = 0;
-  struct ka_packet *packet;
   struct ka_kadvice *k = (struct ka_kadvice *)data;
   struct ka_ringbuffer *readbuf = k->read;
-  //  packet = ka_pack();
-#if 0
-  packet = k->pops.pack(&(k->ka_datum_list));
-  if (packet == NULL) {
-    *eof = 1;
-    //    DBG_P("no entry for pack");
-    return 0;
-  }
-  k->wlotate(k);
-  ka_write_rbuf_packet(readbuf, packet);
-  k->rlotate(k);
-  DBG_P("rbuf:%p", k->read);
-  /* this is original code for read_proc */
-#endif
-  if (list_empty(&(k->ka_datum_list))) {
+
+  /* if read buffer is empty, then return null */
+  printk("offset is %d %d %d \n", off, *eof, count);
+  if (off != 0) {
     *eof = 1;
     return 0;
   }
+  if (!ka_rbuf_isdirty(readbuf)) {
+    *eof = 1;
+    return 0;
+  }
+  printk("%s", readbuf->buffer);
   memcpy(page, readbuf->buffer, RINGBUFFER_SIZE);
+  printk("read from:%p\n", readbuf);
   /* clean up buffer before lotate */
   memset(readbuf->buffer, 0, RINGBUFFER_SIZE);
-  printk("before:%p\t", k->read);
+  ka_rbuf_setclean(readbuf);
+ 
   k->rlotate(k);
-  printk("after:%p\n", k->read);
+
   len = RINGBUFFER_SIZE;
-  //  kfree(packet);
+  
   ka_datum_free_all();
+  *eof = 1;
   return len;
 }
 
@@ -381,7 +442,6 @@ static void lotate_read(struct ka_kadvice *k)
 static void lotate_write(struct ka_kadvice *k)
 {
   k->write = k->write->head;
-  
 }
 
 static int ka_proc_init(void)
@@ -397,12 +457,13 @@ static int ka_proc_init(void)
 
   kadvice.ka_proc_entry->data = (void *)&kadvice;
   kadvice.ka_proc_entry->read_proc = ka_read_proc;
-  kadvice.pops.pack = ka_pack_modified;
+  kadvice.pops.pack = ka_pack_URI_included;
   
   //  kadvice_string_put("goodbye, world");
-  kadvice_string_put("test.k");
+  kadvice_uri_put("test.k");
+  kadvice_string_put("hello, world");
   kadvice_send();
-return 0;
+  return 0;
 }
 
 static void ka_proc_fini(void)

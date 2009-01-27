@@ -8,13 +8,14 @@
 
 //struct list_head ka_datum_list;
 
-#define RINGBUFFER_SIZE 4096
+#define RINGBUFFER_SIZE 1023
 #define RINGBUFFER_NUM 4
 
 enum ka_datum_type {
   D_INT,
   D_CHAR,
-  D_STRING
+  D_STRING,
+  D_URI
 };
 
 struct ka_datum {
@@ -35,9 +36,13 @@ struct ka_packet{
 };
 
 struct ka_ringbuffer {
+  int dirty;
   char buffer[RINGBUFFER_SIZE];
   struct ka_ringbuffer *head;
 };
+
+#define BUFFER_CLEAN 0
+#define BUFFER_DIRTY 1
 
 struct ka_packet_operations {
   // for packing operation
