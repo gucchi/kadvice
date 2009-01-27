@@ -9,15 +9,19 @@
 
 #define PROCNAME "kkk"
 
-#include "kadvice_io.h"o
+#include "kadvice_io.h"
 #include "kadvice_debug.h"
 
 static struct ka_kadvice kadvice;
 
+/*
+ * make new data node (which we call datum).
+ */
 struct ka_datum *ka_new_datum(int type)
 {
   struct ka_datum *d;
-  d = (struct ka_datum *)kmalloc(sizeof(struct ka_datum), GFP_KERNEL);
+  d = (struct ka_datum *)kmalloc
+    (sizeof(struct ka_datum), GFP_KERNEL);
   if (d == NULL) {
     DBG_P("cannot allocate");
   }
@@ -79,7 +83,7 @@ int kadvice_char_put(char c)
   d->value = kmalloc(d->size, GFP_KERNEL);
   memcpy(d->value,(void *)&c, d->size);
   
-  /* insert datum list */
+  /* insert datum list. */
   list_add(&d->list, &(kadvice.ka_datum_list));
   return 0;
 }
@@ -93,7 +97,7 @@ int kadvice_string_put(char* str)
   d->value = kmalloc(d->size, GFP_KERNEL);
   memcpy(d->value, (void *)str, d->size);
   
-  /* insert datum list */
+  /* insert datum list. */
   list_add(&d->list, &(kadvice.ka_datum_list));
   return 0;
 }
@@ -107,22 +111,26 @@ int kadvice_uri_put(char *uri)
   d->value = kmalloc(d->size, GFP_KERNEL);
   memcpy(d->value, (void *)uri, d->size);
   
+  /* insert datum list. */
   list_add(&d->list, &(kadvice.ka_datum_list));
   return 0;
 }
 EXPORT_SYMBOL(kadvice_uri_put);
 
-static inline int ka_rbuf_isdirty(struct ka_ringbuffer *rbuf)
+static inline int ka_rbuf_isdirty
+(struct ka_ringbuffer *rbuf)
 {
   return rbuf->dirty;
 }
 
-static inline void ka_rbuf_setdirty(struct ka_ringbuffer *rbuf)
+static inline void ka_rbuf_setdirty
+(struct ka_ringbuffer *rbuf)
 {
   rbuf->dirty = BUFFER_DIRTY;
 }
 
-static inline void ka_rbuf_setclean(struct ka_ringbuffer *rbuf)
+static inline void ka_rbuf_setclean
+(struct ka_ringbuffer *rbuf)
 {
   rbuf->dirty = BUFFER_CLEAN;
 }
@@ -153,10 +161,9 @@ static void ka_datum_free_all (void)
 /* ka_pack_URI_included
  *
  * URI included packet.
- * 
  */
-static struct ka_packet *ka_pack_URI_included (struct list_head
-					    *ka_datum_list)
+static struct ka_packet *ka_pack_URI_included
+ (struct list_head *ka_datum_list)
 {
   /*
    * URI included packet
@@ -183,13 +190,14 @@ static struct ka_packet *ka_pack_URI_included (struct list_head
   uri_cur = p->body;
   bcur = &(p->body[uri_len]);
   
-  // now, implement URI into packet.
+  /* now, implement URI into packet. */
   
   list_for_each(ptr, ka_datum_list) {
     entry = list_entry(ptr, struct ka_datum, list);
     if (entry->typeinfo_len == sizeof("uri") && 
 	(strcmp(entry->typeinfo, "uri")) == 0) {
-      memcpy(uri_cur, entry->value, sizeof(char) * entry->size);
+      memcpy(uri_cur, entry->value, 
+	     sizeof(char) * entry->size);
     } else {
       memcpy(bcur, (char*)&(entry->size), sizeof(size_t));
       bcur += sizeof(size_t);
@@ -215,7 +223,8 @@ static struct ka_packet *ka_pack_modified (struct list_head
 					   *ka_datum_list)
 {
   /* 
-   * assuming client(who insert filtering module) would know memory layout.
+   * assuming client(who insert 
+   * filtering module) would know memory layout.
    *____________________________________
    * size ! bytes    ! size !  bytes    !
    * ------------------------------------
@@ -254,7 +263,8 @@ static struct ka_packet *ka_pack_modified (struct list_head
  * user mode program wouldn't know the layout of
  * struct (means, packet);
  */
-static struct ka_packet *ka_pack_typeinfo(struct list_head *ka_datum_list)
+static struct ka_packet *ka_pack_typeinfo
+(struct list_head *ka_datum_list)
 {
   /* __________________________________________
    * typesize !type, type, type                
@@ -284,7 +294,8 @@ static struct ka_packet *ka_pack_typeinfo(struct list_head *ka_datum_list)
     entry = list_entry(ptr, struct ka_datum, list);
     len += entry->typeinfo_len;
     size += entry->size;
-    memcpy(tcur, entry->typeinfo, sizeof(char) * entry->typeinfo_len);
+    memcpy(tcur, entry->typeinfo,
+	   sizeof(char) * entry->typeinfo_len);
     tcur += entry->typeinfo_len;
     memcpy(bcur, entry->value, entry->size);
     bcur += entry->size;
@@ -301,7 +312,8 @@ static struct ka_packet *ka_pack_typeinfo(struct list_head *ka_datum_list)
   
   list_for_each(ptr, ka_datum_list) {
     entry = list_entry(ptr, struct ka_datum, list);
-    memcpy(cur, entry->typeinfo, sizeof(char) * entry->typeinfo_len);
+    memcpy(cur, entry->typeinfo, 
+	   sizeof(char) * entry->typeinfo_len);
     cur += entry->typeinfo_len;
     cur[-1] = ',';
   }
@@ -332,7 +344,7 @@ static void ka_write_rbuf_packet(struct ka_ringbuffer *rbuf,
 /*
  * kadvice_send()
  *
- * this is exported symbol for other kernel functions
+ * this is exported symbol for other kernel functions.
  */
 
 void kadvice_send(void)
@@ -349,6 +361,9 @@ void kadvice_send(void)
 }
 EXPORT_SYMBOL(kadvice_send);
 
+/*
+ * clear all ring buffers and free them.
+ */
 static void ka_fini_rbuf(struct ka_kadvice *k)
 {
   struct ka_ringbuffer *prev, *cur;
@@ -363,6 +378,9 @@ static void ka_fini_rbuf(struct ka_kadvice *k)
   DBG_P("buffer finishment.");
 }
 
+/*
+ * initiate ring buffers for RINGNUM.
+ */
 static void ka_init_rbuf(struct ka_kadvice *k)
 {
   struct ka_ringbuffer *r;
@@ -394,8 +412,15 @@ static void ka_init_rbuf(struct ka_kadvice *k)
 
 }
 
-/* ka_write_rbuf_packet
- * write packet to rbuf;
+/* 
+ * when user program read PROC filesystem
+ * copy ringbuffer contents into *page
+ * proc filesystem allocate buffer for this 
+ * operation, one page size, 4096
+ * but at most, one call of read_proc is 1024 bytes.
+ * 
+ * in case, we want send more size, read would be called
+ * for several times from read syscall.
  */
 static int ka_read_proc (char *page, char **start, off_t off,
 			 int count, int *eof, void *data)
@@ -406,7 +431,7 @@ static int ka_read_proc (char *page, char **start, off_t off,
   struct ka_ringbuffer *readbuf = k->read;
 
   /* if read buffer is empty, then return null */
-  printk("offset is %d %d %d \n", off, *eof, count);
+  //printk("offset is %d %d %d \n", off, *eof, count);
   if (off != 0) {
     *eof = 1;
     return 0;
@@ -415,7 +440,7 @@ static int ka_read_proc (char *page, char **start, off_t off,
     *eof = 1;
     return 0;
   }
-  printk("%s", readbuf->buffer);
+  //printk("%s", readbuf->buffer);
   memcpy(page, readbuf->buffer, RINGBUFFER_SIZE);
   printk("read from:%p\n", readbuf);
   /* clean up buffer before lotate */
@@ -431,16 +456,24 @@ static int ka_read_proc (char *page, char **start, off_t off,
   return len;
 }
 
+/*
+ * lotate function for read buffer.
+ */
 static void lotate_read(struct ka_kadvice *k)
 {
   k->read = k->read->head;
 }
 
+/* lotate function for write buffer.
+ */
 static void lotate_write(struct ka_kadvice *k)
 {
   k->write = k->write->head;
 }
 
+/*
+ * proc initiation.
+ */
 static int ka_proc_init(void)
 {
   kadvice.rlotate = lotate_read; 
