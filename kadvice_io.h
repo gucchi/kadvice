@@ -56,13 +56,17 @@ struct ka_kadvice {
   struct ka_packet_operations pops;
   void (*rlotate)(struct ka_kadvice *);
   void (*wlotate)(struct ka_kadvice *);
+
   /* ka_datum_list is for datum list; */
   struct list_head ka_datum_list;
+  
 };
 
-
-
-
+extern int kadvice_int_put(int n);
+extern int kadvice_char_put(char n);
+extern int kadvice_string_put(char *str);
+extern int kadvice_uri_put(char* uri);
+extern void kadvice_send(void);
 #endif /* __KADVICE_IO_H */
 
 

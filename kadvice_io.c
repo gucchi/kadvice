@@ -6,6 +6,8 @@
 #include <asm/uaccess.h>
 #include <linux/kernel.h>
 #include <linux/proc_fs.h>
+#include <linux/mutex.h>
+#include <linux/rcupdate.h>
 
 #define PROCNAME "kkk"
 
@@ -13,6 +15,8 @@
 #include "kadvice_debug.h"
 
 static struct ka_kadvice kadvice;
+
+static DEFINE_MUTEX(kadvice_mutex);
 
 /*
  * make new data node (which we call datum).
@@ -69,7 +73,7 @@ int kadvice_int_put(int n)
   d->value = kmalloc(d->size, GFP_KERNEL);
   memcpy(d->value, &n, d->size);
   /* insert datum list. */
-  list_add(&d->list, &(kadvice.ka_datum_list));
+  list_add_rcu(&d->list, &(kadvice.ka_datum_list));
   
   return 0;
 }
@@ -84,7 +88,7 @@ int kadvice_char_put(char c)
   memcpy(d->value,(void *)&c, d->size);
   
   /* insert datum list. */
-  list_add(&d->list, &(kadvice.ka_datum_list));
+  list_add_rcu(&d->list, &(kadvice.ka_datum_list));
   return 0;
 }
 EXPORT_SYMBOL(kadvice_char_put);
@@ -98,7 +102,7 @@ int kadvice_string_put(char* str)
   memcpy(d->value, (void *)str, d->size);
   
   /* insert datum list. */
-  list_add(&d->list, &(kadvice.ka_datum_list));
+  list_add_rcu(&d->list, &(kadvice.ka_datum_list));
   return 0;
 }
 EXPORT_SYMBOL(kadvice_string_put);
@@ -112,7 +116,7 @@ int kadvice_uri_put(char *uri)
   memcpy(d->value, (void *)uri, d->size);
   
   /* insert datum list. */
-  list_add(&d->list, &(kadvice.ka_datum_list));
+  list_add_rcu(&d->list, &(kadvice.ka_datum_list));
   return 0;
 }
 EXPORT_SYMBOL(kadvice_uri_put);
@@ -149,7 +153,7 @@ static void ka_datum_free_all (void)
     return ;
   list_for_each_safe(ptr, next, &(kadvice.ka_datum_list)) {
     entry = list_entry(ptr, struct ka_datum, list);
-    list_del(ptr);
+    list_del_rcu(ptr);
     kfree(entry->typeinfo);
     kfree(entry->value);
     kfree(entry);
@@ -185,6 +189,11 @@ static struct ka_packet *ka_pack_URI_included
   if(list_empty(ka_datum_list)) 
     return NULL;
 
+
+  //  mutex_lock(&kadvice_mutex);
+  preempt_disable();
+
+
   p = (struct ka_packet *)kmalloc
     (sizeof(struct ka_packet), GFP_KERNEL);
   uri_cur = p->body;
@@ -209,7 +218,8 @@ static struct ka_packet *ka_pack_URI_included
   if (size + uri_len < PACKET_SIZE) {
     memset(bcur, 0, PACKET_SIZE - (size+uri_len));
   }
-
+  preempt_enable();
+  //  mutex_unlock(&kadvice_mutex);
   return p;
 }
 
@@ -350,14 +360,16 @@ static void ka_write_rbuf_packet(struct ka_ringbuffer *rbuf,
 void kadvice_send(void)
 {
   struct ka_packet *packet;
-  printk("writing at %p\n", kadvice.write);
+
+  //preempt_disable();
   packet = kadvice.pops.pack(&(kadvice.ka_datum_list));
   ka_write_rbuf_packet(kadvice.write, packet);
 
   ka_rbuf_setdirty(kadvice.write);
 
   kadvice.wlotate(&kadvice);
- 
+  //preempt_enable();
+
 }
 EXPORT_SYMBOL(kadvice_send);
 
@@ -490,9 +502,9 @@ static int ka_proc_init(void)
   kadvice.pops.pack = ka_pack_URI_included;
   
   //  kadvice_string_put("goodbye, world");
-  kadvice_uri_put("test.k");
-  kadvice_string_put("hello, world");
-  kadvice_send();
+  //  kadvice_uri_put("test.k");
+  //  kadvice_string_put("hello, world");
+  //  kadvice_send();
   return 0;
 }
 

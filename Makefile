@@ -1,6 +1,7 @@
 CFILES = kadvice_core.c
 obj-m+=kadvice.o
 obj-m+=kadvice_lsm.o
+obj-m+=shinpei.o
 obj-m+=advice_test2.o
 obj-m+=advice_test1.o
 obj-m+=kadvice_proc_write.o
