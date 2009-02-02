@@ -18,43 +18,106 @@ static struct ka_kadvice kadvice;
 
 static DEFINE_MUTEX(kadvice_mutex);
 
+
+#define KADVICE_LOCK_ENABLE 0
+
+#ifdef KADVICE_LOCK_ENABLE
+#define KADVICE_LIST_ADD(entry, list) \
+  list_add_rcu(entry, list)
+
+#define KADVICE_LIST_DEL(entry) \
+  list_del_rcu(entry)
+
+#define KADVICE_LOCK() \
+  mutex_lock(&kadvice_mutex);
+
+#define KADVICE_UNLOCK() \
+  mutex_unlock(&kadvice_mutex);
+
+#else
+#define KADVICE_LIST_ADD(entry, list)  \
+  mutex_lock(&kadvice_mutex); \
+  list_add(entry, list); \
+  mutex_unlock(&kadvice_mutex)
+
+#define KADVICE_LIST_DEL(entry) \
+  mutex_lock(&kadvice_mutex); \
+  list_del(entry); \
+  mutex_unlock(&kadvice_mutex)
+
+#define KADVICE_LOCK do { } while(0)
+#define KADVICE_UNLOCK do {} while(0)
+
+#endif
+
+static int mymallocsize;
+
+#define _ka_mymalloc(size) \
+  kmalloc(size, GFP_KERNEL)
+
+static void *ka_mymalloc(size_t size)
+{
+  void *p;
+  p = kmalloc(size, GFP_KERNEL);
+  mymallocsize += size;
+  return p;
+}
+
+#define _ka_myzalloc(size) \
+  kzalloc(size, GFP_KERNEL)
+
+static void *ka_myzalloc(size_t size)
+{
+  void *p;
+  p = kzalloc(size, GFP_KERNEL);
+  mymallocsize += size;
+  return p;
+}
+
+static void ka_myfree(void *ptr, size_t size)
+{
+  mymallocsize -= size;
+  printk("freeing :%d\n", size);
+  kfree(ptr);
+}
+
+#define ka_show_memory() \
+  printk(KERN_INFO "[M]%d\n",  mymallocsize)
+
 /*
  * make new data node (which we call datum).
  */
 struct ka_datum *ka_new_datum(int type)
 {
   struct ka_datum *d;
-  d = (struct ka_datum *)kmalloc
-    (sizeof(struct ka_datum), GFP_KERNEL);
+  d = (struct ka_datum *)ka_mymalloc(sizeof(struct ka_datum));
   if (d == NULL) {
     DBG_P("cannot allocate");
   }
+
   switch (type) {
+    // TODO : maybe layout is different... daemon can read it?
   case D_INT:
-    d->typeinfo_len = sizeof("int");
-    d->typeinfo = (char *)kmalloc
-      (sizeof(char) * d->typeinfo_len + 1, GFP_KERNEL);
+    d->typeinfo_len = sizeof("int") + 1;
+    d->typeinfo = (char *)ka_mymalloc(sizeof(char) * d->typeinfo_len);
     strcpy(d->typeinfo, "int");
     d->typeinfo[d->typeinfo_len] = '\0';
     break;
   case D_CHAR:
-    d->typeinfo_len = sizeof("char");
-    d->typeinfo = (char *)kmalloc
-      (sizeof(char) * d->typeinfo_len + 1, GFP_KERNEL);
+    d->typeinfo_len = sizeof("char") + 1;
+    d->typeinfo = (char *)ka_mymalloc(sizeof(char) * d->typeinfo_len);
     strcpy(d->typeinfo, "char");
     d->typeinfo[d->typeinfo_len] = '\0';
     break;
   case D_STRING:
-    d->typeinfo_len = sizeof("string");
-    d->typeinfo = (char *)kmalloc
-      (sizeof(char) * d->typeinfo_len + 1, GFP_KERNEL);
+    d->typeinfo_len = sizeof("string")+1;
+d->typeinfo = (char *)ka_mymalloc(sizeof(char) * d->typeinfo_len);
     strcpy(d->typeinfo, "string");
     d->typeinfo[d->typeinfo_len] = '\0';
     break;
   case D_URI:
-    d->typeinfo_len = sizeof("uri");
-    d->typeinfo = (char *)kmalloc
-      (sizeof(char) * d->typeinfo_len + 1, GFP_KERNEL);
+    d->typeinfo_len = sizeof("uri")+1;
+    d->typeinfo = (char *)ka_mymalloc(sizeof(char) * d->typeinfo_len);
     strcpy(d->typeinfo, "uri");
     d->typeinfo[d->typeinfo_len] = '\0';
     break;
@@ -70,11 +133,11 @@ int kadvice_int_put(int n)
   struct ka_datum *d;
   d = ka_new_datum(D_INT);
   d->size = sizeof(int);
-  d->value = kmalloc(d->size, GFP_KERNEL);
+  d->value = ka_mymalloc(d->size);
   memcpy(d->value, &n, d->size);
   /* insert datum list. */
   list_add_rcu(&d->list, &(kadvice.ka_datum_list));
-  
+  KADVICE_LIST_ADD(&d->list, &(kadvice.ka_datum_list));
   return 0;
 }
 EXPORT_SYMBOL(kadvice_int_put);
@@ -84,11 +147,12 @@ int kadvice_char_put(char c)
   struct ka_datum *d;
   d = ka_new_datum(D_CHAR);
   d->size = sizeof(char);
-  d->value = kmalloc(d->size, GFP_KERNEL);
+  d->value = ka_mymalloc(d->size);
   memcpy(d->value,(void *)&c, d->size);
   
   /* insert datum list. */
-  list_add_rcu(&d->list, &(kadvice.ka_datum_list));
+  //  list_add_rcu(&d->list, &(kadvice.ka_datum_list));
+  KADVICE_LIST_ADD(&d->list, &(kadvice.ka_datum_list));
   return 0;
 }
 EXPORT_SYMBOL(kadvice_char_put);
@@ -98,11 +162,12 @@ int kadvice_string_put(char* str)
   struct ka_datum *d;
   d = ka_new_datum(D_STRING);
   d->size = strlen(str) + 1;
-  d->value = kmalloc(d->size, GFP_KERNEL);
+  d->value = ka_mymalloc(d->size);
   memcpy(d->value, (void *)str, d->size);
   
   /* insert datum list. */
-  list_add_rcu(&d->list, &(kadvice.ka_datum_list));
+  //  list_add_rcu(&d->list, &(kadvice.ka_datum_list));
+  KADVICE_LIST_ADD(&d->list, &(kadvice.ka_datum_list));
   return 0;
 }
 EXPORT_SYMBOL(kadvice_string_put);
@@ -112,11 +177,12 @@ int kadvice_uri_put(char *uri)
   struct ka_datum *d;
   d = ka_new_datum(D_URI);
   d->size = strlen(uri) + 1;
-  d->value = kmalloc(d->size, GFP_KERNEL);
+  d->value = ka_mymalloc(d->size);
   memcpy(d->value, (void *)uri, d->size);
   
   /* insert datum list. */
-  list_add_rcu(&d->list, &(kadvice.ka_datum_list));
+  //  list_add_rcu(&d->list, &(kadvice.ka_datum_list));
+  KADVICE_LIST_ADD(&d->list, &(kadvice.ka_datum_list));
   return 0;
 }
 EXPORT_SYMBOL(kadvice_uri_put);
@@ -151,13 +217,18 @@ static void ka_datum_free_all (void)
   struct list_head *next;
   if (list_empty(&(kadvice.ka_datum_list)))
     return ;
+
+  preempt_disable();
   list_for_each_safe(ptr, next, &(kadvice.ka_datum_list)) {
     entry = list_entry(ptr, struct ka_datum, list);
-    list_del_rcu(ptr);
-    kfree(entry->typeinfo);
-    kfree(entry->value);
-    kfree(entry);
+    //    list_del_rcu(ptr);
+    KADVICE_LIST_DEL(ptr);
+    
+    ka_myfree(entry->typeinfo, entry->typeinfo_len);
+    ka_myfree(entry->value, entry->size);
+    ka_myfree(entry, sizeof(struct ka_datum));
   }
+  preempt_enable();
   //  if (list_empty(&(kadvice.ka_datum_list)))
   //DBG_P("emprified");
 }
@@ -190,12 +261,9 @@ static struct ka_packet *ka_pack_URI_included
     return NULL;
 
 
-  //  mutex_lock(&kadvice_mutex);
-  preempt_disable();
+  KADVICE_LOCK();
 
-
-  p = (struct ka_packet *)kmalloc
-    (sizeof(struct ka_packet), GFP_KERNEL);
+  p = (struct ka_packet *)ka_mymalloc(sizeof(struct ka_packet));
   uri_cur = p->body;
   bcur = &(p->body[uri_len]);
   
@@ -218,8 +286,9 @@ static struct ka_packet *ka_pack_URI_included
   if (size + uri_len < PACKET_SIZE) {
     memset(bcur, 0, PACKET_SIZE - (size+uri_len));
   }
-  preempt_enable();
-  //  mutex_unlock(&kadvice_mutex);
+  
+  KADVICE_UNLOCK();
+
   return p;
 }
 
@@ -248,8 +317,9 @@ static struct ka_packet *ka_pack_modified (struct list_head
   if (list_empty(ka_datum_list))
     return NULL;
 
-  p = (struct ka_packet *)kmalloc
-    (sizeof(struct ka_packet), GFP_KERNEL);
+  KADVICE_LOCK();
+
+  p = (struct ka_packet *)ka_mymalloc(sizeof(struct ka_packet));
   bcur = p->body;
   list_for_each(ptr, ka_datum_list) {
     entry = list_entry(ptr, struct ka_datum, list);
@@ -264,6 +334,8 @@ static struct ka_packet *ka_pack_modified (struct list_head
     memset(bcur, 0, PACKET_SIZE - size);
   }
   
+  KADVICE_UNLOCK();
+
   return p;
 }
 
@@ -295,13 +367,15 @@ static struct ka_packet *ka_pack_typeinfo
   if (list_empty(ka_datum_list))
     return NULL;
 
-  p = (struct ka_packet *)kmalloc
-    (sizeof(struct ka_packet), GFP_KERNEL);
+  KADVICE_LOCK();
+
+  p = (struct ka_packet *)ka_mymalloc(sizeof(struct ka_packet));
   tcur = p->body;
   bcur = &(p->body[typeinfo_list_len]);  
-  
+  preempt_disable();
   list_for_each(ptr, ka_datum_list) {
     entry = list_entry(ptr, struct ka_datum, list);
+    
     len += entry->typeinfo_len;
     size += entry->size;
     memcpy(tcur, entry->typeinfo,
@@ -310,35 +384,17 @@ static struct ka_packet *ka_pack_typeinfo
     memcpy(bcur, entry->value, entry->size);
     bcur += entry->size;
   }
+  preempt_enable();
   DBG_P("len of typeinfo:%d", len);
   p->typeinfo_len = len;
   /*
     hdr->typeinfo_list = (char *)kmalloc
     (sizeof(char) * len + 1, GFP_KERNEL);
   */
-#if 0
-  if (len > TYPEINFO_SIE || size > PACKET_SIZE)
-    return NULL /* error */
-  
-  list_for_each(ptr, ka_datum_list) {
-    entry = list_entry(ptr, struct ka_datum, list);
-    memcpy(cur, entry->typeinfo, 
-	   sizeof(char) * entry->typeinfo_len);
-    cur += entry->typeinfo_len;
-    cur[-1] = ',';
-  }
-  cur[0] = '\0';
-  DBG_P("%s", p->typeinfo_list);
-  
-  /* now pack datagram */
-  cur = p->body;
-  list_for_each(ptr, ka_datum_list) {
-    entry = list_entry(ptr, struct ka_datum, list);
-    memcpy(cur, entry->value, entry->size);
-    cur += entry->size;
-  }
-#endif
-  DBG_P("sizeof packet:%d", sizeof(struct ka_packet));
+  //  DBG_P("sizeof packet:%d", sizeof(struct ka_packet));
+
+  KADVICE_UNLOCK();
+
   return p;
 }
 
@@ -346,9 +402,9 @@ static struct ka_packet *ka_pack_typeinfo
 static void ka_write_rbuf_packet(struct ka_ringbuffer *rbuf,
 				 struct ka_packet *packet)
 {
-  
+  mutex_lock(&kadvice_mutex);
   memcpy(rbuf->buffer, packet, RINGBUFFER_SIZE);
-
+  mutex_unlock(&kadvice_mutex);
 }
 
 /*
@@ -361,14 +417,21 @@ void kadvice_send(void)
 {
   struct ka_packet *packet;
 
-  //preempt_disable();
+  preempt_disable();
+
+  ka_show_memory();
   packet = kadvice.pops.pack(&(kadvice.ka_datum_list));
   ka_write_rbuf_packet(kadvice.write, packet);
+  ka_myfree(packet, sizeof(struct ka_packet));
+  mutex_lock(&kadvice_mutex);
 
   ka_rbuf_setdirty(kadvice.write);
-
   kadvice.wlotate(&kadvice);
-  //preempt_enable();
+  ka_datum_free_all();
+
+  mutex_unlock(&kadvice_mutex);
+
+  preempt_enable();
 
 }
 EXPORT_SYMBOL(kadvice_send);
@@ -384,7 +447,7 @@ static void ka_fini_rbuf(struct ka_kadvice *k)
   prev = cur = k->write;
   for (i = 0; i < RINGBUFFER_NUM; i++) {
     cur = cur->head;
-    kfree(prev);
+    ka_myfree(prev, RINGBUFFER_SIZE);
     prev = cur;
   }
   DBG_P("buffer finishment.");
@@ -398,12 +461,10 @@ static void ka_init_rbuf(struct ka_kadvice *k)
   struct ka_ringbuffer *r;
   int i;
 
-  k->write = (struct ka_ringbuffer *)kzalloc
-    (sizeof(struct ka_ringbuffer), GFP_KERNEL);
+  k->write = (struct ka_ringbuffer *)ka_myzalloc(sizeof(struct ka_ringbuffer));
   r = k->write;
   for (i = 1; i < RINGBUFFER_NUM; i++) {
-    r->head = (struct ka_ringbuffer *)kzalloc
-      (sizeof(struct ka_ringbuffer), GFP_KERNEL);
+    r->head = (struct ka_ringbuffer *)ka_myzalloc(sizeof(struct ka_ringbuffer));
     ka_rbuf_setclean(r);
     r = r->head;
   }
@@ -420,7 +481,6 @@ static void ka_init_rbuf(struct ka_kadvice *k)
     printk("%p %d ",k->write,  k->write->dirty);
     k->wlotate(k);
   }
-  printk("kadvice:%p\n", k);
 
 }
 
@@ -488,6 +548,7 @@ static void lotate_write(struct ka_kadvice *k)
  */
 static int ka_proc_init(void)
 {
+  mymallocsize = 0;
   kadvice.rlotate = lotate_read; 
   kadvice.wlotate = lotate_write;
   kadvice.ka_proc_entry = create_proc_entry(PROCNAME, 0666, NULL);
@@ -510,13 +571,15 @@ static int ka_proc_init(void)
 
 static void ka_proc_fini(void)
 {
-  remove_proc_entry(PROCNAME, NULL);
+ 
   ka_datum_free_all();
   ka_fini_rbuf(&kadvice);
+  remove_proc_entry(PROCNAME, NULL);
 }
 
 module_init(ka_proc_init);
 module_exit(ka_proc_fini);
+
   
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Shinpei Nakata");
