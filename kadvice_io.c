@@ -111,7 +111,7 @@ struct ka_datum *ka_new_datum(int type)
     break;
   case D_STRING:
     d->typeinfo_len = sizeof("string")+1;
-d->typeinfo = (char *)ka_mymalloc(sizeof(char) * d->typeinfo_len);
+    d->typeinfo = (char *)ka_mymalloc(sizeof(char) * d->typeinfo_len);
     strcpy(d->typeinfo, "string");
     d->typeinfo[d->typeinfo_len] = '\0';
     break;
@@ -186,6 +186,16 @@ int kadvice_uri_put(char *uri)
   return 0;
 }
 EXPORT_SYMBOL(kadvice_uri_put);
+
+
+//gucchi
+int kadvice_put(char *str){
+  //  *(str + strlen(str)) = '\0';
+  memcpy(kadvice.body, str, strlen(str) + 1);
+  return 0;
+}
+EXPORT_SYMBOL(kadvice_put);
+
 
 static inline int ka_rbuf_isdirty
 (struct ka_ringbuffer *rbuf)
@@ -407,6 +417,17 @@ static void ka_write_rbuf_packet(struct ka_ringbuffer *rbuf,
   mutex_unlock(&kadvice_mutex);
 }
 
+//gucchi
+static void ka_write_rbuf_char(struct ka_ringbuffer *rbuf,
+			       char *str){
+  //mutex_lock(&kadvice_mutex);
+  //DBG_P("%d\n",strlen(str));
+  memset(rbuf->buffer, 0, RINGBUFFER_SIZE);
+  memcpy(rbuf->buffer, str, strlen(str) + 1);
+  //mutex_unlock(&kadvice_mutex);
+}
+
+
 /*
  * kadvice_send()
  *
@@ -417,21 +438,24 @@ void kadvice_send(void)
 {
   struct ka_packet *packet;
 
-  preempt_disable();
-
-  ka_show_memory();
-  packet = kadvice.pops.pack(&(kadvice.ka_datum_list));
-  ka_write_rbuf_packet(kadvice.write, packet);
-  ka_myfree(packet, sizeof(struct ka_packet));
-  mutex_lock(&kadvice_mutex);
+  //preempt_disable();
+  
+  //ka_show_memory();
+  //packet = kadvice.pops.pack(&(kadvice.ka_datum_list));
+    //ka_write_rbuf_packet(kadvice.write, packet);
+  //DBG_P("kadvice.body %d %s\n",strlen(kadvice.body),kadvice.body);
+   ka_write_rbuf_char(kadvice.write, kadvice.body);
+  
+   //ka_myfree(packet, sizeof(struct ka_packet));
+   //mutex_lock(&kadvice_mutex);
 
   ka_rbuf_setdirty(kadvice.write);
   kadvice.wlotate(&kadvice);
-  ka_datum_free_all();
+  //ka_datum_free_all();
 
-  mutex_unlock(&kadvice_mutex);
+  //mutex_unlock(&kadvice_mutex);
 
-  preempt_enable();
+  //preempt_enable();
 
 }
 EXPORT_SYMBOL(kadvice_send);
@@ -512,6 +536,7 @@ static int ka_read_proc (char *page, char **start, off_t off,
     *eof = 1;
     return 0;
   }
+  printk("%p\n", readbuf);
   //printk("%s", readbuf->buffer);
   memcpy(page, readbuf->buffer, RINGBUFFER_SIZE);
   printk("read from:%p\n", readbuf);
@@ -549,6 +574,7 @@ static void lotate_write(struct ka_kadvice *k)
 static int ka_proc_init(void)
 {
   mymallocsize = 0;
+  memset(kadvice.body, 0, PACKET_SIZE);
   kadvice.rlotate = lotate_read; 
   kadvice.wlotate = lotate_write;
   kadvice.ka_proc_entry = create_proc_entry(PROCNAME, 0666, NULL);

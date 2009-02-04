@@ -25,11 +25,17 @@ static int test_read(char *page, char **start, off_t off,
   unsigned long long t0, t1, time_passed_ns;
   t0 = cpu_clock(0);
   //  preempt_disable();
-    mutex_lock(&advice_iotest_mutex);
-    kadvice_uri_put("test2.k");
-    kadvice_string_put("hi");
+  //  mutex_lock(&advice_iotest_mutex);
+  //  kadvice_uri_put("test2.k");
+  //kadvice_string_put("hi");
+  kadvice_put("hi");
+kadvice_put("hi");
+kadvice_put("hi");
+kadvice_put("hi");
+kadvice_put("hi");
+
     kadvice_send();
-    mutex_unlock(&advice_iotest_mutex);
+    //mutex_unlock(&advice_iotest_mutex);
     //  preempt_enable();
   //printk("aloha, world");
   t1 = cpu_clock(0);
@@ -54,4 +60,4 @@ static void test_fini(void)
 }
 
 module_init(test_init);
-module_fini(test_fini);
+module_exit(test_fini);

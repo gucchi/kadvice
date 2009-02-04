@@ -8,7 +8,7 @@
 MODULE_LICENSE("GPL");
 
 
-extern int kadvice_string_put(char* str);
+extern int kadvice_put(char* str);
 extern int kadvice_uri_put(char* uri);
 extern int kadvice_send(void);
 
@@ -16,9 +16,13 @@ extern int kadvice_send(void);
 static int test_file_permission (struct file *file, int mask)
 {
 
-  kadvice_uri_put("test.k");
-  kadvice_string_put((char*)file->f_dentry->d_name.name);
-  kadvice_send();
+  //kadvice_uri_put("test.k");
+  kadvice_put((char*)file->f_dentry->d_name.name);
+  //kadvice_put("bye");
+
+  
+
+kadvice_send();
   //  printk("%s", file->f_dentry->d_name.name);
 
   return 0;
