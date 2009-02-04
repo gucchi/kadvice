@@ -1,0 +1,3 @@
+./insert_mod
+insmod advice_inode_permission.ko
+sample/put_advice inode_permission
