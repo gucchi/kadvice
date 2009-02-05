@@ -463,6 +463,8 @@ static void lsm_inet_conn_established(struct sock * sk, struct sk_buff * skb){
 static void lsm_req_classify_flow(const struct request_sock * req, struct flowi * fl){
 	return ka_check_req_classify_flow(req, fl);
 }
+
+#ifdef CONFIG_SECURITY_NETWORK_XFRM
 static int lsm_xfrm_policy_alloc_security(struct xfrm_policy * xp, struct xfrm_user_sec_ctx * sec_ctx){
 	return ka_check_xfrm_policy_alloc_security(xp, sec_ctx);
 }
@@ -493,6 +495,8 @@ static int lsm_xfrm_state_pol_flow_match(struct xfrm_state * x, struct xfrm_poli
 static int lsm_xfrm_decode_session(struct sk_buff * skb, u32 * secid, int ckall){
 	return ka_check_xfrm_decode_session(skb, secid, ckall);
 }
+#endif/* CONFIG_SECURITY_NETWORK_XFRM */
+
 /*
 static int lsm_key_alloc(struct key * key, struct task_struct * tsk, unsigned long flags){
 	return ka_check_key_alloc(key, tsk, flags);

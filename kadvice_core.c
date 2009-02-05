@@ -157,6 +157,7 @@ static int lsmacc_module_init(void)
 
 static void lsmacc_module_exit(void)
 {
+  REMOVE_ENTRY(0);
   REMOVE_ENTRY(1);
   //REMOVE_ENTRY(2);
   //REMOVE_ENTRY(3);
@@ -362,6 +363,7 @@ int kadvice_post(char *head, char *name, int aoid, int priority){
   strncat(funcname, "_", 1);
   strncat(funcname, name, strlen(name));
   funcname[namelen] = '\0';
+  printk("func %s\n",funcname);
   query->funcname = funcname;
   query->aoid = aoid;
   query->priority = priority;
@@ -373,6 +375,8 @@ int kadvice_post(char *head, char *name, int aoid, int priority){
   return ret;
 }
 EXPORT_SYMBOL(kadvice_post);
+
+/*
 int kadvice_set_selinux(int aoid, int priority){
   int i = 0;
   while(lsm_security_str[i]){
@@ -384,7 +388,7 @@ int kadvice_set_selinux(int aoid, int priority){
   return 0;
 }
 EXPORT_SYMBOL(kadvice_set_selinux);
-
+*/
 
 FUNC2INT(lsm_acc, ptrace, struct task_struct *, parent, struct task_struct *, child);
 FUNC4INT(lsm_acc, capget, struct task_struct *, target, kernel_cap_t *, effective, kernel_cap_t *, inheritable, kernel_cap_t *, permitted);
@@ -544,6 +548,8 @@ FUNC3INT(lsm_acc, inet_conn_request, struct sock *, sk, struct sk_buff *, skb, s
 FUNC2VOID(lsm_acc, inet_csk_clone, struct sock *, newsk, const struct request_sock *, req);
 FUNC2VOID(lsm_acc, inet_conn_established, struct sock *, sk, struct sk_buff *, skb);
 FUNC2VOID(lsm_acc, req_classify_flow, const struct request_sock *, req, struct flowi *, fl);
+
+#ifdef CONFIG_SECURITY_NETWORK_XFRM
 FUNC2INT(lsm_acc, xfrm_policy_alloc_security, struct xfrm_policy *, xp, struct xfrm_user_sec_ctx *, sec_ctx);
 FUNC2INT(lsm_acc, xfrm_policy_clone_security, struct xfrm_policy *, old, struct xfrm_policy *, new);
 FUNC1VOID(lsm_acc, xfrm_policy_free_security, struct xfrm_policy *, xp);
@@ -554,3 +560,4 @@ FUNC1INT(lsm_acc, xfrm_state_delete_security, struct xfrm_state *, x);
 FUNC3INT(lsm_acc, xfrm_policy_lookup, struct xfrm_policy *, xp, u32, fl_secid, u8, dir);
 FUNC3INT(lsm_acc, xfrm_state_pol_flow_match, struct xfrm_state *, x, struct xfrm_policy *, xp, struct flowi *, fl);
 FUNC3INT(lsm_acc, xfrm_decode_session, struct sk_buff *, skb, u32 *, secid, int, ckall);
+#endif/* CONFIG_SECURITY_NETWORK_XFRM */

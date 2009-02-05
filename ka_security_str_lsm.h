@@ -160,8 +160,8 @@ char *lsm_security_str[] = {
 	"xfrm_policy_lookup",
 	"xfrm_state_pol_flow_match",
 	"xfrm_decode_session",
-	"key_alloc",
-	"key_free",
-	"key_permission",
+	//"key_alloc",
+	//"key_free",
+	//"key_permission",
 	0
 };

@@ -2,7 +2,6 @@
 #define KAOACM(i) acm[i]
 
 
-
 //lsm_acm_t lsm_acm[32][8];
 
 static void *ka_start(struct seq_file *, loff_t *);

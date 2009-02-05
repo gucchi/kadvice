@@ -17,12 +17,14 @@ static int test_file_permission (struct file *file, int mask)
 {
 
   //kadvice_uri_put("test.k");
-  kadvice_put((char*)file->f_dentry->d_name.name);
+  if(strstr((char*)file->f_dentry->d_name.name,"txt")){
+    kadvice_put((char*)file->f_dentry->d_name.name);
   //kadvice_put("bye");
 
   
 
-kadvice_send();
+    kadvice_send();
+  }
   //  printk("%s", file->f_dentry->d_name.name);
 
   return 0;
