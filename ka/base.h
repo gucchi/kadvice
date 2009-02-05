@@ -3,6 +3,14 @@ extern int lookup_module_symbol_attrs(unsigned long, unsigned long *, unsigned l
 
 #define FUNCNAME(name) ka_check_##name
 
+//#define CHECK
+
+#ifdef CHECK
+#define CHECK_MSG(name) printk(#name " security check\n")
+#else
+#define CHECK_MSG(name)
+#endif  
+
 extern struct security_operations dummy_security_ops;
 
 /* acc check function */
@@ -48,7 +56,7 @@ extern struct security_operations dummy_security_ops;
     for(i = 0; i < 8; i++){						\
       if(acc[__KA_##name][cabiid][i] != 0){				\
 	char symname[128];						\
-	printk(#name " security check\n");				\
+	CHECK_MSG(name);						\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
 	if(lookup_module_symbol_name((unsigned long)func, symname) != 0){	\
 	  acc[__KA_##name][cabiid][i] = 0;				\

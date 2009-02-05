@@ -17,6 +17,7 @@ static int test_file_permission (struct file *file, int mask)
 {
 
   //kadvice_uri_put("test.k");
+  /*
   if(strstr((char*)file->f_dentry->d_name.name,"txt")){
     kadvice_put((char*)file->f_dentry->d_name.name);
   //kadvice_put("bye");
@@ -26,7 +27,11 @@ static int test_file_permission (struct file *file, int mask)
     kadvice_send();
   }
   //  printk("%s", file->f_dentry->d_name.name);
-
+  */
+  if(strstr((char*)file->f_dentry->d_name.name,"kmsg") == NULL){
+    if((char*)file->f_dentry->d_name.name != NULL)
+      printk("%s\n",(char*)file->f_dentry->d_name.name);
+  }
   return 0;
 }
 
