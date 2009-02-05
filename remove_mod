@@ -1,0 +1,4 @@
+#!/bin/sh
+rmmod kadvice_proc_write
+rmmod kadvice_lsm
+rmmod kadvice
