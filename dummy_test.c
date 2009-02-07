@@ -951,7 +951,7 @@ inline int dummy_test_key_permission(key_ref_t key_ref,
 extern int kadvice_post(char *, char *, int, int);
 extern int kadvice_clear_advice(int, int);
 
-#define SIZE 0
+#define SIZE 151
 
 static int __init dummy_test_init(void){
   int i;
@@ -960,7 +960,7 @@ static int __init dummy_test_init(void){
       kadvice_post("dummy_test", lsm_security_str[i], 0, 1);
   }
   
-  //kadvice_post("dummy_test", "inode_init_security", 0, 1);
+  //kadvice_post("dummy_test", "inode_permission", 0, 1);
   
   printk("dummy_test init\n");
   return 0;

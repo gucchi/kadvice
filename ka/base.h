@@ -29,11 +29,6 @@ extern struct security_operations dummy_security_ops;
 	char symname[128];						\
 	CHECK_MSG(name);						\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
-	if(lookup_module_symbol_name((unsigned long)func, symname) != 0){ \
-	  acc[__KA_##name][cabiid][i] = 0;				\
-	  func = (void *)(dummy_security_ops.name);			\
-	  return func(arg1);						\
-	}								\
 	if(func(arg1) != 0)						\
 	  return -1;							\
       }									\
@@ -58,11 +53,6 @@ extern struct security_operations dummy_security_ops;
 	char symname[128];						\
 	CHECK_MSG(name);						\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
-	if(lookup_module_symbol_name((unsigned long)func, symname) != 0){	\
-	  acc[__KA_##name][cabiid][i] = 0;				\
-	  func = (void *)(dummy_security_ops.name);			\
-	  return func(arg1, arg2);				\
-	}								\
 	if(func(arg1, arg2) != 0)					\
 	  return -1;							\
       }									\
@@ -87,11 +77,6 @@ extern struct security_operations dummy_security_ops;
 	char symname[128];						\
 	CHECK_MSG(name);						\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
-	if(lookup_module_symbol_name((unsigned long)func, symname) != 0){ \
-	  acc[__KA_##name][cabiid][i] = 0;				\
-	  func = (void *)(dummy_security_ops.name);			\
-	  return func(arg1, arg2, arg3);				\
-	}								\
 	if(func(arg1, arg2, arg3) != 0)					\
 	  return -1;							\
       }									\
@@ -116,11 +101,6 @@ extern struct security_operations dummy_security_ops;
 	char symname[128];						\
 	CHECK_MSG(name);						\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
-	if(lookup_module_symbol_name((unsigned long)func, symname) != 0){	\
-	  acc[__KA_##name][cabiid][i] = 0;				\
-	  func = (void *)(dummy_security_ops.name);\
-	  return func(arg1, arg2, arg3, arg4);				\
-	}								\
 	if(func(arg1, arg2, arg3, arg4) != 0)				\
 	  return -1;							\
       }									\
@@ -145,11 +125,6 @@ extern struct security_operations dummy_security_ops;
 	char symname[128];						\
 	CHECK_MSG(name);						\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
-	if(lookup_module_symbol_name((unsigned long)func, symname) != 0){	\
-	  acc[__KA_##name][cabiid][i] = 0;				\
-	  func = (void *)(dummy_security_ops.name);			\
-	  return func(arg1, arg2, arg3, arg4, arg5);			\
-	}								\
 	if(func(arg1, arg2, arg3, arg4, arg5) != 0)			\
 	  return -1;							\
       }									\
@@ -174,11 +149,6 @@ extern struct security_operations dummy_security_ops;
 	char symname[128];						\
 	CHECK_MSG(name);						\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
-	if(lookup_module_symbol_name((unsigned long)func, symname) != 0){ \
-	  acc[__KA_##name][cabiid][i] = 0;				\
-	  func = (void *)(dummy_security_ops.name);			\
-	  return func(arg1, arg2, arg3, arg4, arg5, arg6);		\
-	}								\
 	if(func(arg1, arg2, arg3, arg4, arg5, arg6) != 0)		\
 	  return -1;							\
       }									\
@@ -204,11 +174,6 @@ extern struct security_operations dummy_security_ops;
 	char symname[128];						\
 	CHECK_MSG(name);							\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
-	if(lookup_module_symbol_name((unsigned long)func, symname) != 0){ \
-	  acc[__KA_##name][cabiid][i] = 0;				\
-	  func = (void *)(dummy_security_ops.name);			\
-	  return func();						\
-	}								\
 	func();								\
       }									\
     }									\
@@ -233,11 +198,6 @@ extern struct security_operations dummy_security_ops;
 	char symname[128];						\
 	CHECK_MSG(name);				\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
-	if(lookup_module_symbol_name((unsigned long)func, symname) != 0){	\
-	  acc[__KA_##name][cabiid][i] = 0;				\
-	  func = (void *)(dummy_security_ops.name);			\
-	  return func(arg1);						\
-	}								\
 	func(arg1);							\
       }									\
     }									\
@@ -261,11 +221,6 @@ extern struct security_operations dummy_security_ops;
 	char symname[128];						\
 	CHECK_MSG(name);				\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
-	if(lookup_module_symbol_name((unsigned long)func, symname) != 0){	\
-	  acc[__KA_##name][cabiid][i] = 0;				\
-	  func = (void *)(dummy_security_ops.name);			\
-	  return func(arg1, arg2);					\
-	}								\
 	func(arg1, arg2);							\
       }									\
     }									\
@@ -289,11 +244,6 @@ extern struct security_operations dummy_security_ops;
 	char symname[128];						\
 	CHECK_MSG(name);				\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
-	if(lookup_module_symbol_name((unsigned long)func, symname) != 0){	\
-	  acc[__KA_##name][cabiid][i] = 0;				\
-	  func = (void *)(dummy_security_ops.name);			\
-	  return func(arg1, arg2, arg3);				\
-	}								\
 	func(arg1, arg2, arg3);						\
       }									\
     }									\
@@ -317,11 +267,6 @@ extern struct security_operations dummy_security_ops;
 	char symname[128];						\
 	CHECK_MSG(name);				\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
-	if(lookup_module_symbol_name((unsigned long)func, symname) != 0){	\
-	  acc[__KA_##name][cabiid][i] = 0;				\
-	  func = (void *)(dummy_security_ops.name);			\
-	  return func(arg1, arg2, arg3, arg4);				\
-	}								\
 	func(arg1, arg2, arg3, arg4);					\
       }									\
     }									\
@@ -345,11 +290,6 @@ extern struct security_operations dummy_security_ops;
 	char symname[128];						\
 	CHECK_MSG(name);				\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
-	if(lookup_module_symbol_name((unsigned long)func, symname) != 0){	\
-	  acc[__KA_##name][cabiid][i] = 0;				\
-	  func = (void *)(dummy_security_ops.name);			\
-	  return func(arg1, arg2, arg3, arg4, arg5);			\
-	}								\
 	func(arg1, arg2, arg3, arg4, arg5);				\
       }									\
     }									\
@@ -373,11 +313,6 @@ extern struct security_operations dummy_security_ops;
 	char symname[128];						\
 	CHECK_MSG(name);						\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
-	if(lookup_module_symbol_name((unsigned long)func, symname) != 0){	\
-	  acc[__KA_##name][cabiid][i] = 0;				\
-	  func = (void *)(dummy_security_ops.name);			\
-	  return func(arg1, arg2, arg3, arg4, arg5, arg6);		\
-	}								\
 	func(arg1, arg2, arg3, arg4, arg5, arg6);			\
       }									\
     }									\
