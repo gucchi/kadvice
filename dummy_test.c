@@ -252,7 +252,8 @@ void dummy_test_inode_free_security (struct inode *inode)
 int dummy_test_inode_init_security (struct inode *inode, struct inode *dir,
 				      char **name, void **value, size_t *len)
 {
-	return -EOPNOTSUPP;
+  return 0;
+  //	return -EOPNOTSUPP;
 }
 
 int dummy_test_inode_create (struct inode *inode, struct dentry *dentry,
@@ -380,12 +381,14 @@ int dummy_test_inode_killpriv(struct dentry *dentry)
 
 int dummy_test_inode_getsecurity(const struct inode *inode, const char *name, void *buffer, size_t size, int err)
 {
-	return -EOPNOTSUPP;
+  return 0;
+  //return -EOPNOTSUPP;
 }
 
 int dummy_test_inode_setsecurity(struct inode *inode, const char *name, const void *value, size_t size, int flags)
 {
-	return -EOPNOTSUPP;
+  return 0;
+  //return -EOPNOTSUPP;
 }
 
 int dummy_test_inode_listsecurity(struct inode *inode, char *buffer, size_t buffer_size)
@@ -948,16 +951,17 @@ inline int dummy_test_key_permission(key_ref_t key_ref,
 extern int kadvice_post(char *, char *, int, int);
 extern int kadvice_clear_advice(int, int);
 
-#define SIZE 151
+#define SIZE 0
 
 static int __init dummy_test_init(void){
   int i;
     
-  for(i = 0; i < SIZE ; i++){
-    kadvice_post("dummy_test", lsm_security_str[i], 0, 1);
+  for(i = 0; i < SIZE; i++){
+      kadvice_post("dummy_test", lsm_security_str[i], 0, 1);
   }
   
-  //kadvice_post("dummy_test", "inode_permission", 0, 1);
+  //kadvice_post("dummy_test", "inode_init_security", 0, 1);
+  
   printk("dummy_test init\n");
   return 0;
 }

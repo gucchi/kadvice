@@ -16,4 +16,4 @@ struct ka_query{
 };
 
 
-#endif
+#endif //_KADVICE_KA_DEF_H
