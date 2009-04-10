@@ -1,3 +1,5 @@
+#include "../securitycube/securitycube.h"
+
 extern int lookup_module_symbol_name(unsigned long, char *);
 extern int lookup_module_symbol_attrs(unsigned long, unsigned long *, unsigned long *, char *, char *);
 
@@ -14,21 +16,31 @@ extern int lookup_module_symbol_attrs(unsigned long, unsigned long *, unsigned l
 extern struct security_operations dummy_security_ops;
 
 /* acc check function */
+/*
+
+
+	current->security = (void *)tsec_current;			\
+*/
+
 #define FUNC1INT(acc, name, type1, arg1)				\
   int FUNCNAME(name)(type1 arg1)					\
   {									\
-    struct cabi_account *cabi_ac;					\
-    int cabiid, i;							\
+    int group_id, i;							\
     int (*func)(type1 arg1);						\
-    if((cabi_ac = (struct cabi_account *)(current->cabi_info)))	\
-      cabiid = cabi_ac->cabi_id;\
-    else								\
-      cabiid = 0;							\
+    struct sc_task_security *tsec_current =				\
+      (struct sc_task_security *)(current->security);			\
+    if (tsec_current != NULL) {						\
+      group_id  = tsec_current->gid;					\
+      printk("group id %d\n", group_id);				\
+    } else {								\
+      group_id = 0;							\
+    }									\
     for(i = 0; i < 8; i++){						\
-      if(acc[__KA_##name][cabiid][i] != 0){				\
-	char symname[128];						\
+      if(acc[__KA_##name][group_id][i] != 0) {				\
 	CHECK_MSG(name);						\
-	func = (void *)acc[__KA_##name][cabiid][i];			\
+	current->security =						\
+	  (void *)(tsec_current->label[tsec_current->gid-1]);		\
+	func = (void *)acc[__KA_##name][group_id][i];			\
 	if(func(arg1) != 0)						\
 	  return -1;							\
       }									\
@@ -38,19 +50,18 @@ extern struct security_operations dummy_security_ops;
   }									\
   EXPORT_SYMBOL(ka_check_##name)			       
 
-#define FUNC2INT(acc, name, type1, arg1, type2, arg2)		\
+#define FUNC2INT(acc, name, type1, arg1, type2, arg2)			\
   int FUNCNAME(name)(type1 arg1, type2 arg2)				\
   {									\
     struct cabi_account *cabi_ac;					\
     int cabiid, i;							\
-    int (*func)(type1 arg1, type2 arg2);					\
-    if((cabi_ac = (struct cabi_account *)(current->cabi_info)))	\
+    int (*func)(type1 arg1, type2 arg2);				\
+    if((cabi_ac = (struct cabi_account *)(current->cabi_info)))		\
       cabiid = cabi_ac->cabi_id;					\
-    else									\
+    else								\
       cabiid = 0;							\
     for(i = 0; i < 8; i++){						\
       if(acc[__KA_##name][cabiid][i] != 0){				\
-	char symname[128];						\
 	CHECK_MSG(name);						\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
 	if(func(arg1, arg2) != 0)					\
@@ -58,30 +69,32 @@ extern struct security_operations dummy_security_ops;
       }									\
     }									\
     func = (void *)(dummy_security_ops.name);				\
-    return func(arg1, arg2);					\
+    return func(arg1, arg2);						\
   }									\
   EXPORT_SYMBOL(ka_check_##name)			       
 
 #define FUNC3INT(acc, name, type1, arg1, type2, arg2, type3, arg3)	\
   int FUNCNAME(name)(type1 arg1, type2 arg2, type3 arg3)		\
   {									\
-        struct cabi_account *cabi_ac;					\
-        int cabiid, i;						\
-        int (*func)(type1 arg1, type2 arg2, type3 arg3);		\
-        if((cabi_ac = (struct cabi_account *)(current->cabi_info)))	\
-          cabiid = cabi_ac->cabi_id;					\
-        else								\
-          cabiid = 0;							\
-        for(i = 0; i < 8; i++){					\
-          if(acc[__KA_##name][cabiid][i] != 0){			\
-	    char symname[128];						\
-		CHECK_MSG(name);					\
-		func = (void *)acc[__KA_##name][cabiid][i];		\
-		if(func(arg1, arg2, arg3) != 0)				\
-		  return -1;						\
-	      }							\
-	    }								\
-	    func = (void *)(dummy_security_ops.name);			\
+    int group_id, i;							\
+    int (*func)(type1 arg1, type2 arg2, type3 arg3);			\
+    struct sc_task_security *tsec_current =				\
+      (struct sc_task_security *)(current->security);			\
+    if(tsec_current != NULL) {						\
+      group_id = tsec_current->gid;					\
+    } else								\
+      group_id = 0;							\
+    for(i = 0; i < 8; i++){						\
+      if(acc[__KA_##name][group_id][i] != 0){				\
+	CHECK_MSG(name);						\
+	current->security =						\
+	  (void *)(tsec_current->label[tsec_current->gid-1]);		\
+	func = (void *)acc[__KA_##name][group_id][i];			\
+	if(func(arg1, arg2, arg3) != 0)					\
+	  return -1;							\
+      }									\
+    }									\
+    func = (void *)(dummy_security_ops.name);				\
     return 0;								\
   }									\
   EXPORT_SYMBOL(ka_check_##name)			       
@@ -103,14 +116,13 @@ extern struct security_operations dummy_security_ops;
   {									\
     struct cabi_account *cabi_ac;					\
     int cabiid, i;							\
-    int (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4);		\
-    if((cabi_ac = (struct cabi_account *)(current->cabi_info)))	\
-      cabiid = cabi_ac->cabi_id;\
-    else									\
-      cabiid = 0;					\
+    int (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4);	\
+    if((cabi_ac = (struct cabi_account *)(current->cabi_info)))		\
+      cabiid = cabi_ac->cabi_id;					\
+    else								\
+      cabiid = 0;							\
     for(i = 0; i < 8; i++){						\
       if(acc[__KA_##name][cabiid][i] != 0){				\
-	char symname[128];						\
 	CHECK_MSG(name);						\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
 	if(func(arg1, arg2, arg3, arg4) != 0)				\
@@ -128,13 +140,12 @@ extern struct security_operations dummy_security_ops;
     struct cabi_account *cabi_ac;					\
     int cabiid, i;							\
     int (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4, type5 arg5); \
-    if((cabi_ac = (struct cabi_account *)(current->cabi_info)))	\
-      cabiid = cabi_ac->cabi_id;				\
-    else\
-      cabiid = 0;					\
+    if((cabi_ac = (struct cabi_account *)(current->cabi_info)))		\
+      cabiid = cabi_ac->cabi_id;					\
+    else								\
+      cabiid = 0;							\
     for(i = 0; i < 8; i++){						\
       if(acc[__KA_##name][cabiid][i] != 0){				\
-	char symname[128];						\
 	CHECK_MSG(name);						\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
 	if(func(arg1, arg2, arg3, arg4, arg5) != 0)			\
@@ -183,8 +194,7 @@ extern struct security_operations dummy_security_ops;
       cabiid = 0;							\
     for(i = 0; i < 8; i++){						\
       if(acc[__KA_##name][cabiid][i] != 0){				\
-	char symname[128];						\
-	CHECK_MSG(name);							\
+	CHECK_MSG(name);						\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
 	func();								\
       }									\
@@ -207,7 +217,6 @@ extern struct security_operations dummy_security_ops;
       cabiid = 0;					\
     for(i = 0; i < 8; i++){						\
       if(acc[__KA_##name][cabiid][i] != 0){				\
-	char symname[128];						\
 	CHECK_MSG(name);				\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
 	func(arg1);							\
@@ -230,7 +239,6 @@ extern struct security_operations dummy_security_ops;
       cabiid = 0;					\
     for(i = 0; i < 8; i++){						\
       if(acc[__KA_##name][cabiid][i] != 0){				\
-	char symname[128];						\
 	CHECK_MSG(name);				\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
 	func(arg1, arg2);							\
@@ -253,7 +261,6 @@ extern struct security_operations dummy_security_ops;
       cabiid = 0;					\
     for(i = 0; i < 8; i++){						\
       if(acc[__KA_##name][cabiid][i] != 0){				\
-	char symname[128];						\
 	CHECK_MSG(name);				\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
 	func(arg1, arg2, arg3);						\
@@ -276,7 +283,6 @@ extern struct security_operations dummy_security_ops;
       cabiid = 0;					\
     for(i = 0; i < 8; i++){						\
       if(acc[__KA_##name][cabiid][i] != 0){				\
-	char symname[128];						\
 	CHECK_MSG(name);				\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
 	func(arg1, arg2, arg3, arg4);					\
@@ -299,7 +305,6 @@ extern struct security_operations dummy_security_ops;
       cabiid = 0;					\
     for(i = 0; i < 8; i++){						\
       if(acc[__KA_##name][cabiid][i] != 0){				\
-	char symname[128];						\
 	CHECK_MSG(name);				\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
 	func(arg1, arg2, arg3, arg4, arg5);				\
@@ -322,7 +327,6 @@ extern struct security_operations dummy_security_ops;
       cabiid = 0;							\
     for(i = 0; i < 8; i++){						\
       if(acc[__KA_##name][cabiid][i] != 0){				\
-	char symname[128];						\
 	CHECK_MSG(name);						\
 	func = (void *)acc[__KA_##name][cabiid][i];			\
 	func(arg1, arg2, arg3, arg4, arg5, arg6);			\

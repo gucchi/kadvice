@@ -116,7 +116,7 @@ static void lsm_sb_post_pivotroot(struct nameidata * old_nd, struct nameidata * 
 	return ka_check_sb_post_pivotroot(old_nd, new_nd);
 }
 static int lsm_inode_alloc_security(struct inode * inode){
-  int ret = 0;
+  /*  int ret = 0;
   struct sc_inode_security *isec = NULL;
   int i;
   if (inode->i_security == NULL) {
@@ -124,7 +124,7 @@ static int lsm_inode_alloc_security(struct inode * inode){
       kmalloc(sizeof(struct sc_inode_security), GFP_KERNEL);
     isec->gid = 0;
     // no need to init label
-    for (i = 0; i < PRIORITY_MAX; i++)
+    for (i = 0; i < MODEL_MAX; i++)
       isec->label[i] = NULL;
   } else {
     isec = inode->i_security;
@@ -134,20 +134,24 @@ static int lsm_inode_alloc_security(struct inode * inode){
   ret = ka_check_inode_alloc_security(inode);
   inode->i_security = isec;
   return ret;
+  */
+  return ka_check_inode_alloc_security(inode);
 }
 static void lsm_inode_free_security(struct inode * inode){
-  struct sc_inode_security *isec;
+  /*  struct sc_inode_security *isec;
 
   isec = inode->i_security;
   if (isec != NULL) {
     kfree(isec);
   }
+  */
   return ka_check_inode_free_security(inode);
 }
 static int lsm_inode_init_security(struct inode * inode, struct inode * dir, char ** name, void ** value, size_t * len){
 	return ka_check_inode_init_security(inode, dir, name, value, len);
 }
 static int lsm_inode_create(struct inode * dir, struct dentry * dentry, int mode){
+  /*
   int ret;
   // pointer should always init with NULL!!!!!;
   struct sc_inode_security *isec = NULL;
@@ -159,11 +163,13 @@ static int lsm_inode_create(struct inode * dir, struct dentry * dentry, int mode
   }
   ret = ka_check_inode_create(dir, dentry, mode);
   dir->i_security = isec;
-  
+
   return  ret;
+  */
+  return ka_check_inode_create(dir, dentry, mode);
 }
 static int lsm_inode_link(struct dentry * old_dentry, struct inode * dir, struct dentry * new_dentry){
-  int ret;
+  /*  int ret;
   // pointer should always init with NULL!!!!!;
   struct sc_inode_security *isec = NULL;
 
@@ -172,10 +178,12 @@ static int lsm_inode_link(struct dentry * old_dentry, struct inode * dir, struct
     dir->i_security = isec->label[isec->gid];
 
   }
-  ret =ka_check_inode_link(old_dentry, dir, new_dentry);
+  ret = ka_check_inode_link(old_dentry, dir, new_dentry);
   dir->i_security = isec;
   
   return  ret;
+  */
+  return ka_check_inode_link(old_dentry, dir, new_dentry);
 
 }
 static int lsm_inode_unlink(struct inode * dir, struct dentry * dentry){
@@ -194,7 +202,7 @@ static int lsm_inode_mknod(struct inode * dir, struct dentry * dentry, int mode,
 	return ka_check_inode_mknod(dir, dentry, mode, dev);
 }
 static int lsm_inode_rename(struct inode * old_dir, struct dentry * old_dentry, struct inode * new_dir, struct dentry * new_dentry){
-  int ret;
+  /*  int ret;
   // pointer should always init with NULL!!!!!;
   struct sc_inode_security *isec = NULL;
 
@@ -207,6 +215,8 @@ static int lsm_inode_rename(struct inode * old_dir, struct dentry * old_dentry, 
   old_dir->i_security = isec;
   
   return  ret;
+  */
+  return ka_check_inode_rename(old_dir, old_dentry, new_dir, new_dentry);
 }
 static int lsm_inode_readlink(struct dentry * dentry){
 	return ka_check_inode_readlink(dentry);
@@ -215,6 +225,7 @@ static int lsm_inode_follow_link(struct dentry * dentry, struct nameidata * nd){
 	return ka_check_inode_follow_link(dentry, nd);
 }
 static int lsm_inode_permission(struct inode * inode, int mask, struct nameidata * nd){
+  /*
   int ret;
   // pointer should always init with NULL!!!!!;
   struct sc_inode_security *isec = NULL;
@@ -228,6 +239,8 @@ static int lsm_inode_permission(struct inode * inode, int mask, struct nameidata
   inode->i_security = isec;
   
   return  ret;
+  */
+  return ka_check_inode_permission(inode, mask, nd);
 }
 static int lsm_inode_setattr(struct dentry * dentry, struct iattr * attr){
 	return ka_check_inode_setattr(dentry, attr);
