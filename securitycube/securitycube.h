@@ -7,7 +7,7 @@ struct sc_task_security {
   void *label[MODEL_MAX];
 };
 
-struct ka_inode_security {
+struct sc_inode_security {
   int gid;
   void *label[MODEL_MAX];
 };

@@ -8,6 +8,7 @@
 
 #include "ka/kadvice_lsm.h"
 #include "ka/resources.h"
+#include "securitycube/securitycube.h"
 
 MODULE_LICENSE("GPL");
 
@@ -116,11 +117,11 @@ static void lsm_sb_post_pivotroot(struct nameidata * old_nd, struct nameidata * 
 }
 static int lsm_inode_alloc_security(struct inode * inode){
   int ret = 0;
-  struct ka_inode_security *isec = NULL;
+  struct sc_inode_security *isec = NULL;
   int i;
   if (inode->i_security == NULL) {
-    isec = (struct ka_inode_security *)
-      kmalloc(sizeof(struct ka_inode_security), GFP_KERNEL);
+    isec = (struct sc_inode_security *)
+      kmalloc(sizeof(struct sc_inode_security), GFP_KERNEL);
     isec->gid = 0;
     // no need to init label
     for (i = 0; i < PRIORITY_MAX; i++)
@@ -135,7 +136,7 @@ static int lsm_inode_alloc_security(struct inode * inode){
   return ret;
 }
 static void lsm_inode_free_security(struct inode * inode){
-  struct ka_inode_security *isec;
+  struct sc_inode_security *isec;
 
   isec = inode->i_security;
   if (isec != NULL) {
@@ -149,7 +150,7 @@ static int lsm_inode_init_security(struct inode * inode, struct inode * dir, cha
 static int lsm_inode_create(struct inode * dir, struct dentry * dentry, int mode){
   int ret;
   // pointer should always init with NULL!!!!!;
-  struct ka_inode_security *isec = NULL;
+  struct sc_inode_security *isec = NULL;
 
   if (dir->i_security != NULL) {
     isec = dir->i_security;
@@ -164,7 +165,7 @@ static int lsm_inode_create(struct inode * dir, struct dentry * dentry, int mode
 static int lsm_inode_link(struct dentry * old_dentry, struct inode * dir, struct dentry * new_dentry){
   int ret;
   // pointer should always init with NULL!!!!!;
-  struct ka_inode_security *isec = NULL;
+  struct sc_inode_security *isec = NULL;
 
   if (dir->i_security != NULL) {
     isec = dir->i_security;
@@ -195,7 +196,7 @@ static int lsm_inode_mknod(struct inode * dir, struct dentry * dentry, int mode,
 static int lsm_inode_rename(struct inode * old_dir, struct dentry * old_dentry, struct inode * new_dir, struct dentry * new_dentry){
   int ret;
   // pointer should always init with NULL!!!!!;
-  struct ka_inode_security *isec = NULL;
+  struct sc_inode_security *isec = NULL;
 
   if (old_dir->i_security != NULL) {
     isec = old_dir->i_security;
@@ -216,7 +217,7 @@ static int lsm_inode_follow_link(struct dentry * dentry, struct nameidata * nd){
 static int lsm_inode_permission(struct inode * inode, int mask, struct nameidata * nd){
   int ret;
   // pointer should always init with NULL!!!!!;
-  struct ka_inode_security *isec = NULL;
+  struct sc_inode_security *isec = NULL;
 
   if (inode->i_security != NULL) {
     isec = inode->i_security;

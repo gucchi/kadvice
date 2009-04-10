@@ -70,6 +70,8 @@ int sc_proc_write(struct file *file, const char *buffer,
   return len;
 }
 
+
+
 int sc_init(void)
 {
   struct proc_dir_entry *entry;
