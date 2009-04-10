@@ -45,6 +45,7 @@ int sample_inode_create(struct inode *dir, struct dentry *dentry, int mode)
   return 0;
 }
 */
+
 int sample_inode_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_dentry)
 {
   struct ka_sample_isec *isec;

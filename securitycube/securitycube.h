@@ -8,6 +8,6 @@ struct sc_task_security {
 };
 
 struct sc_inode_security {
-  int gid;
+  //  int gid;
   void *label[MODEL_MAX];
 };

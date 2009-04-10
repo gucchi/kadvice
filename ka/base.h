@@ -31,7 +31,6 @@ extern struct security_operations dummy_security_ops;
       (struct sc_task_security *)(current->security);			\
     if (tsec_current != NULL) {						\
       group_id  = tsec_current->gid;					\
-      printk("group id %d\n", group_id);				\
     } else {								\
       group_id = 0;							\
     }									\
@@ -41,8 +40,11 @@ extern struct security_operations dummy_security_ops;
 	current->security =						\
 	  (void *)(tsec_current->label[tsec_current->gid-1]);		\
 	func = (void *)acc[__KA_##name][group_id][i];			\
-	if(func(arg1) != 0)						\
+	if(func(arg1) != 0) {						\
+	  current->security = tsec_current;				\
 	  return -1;							\
+	}								\
+	current->security = tsec_current;				\
       }									\
     }									\
     func = (void *)(dummy_security_ops.name);				\
@@ -107,9 +109,6 @@ extern struct security_operations dummy_security_ops;
   }							 \
   EXPORT_SYMBOL(ka_check_##name)			 \
 */
-
-
-
 
 #define FUNC4INT(acc, name, type1, arg1, type2, arg2, type3, arg3, type4, arg4) \
   int FUNCNAME(name)(type1 arg1, type2 arg2, type3 arg3, type4 arg4)	\

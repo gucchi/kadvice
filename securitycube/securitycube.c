@@ -14,7 +14,18 @@ MODULE_DESCRIPTION("SecurityCube File Interface");
 
 #define PROCNAME "scube"
 
-
+void scube_fork(struct task_struct *child)
+{
+  struct sc_task_security *tsec;
+  if (!tsec = sc_alloc_new_task_security()) {
+    return -ENOMEN;
+  }
+  task_lock(current);
+  tsec->gid =((sc_task_security *)(current->security))->gid;
+  task_unlock(current);
+  child->security = tsec;
+  
+}
 static
 struct sc_task_security *sc_alloc_new_task_security(void)
 {

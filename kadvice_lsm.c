@@ -122,7 +122,6 @@ static int lsm_inode_alloc_security(struct inode * inode){
   if (inode->i_security == NULL) {
     isec = (struct sc_inode_security *)
       kmalloc(sizeof(struct sc_inode_security), GFP_KERNEL);
-    isec->gid = 0;
     // no need to init label
     for (i = 0; i < MODEL_MAX; i++)
       isec->label[i] = NULL;
