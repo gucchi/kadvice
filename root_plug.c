@@ -1,12 +1,7 @@
 /*
  * Root Plug sample LSM module
  *
- * Originally written for a Linux Journal.
- *
- * Copyright (C) 2002 Greg Kroah-Hartman <greg@kroah.com>
- *
- * Prevents any programs running with egid == 0 if a specific USB device
- * is not present in the system.  Yes, it can be gotten around, but is a
+
  * nice starting point for people to play with, and learn the LSM
  * interface.
  *
@@ -72,7 +67,8 @@ int rootplug_bprm_check_security (struct linux_binprm *bprm)
 
 	return 0;
 }
-/*
+
+
 static struct security_operations rootplug_security_ops = {
 	// Use the capability functions for some of the hooks 
 	.ptrace =			cap_ptrace,
@@ -89,11 +85,15 @@ static struct security_operations rootplug_security_ops = {
 
 	.bprm_check_security =		rootplug_bprm_check_security,
 };
-*/
+
+
 extern int kadvice_post(char *, char *, int, int);
+//extern struct security_operation rootplug_security_ops;
+
 static int __init rootplug_init (void)
 {
 	/* register ourselves with the security framework */
+
   kadvice_post("cap", "ptrace", 0, 1);
   kadvice_post("cap", "capget", 0, 1);
   kadvice_post("cap", "capset_check", 0, 1);
@@ -104,11 +104,11 @@ static int __init rootplug_init (void)
   kadvice_post("cap", "task_post_setuid", 0, 1);
   kadvice_post("cap", "task_reparent_to_init", 0, 1);
   kadvice_post("rootplug", "bprm_check_security", 0, 1);
-  
-	printk (KERN_INFO "Root Plug module initialized, "
+  printk (KERN_INFO "Root Plug module initialized, "
 		"vendor_id = %4.4x, product id = %4.4x\n", vendor_id, product_id);
 	return 0;
 }
+
 static void __exit rootplug_exit(void){
   printk(KERN_INFO "Root Plug module removed\n");
 }

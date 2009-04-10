@@ -7,6 +7,7 @@
 #include <linux/security.h>
 
 #include "ka/kadvice_lsm.h"
+#include "ka/resources.h"
 
 MODULE_LICENSE("GPL");
 
@@ -22,6 +23,7 @@ static int lsm_capset_check(struct task_struct * target, kernel_cap_t * effectiv
 static void lsm_capset_set(struct task_struct * target, kernel_cap_t * effective, kernel_cap_t * inheritable, kernel_cap_t * permitted){
 	return ka_check_capset_set(target, effective, inheritable, permitted);
 }
+
 static int lsm_capable(struct task_struct * tsk, int cap){
 	return ka_check_capable(tsk, cap);
 }
@@ -113,19 +115,67 @@ static void lsm_sb_post_pivotroot(struct nameidata * old_nd, struct nameidata * 
 	return ka_check_sb_post_pivotroot(old_nd, new_nd);
 }
 static int lsm_inode_alloc_security(struct inode * inode){
-	return ka_check_inode_alloc_security(inode);
+  int ret = 0;
+  struct ka_inode_security *isec = NULL;
+  int i;
+  if (inode->i_security == NULL) {
+    isec = (struct ka_inode_security *)
+      kmalloc(sizeof(struct ka_inode_security), GFP_KERNEL);
+    isec->gid = 0;
+    // no need to init label
+    for (i = 0; i < PRIORITY_MAX; i++)
+      isec->label[i] = NULL;
+  } else {
+    isec = inode->i_security;
+  }
+  inode->i_security = isec->label[isec->gid];
+  
+  ret = ka_check_inode_alloc_security(inode);
+  inode->i_security = isec;
+  return ret;
 }
 static void lsm_inode_free_security(struct inode * inode){
-	return ka_check_inode_free_security(inode);
+  struct ka_inode_security *isec;
+
+  isec = inode->i_security;
+  if (isec != NULL) {
+    kfree(isec);
+  }
+  return ka_check_inode_free_security(inode);
 }
 static int lsm_inode_init_security(struct inode * inode, struct inode * dir, char ** name, void ** value, size_t * len){
 	return ka_check_inode_init_security(inode, dir, name, value, len);
 }
 static int lsm_inode_create(struct inode * dir, struct dentry * dentry, int mode){
-	return ka_check_inode_create(dir, dentry, mode);
+  int ret;
+  // pointer should always init with NULL!!!!!;
+  struct ka_inode_security *isec = NULL;
+
+  if (dir->i_security != NULL) {
+    isec = dir->i_security;
+    dir->i_security = isec->label[isec->gid];
+
+  }
+  ret = ka_check_inode_create(dir, dentry, mode);
+  dir->i_security = isec;
+  
+  return  ret;
 }
 static int lsm_inode_link(struct dentry * old_dentry, struct inode * dir, struct dentry * new_dentry){
-	return ka_check_inode_link(old_dentry, dir, new_dentry);
+  int ret;
+  // pointer should always init with NULL!!!!!;
+  struct ka_inode_security *isec = NULL;
+
+  if (dir->i_security != NULL) {
+    isec = dir->i_security;
+    dir->i_security = isec->label[isec->gid];
+
+  }
+  ret =ka_check_inode_link(old_dentry, dir, new_dentry);
+  dir->i_security = isec;
+  
+  return  ret;
+
 }
 static int lsm_inode_unlink(struct inode * dir, struct dentry * dentry){
 	return ka_check_inode_unlink(dir, dentry);
@@ -143,7 +193,19 @@ static int lsm_inode_mknod(struct inode * dir, struct dentry * dentry, int mode,
 	return ka_check_inode_mknod(dir, dentry, mode, dev);
 }
 static int lsm_inode_rename(struct inode * old_dir, struct dentry * old_dentry, struct inode * new_dir, struct dentry * new_dentry){
-	return ka_check_inode_rename(old_dir, old_dentry, new_dir, new_dentry);
+  int ret;
+  // pointer should always init with NULL!!!!!;
+  struct ka_inode_security *isec = NULL;
+
+  if (old_dir->i_security != NULL) {
+    isec = old_dir->i_security;
+    old_dir->i_security = isec->label[isec->gid];
+
+  }
+  ret = ka_check_inode_rename(old_dir, old_dentry, new_dir, new_dentry);
+  old_dir->i_security = isec;
+  
+  return  ret;
 }
 static int lsm_inode_readlink(struct dentry * dentry){
 	return ka_check_inode_readlink(dentry);
@@ -152,7 +214,19 @@ static int lsm_inode_follow_link(struct dentry * dentry, struct nameidata * nd){
 	return ka_check_inode_follow_link(dentry, nd);
 }
 static int lsm_inode_permission(struct inode * inode, int mask, struct nameidata * nd){
-	return ka_check_inode_permission(inode, mask, nd);
+  int ret;
+  // pointer should always init with NULL!!!!!;
+  struct ka_inode_security *isec = NULL;
+
+  if (inode->i_security != NULL) {
+    isec = inode->i_security;
+    inode->i_security = isec->label[isec->gid];
+
+  }
+  ret = ka_check_inode_permission(inode, mask, nd);
+  inode->i_security = isec;
+  
+  return  ret;
 }
 static int lsm_inode_setattr(struct dentry * dentry, struct iattr * attr){
 	return ka_check_inode_setattr(dentry, attr);
@@ -692,6 +766,7 @@ static void __exit kadvicelsm_exit(void){
   printk(KERN_INFO "addhookbase module remove\n");
 }
 
-security_initcall(kadvicelsm_init);
+//security_initcall(kadvicelsm_init);
+module_init(kadvicelsm_init);
 module_exit(kadvicelsm_exit);
 EXPORT_SYMBOL(lsm_security_ops);

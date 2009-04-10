@@ -65,26 +65,38 @@ extern struct security_operations dummy_security_ops;
 #define FUNC3INT(acc, name, type1, arg1, type2, arg2, type3, arg3)	\
   int FUNCNAME(name)(type1 arg1, type2 arg2, type3 arg3)		\
   {									\
-    struct cabi_account *cabi_ac;					\
-    int cabiid, i;							\
-    int (*func)(type1 arg1, type2 arg2, type3 arg3);			\
-    if((cabi_ac = (struct cabi_account *)(current->cabi_info)))		\
-      cabiid = cabi_ac->cabi_id;					\
-    else								\
-      cabiid = 0;							\
-    for(i = 0; i < 8; i++){						\
-      if(acc[__KA_##name][cabiid][i] != 0){				\
-	char symname[128];						\
-	CHECK_MSG(name);						\
-	func = (void *)acc[__KA_##name][cabiid][i];			\
-	if(func(arg1, arg2, arg3) != 0)					\
-	  return -1;							\
-      }									\
-    }									\
-    func = (void *)(dummy_security_ops.name);				\
+        struct cabi_account *cabi_ac;					\
+        int cabiid, i;						\
+        int (*func)(type1 arg1, type2 arg2, type3 arg3);		\
+        if((cabi_ac = (struct cabi_account *)(current->cabi_info)))	\
+          cabiid = cabi_ac->cabi_id;					\
+        else								\
+          cabiid = 0;							\
+        for(i = 0; i < 8; i++){					\
+          if(acc[__KA_##name][cabiid][i] != 0){			\
+	    char symname[128];						\
+		CHECK_MSG(name);					\
+		func = (void *)acc[__KA_##name][cabiid][i];		\
+		if(func(arg1, arg2, arg3) != 0)				\
+		  return -1;						\
+	      }							\
+	    }								\
+	    func = (void *)(dummy_security_ops.name);			\
     return 0;								\
   }									\
   EXPORT_SYMBOL(ka_check_##name)			       
+/*
+#define FUNC3INT(acc, name, type1, arg1, type2, arg2, type3, arg3) \
+  int FUNCNAME(name)(type1 arg1, type2 arg2, type3 arg3) \
+  {							 \
+    printk("security id:%p\n", current->security);	 \
+    return 0;						 \
+  }							 \
+  EXPORT_SYMBOL(ka_check_##name)			 \
+*/
+
+
+
 
 #define FUNC4INT(acc, name, type1, arg1, type2, arg2, type3, arg3, type4, arg4) \
   int FUNCNAME(name)(type1 arg1, type2 arg2, type3 arg3, type4 arg4)	\

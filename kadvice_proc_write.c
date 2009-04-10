@@ -13,6 +13,8 @@ extern int kadvice_put_advice_str(struct ka_query *);
 extern int kadvice_post_advice_str(struct ka_query *);
 extern int kadvice_delete_advice(struct ka_query *);
 
+
+// echo "post http://localhost/1.1.1 weavepoint" > /proc/kadvice
 int ka_parse_uri(char *uri, struct ka_query *query){
   char *acc, *weavepoint, *aoidp, *priorityp;
   int aoid, priority;
@@ -21,6 +23,7 @@ int ka_parse_uri(char *uri, struct ka_query *query){
     return -1;
   acc += 3;
   weavepoint = strstr(acc, "/");
+  // http://localhost/(*.*.*)->weavepoint
   if(!weavepoint)
     return -1;
   *weavepoint = '\0';
@@ -38,7 +41,7 @@ int ka_parse_uri(char *uri, struct ka_query *query){
 
   aoid = simple_strtol(aoidp, NULL, 10);
   priority = simple_strtol(priorityp, NULL, 10);
-  //printk("acc:%s weavepint:%s aoid:%d priority:%d\n", acc, weavepoint, aoid, priority);
+  printk("acc:%s weavepint:%s aoid:%d priority:%d\n", acc, weavepoint, aoid, priority);
 
   query->acc = acc;
   query->weavepoint = weavepoint;
@@ -56,9 +59,12 @@ int ka_proc_write(struct file *file, const char *buffer, unsigned long count, vo
   int ret = -1;
   if(len >= sizeof(buf))
     len = sizeof(buf) - 1;
-  if(copy_from_user(buf, buffer, len))
+  if(copy_from_user(buf, buffer, len)) {
+    printk("cannot copy from user\n");
     goto err;
+  }
   buf[len] = '\0';
+  //  printk("%s\n", buf);
   method = buf;
   uri = strstr(method, " ");
   if(!uri)
@@ -70,14 +76,19 @@ int ka_proc_write(struct file *file, const char *buffer, unsigned long count, vo
     br = strstr(uri, "\n");
     if(br)
       *br = '\0';
-    if(ka_parse_uri(uri, query))
+    if(ka_parse_uri(uri, query)) {
+      //      printk("cannot parse\n");
       goto err;
+    }
     //printk("method:%s uri:%s\n", method, uri);
     ret = kadvice_delete_advice(query);
   }else{
      funcname = strstr(uri, " ");
-    if(!funcname)
+     if(!funcname){
+       //       printk("cannot parse2\n");
       goto err;
+
+     }
     *funcname = '\0';
     funcname++;
     br = strstr(funcname, "\n");
@@ -85,10 +96,11 @@ int ka_proc_write(struct file *file, const char *buffer, unsigned long count, vo
       *br = '\0';
     query->funcname = funcname;
   
-    if(ka_parse_uri(uri, query))
+    if(ka_parse_uri(uri, query)) {
+      printk("cannot parse3\n");
       goto err;
-   
-    //printk("method:%s uri:%s funcname:%s\n", method, uri, funcname);
+    }
+    printk("method:%s uri:%s funcname:%s\n", method, uri, funcname);
        
     if(strcmp(method, "post") == 0){
       ret = kadvice_post_advice_str(query);
@@ -103,6 +115,7 @@ int ka_proc_write(struct file *file, const char *buffer, unsigned long count, vo
 
  err:
   kfree(query);
+  printk("ERROR!!\n");
   return -EFAULT;
 }
 

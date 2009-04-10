@@ -1,3 +1,4 @@
+
 /* 
  * Kadvice readinterface
  * shinpei(c)ynu 2009

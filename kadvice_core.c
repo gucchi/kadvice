@@ -17,8 +17,6 @@
 unsigned long lsm_acc[LSMIDMAX + 1][AOIDMAX][FUNCMAX];
 
 MODULE_LICENSE("GPL");
-
-
 /*
 static int ka_show1(struct seq_file *m, void *p){
   int n = (int)p-1;
@@ -38,7 +36,6 @@ static int ka_show1(struct seq_file *m, void *p){
 }
 */
 
-
 #define KA_SHOW(aoid, acc, max)						\
   static int ka_show##aoid(struct seq_file *m, void *p){		\
     int n = (int)p-1;							\
@@ -56,7 +53,6 @@ static int ka_show1(struct seq_file *m, void *p){
     seq_puts(m, "\n");							\
     return 0;								\
   }									\
-
 
 /* seq_file handler */
 #define CREATE_SEQ_OPS(aoid)				\
@@ -124,8 +120,6 @@ static void *ka_next(struct seq_file *m, void *p, loff_t *pos){
   }								
   return 0;							
 }								
-
-
 
 KA_SHOW(0, lsm_acc, FUNCMAX)
 KA_SHOW(1, lsm_acc, FUNCMAX)
@@ -198,13 +192,13 @@ int kadvice_register_advice(int aoid, int lsmid, void *func, int priority){
   int i = priority;
   if(lsm_acc[lsmid][aoid][priority] == 0){
     lsm_acc[lsmid][aoid][priority] = (unsigned long)func;
-    printk("register advice lsmid:%d aoid:%d [%d] %p\n", lsmid, aoid, i, func);
+     //    printk("register advice lsmid:%d aoid:%d [%d] %p\n", lsmid, aoid, i, func);
     return 0;
   }
   for(i += 1; i < 8; i++){
     if(lsm_acc[lsmid][aoid][i] == 0){
       lsm_acc[lsmid][aoid][i] = (unsigned long)func;
-      printk("register advice lsmid:%d aoid:%d [%d] %p\n", lsmid, aoid, i, func);
+      //printk("register advice lsmid:%d aoid:%d [%d] %p\n", lsmid, aoid, i, func);
       return 0;
     }
   }
@@ -252,7 +246,6 @@ int kadvice_clear_func(unsigned long addr){
       for(k = 0; k < FUNCMAX; k++){
 	if(lsm_acc[i][j][k] == addr){
 	  lsm_acc[i][j][k] = 0;
-	  printk("clear func\n");
 	}
       }
     }
@@ -293,8 +286,10 @@ int ka_find_lsmid_from_str(char *name){
 
 int kadvice_post_advice(struct ka_query *query){
   int lsmid = ka_find_lsmid_from_str(query->weavepoint);
-  if(lsmid < 0)
+  if(lsmid < 0) {
+    printk("cannot find lsm name :%s\n", query->weavepoint);
     return -1;
+  }
   return kadvice_register_advice(query->aoid, lsmid, (void *)query->funcaddr, query->priority);
 }
 EXPORT_SYMBOL(kadvice_post_advice);
@@ -303,8 +298,11 @@ EXPORT_SYMBOL(kadvice_post_advice);
 int kadvice_post_advice_str(struct ka_query *query){
   unsigned long addr;
   addr = kallsyms_lookup_name(query->funcname);
-  if(addr == 0)
-    return -ENOMEM;
+  if(addr == 0) {
+    /* attempt to get address resolve from System.map */
+    printk("cannot find funcname:%s\n", query->funcname);
+    return -EFAULT;
+  }
   query->funcaddr = addr;
   return kadvice_post_advice(query);
 }
@@ -358,18 +356,18 @@ int kadvice_post(char *head, char *name, int aoid, int priority){
   int namelen = strlen(head) + strlen(name) + 1;
   char *funcname = (char *)kmalloc(namelen + 1, GFP_KERNEL);
   memset(funcname, 0, namelen + 1);
-  printk("namelen %d head %d name %d\n",namelen, strlen(head), strlen(name));
+  //  printk("namelen %d head %d name %d\n",namelen, strlen(head), strlen(name));
   strncpy(funcname, head, strlen(head));
   strncat(funcname, "_", 1);
   strncat(funcname, name, strlen(name));
   funcname[namelen] = '\0';
-  printk("func %s\n",funcname);
+  //  printk("func %s\n",funcname);
   query->funcname = funcname;
   query->aoid = aoid;
   query->priority = priority;
   query->weavepoint = name;
   ret = kadvice_post_advice_str(query);
-  printk("post %d\n",ret);
+  //  printk("post %d\n",ret);
   kfree(query);
   kfree(funcname);
   return ret;
