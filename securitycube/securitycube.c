@@ -16,19 +16,24 @@ MODULE_DESCRIPTION("SecurityCube File Interface");
 
 static struct sc_task_security *sc_alloc_new_task_security(void);
 
-void scube_fork(struct task_struct *child)
+void securitycube_fork(struct task_struct *child)
 {
   struct sc_task_security *tsec;
   if (!(tsec = sc_alloc_new_task_security())) {
     printk("no memory\n");
     //return -ENOMEM;
   }
+
+  if (current->security != NULL) {
+    tsec->gid =((struct sc_task_security *)(current->security))->gid;
+  } else {
+    tsec->gid = 0;
+  }
   task_lock(current);
-  tsec->gid =((struct sc_task_security *)(current->security))->gid;
-  task_unlock(current);
   child->security = tsec;
+  task_unlock(current);
 }
-EXPORT_SYMBOL(scube_fork);
+EXPORT_SYMBOL (securitycube_fork);
 
 static
 struct sc_task_security *sc_alloc_new_task_security(void)

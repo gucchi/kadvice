@@ -15,6 +15,5 @@ struct sc_inode_security {
   void *label[MODEL_MAX];
 };
 
-extern void scube_fork(struct task_struct *child);
 
 #endif /* __SECURITYCUBE_H */
