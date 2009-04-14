@@ -12,8 +12,6 @@ struct ka_sample_isec {
   int permission;
 };
 
-extern int kadvice_string_put(char *);
-extern int kadvice_clear_func(unsigned long);
 
 MODULE_LICENSE("GPL");
 
@@ -32,6 +30,24 @@ int sample_inode_permission(struct inode *inode, int mask, struct nameidata *nd)
 }
 */
 
+int sample_task_alloc_security(struct task_struct *p)
+{
+  //  printk("shinpei %p\n", p->security);
+  /*
+  struct ka_sample_isec *isec;
+  if (p->security == NULL) {
+    isec = (struct ka_sample_isec *)
+      kmalloc(sizeof(struct ka_sample_isec), GFP_KERNEL);
+    isec->permission = 1;
+    p->security = (void *)isec;
+  } else {
+    printk("hehehe\n");
+  }
+  */
+  printk("hehehe\n");
+  return 0;
+}
+
 int sample_inode_create(struct inode *dir, struct dentry *dentry, int mode)
 {
   printk("dir num%d %p\n", dir->i_ino, dir->i_security);
@@ -39,12 +55,11 @@ int sample_inode_create(struct inode *dir, struct dentry *dentry, int mode)
   if (dir->i_security == NULL) {
     isec = (struct ka_sample_isec *)
       kmalloc(sizeof(struct ka_sample_isec), GFP_KERNEL);
-    dir->i_security = (void *)isec;
     isec->permission = 1;
+    dir->i_security = (void *)isec;
   }
   return 0;
 }
-
 
 int sample_inode_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_dentry)
 {
@@ -85,7 +100,6 @@ int sample_inode_alloc_security(struct inode *inode)
 }
 
 static int __init sample_init(void){
-  //set inode-label
 
   return 0;
 }

@@ -325,7 +325,6 @@ static int lsm_task_create(unsigned long clone_flags){
 
 static int lsm_task_alloc_security(struct task_struct * p){
   struct sc_task_security *isec = NULL;
-
   if (p->security == NULL) {
     securitycube_fork(p);
   }

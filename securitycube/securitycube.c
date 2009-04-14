@@ -19,17 +19,23 @@ static struct sc_task_security *sc_alloc_new_task_security(void);
 void securitycube_fork(struct task_struct *child)
 {
   struct sc_task_security *tsec;
+  task_lock(current);
   if (!(tsec = sc_alloc_new_task_security())) {
     printk("no memory\n");
     //return -ENOMEM;
   }
-
   if (current->security != NULL) {
+    // set current security 
     tsec->gid =((struct sc_task_security *)(current->security))->gid;
   } else {
+    struct sc_task_security *tsec_cur;
+    if(!(tsec_cur = sc_alloc_new_task_security())) {
+      printk("no memory\n");
+    }
+    tsec_cur->gid = 0;
+    current->security = tsec_cur;
     tsec->gid = 0;
   }
-  task_lock(current);
   child->security = tsec;
   task_unlock(current);
 }
@@ -39,8 +45,12 @@ static
 struct sc_task_security *sc_alloc_new_task_security(void)
 {
   struct sc_task_security *tsec = NULL;
+  int i;
   tsec = (struct sc_task_security *)
     kmalloc(sizeof(struct sc_task_security), GFP_KERNEL);
+  for (i = 0; i < MODEL_MAX; i++) {
+    tsec->label[i] = NULL;
+  }
   return tsec;
 }
 

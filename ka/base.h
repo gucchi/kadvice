@@ -17,15 +17,13 @@ extern struct security_operations dummy_security_ops;
 
 /* acc check function */
 /*
-
-
 	current->security = (void *)tsec_current;			\
 */
 
 #define FUNC1INT(acc, name, type1, arg1)				\
   int FUNCNAME(name)(type1 arg1)					\
   {									\
-    int group_id, i;							\
+    int group_id;							\
     int (*func)(type1 arg1);						\
     struct sc_task_security *tsec_current =				\
       (struct sc_task_security *)(current->security);			\
@@ -34,12 +32,12 @@ extern struct security_operations dummy_security_ops;
     } else {								\
       group_id = 0;							\
     }									\
-    for(i = 0; i < 8; i++){						\
-      if(acc[__KA_##name][group_id][i] != 0) {				\
-	CHECK_MSG(name);						\
-	current->security =						\
-	  (void *)(tsec_current->label[tsec_current->gid-1]);		\
-	func = (void *)acc[__KA_##name][group_id][i];			\
+    if(acc[__KA_##name][group_id][0] != 0) {				\
+      CHECK_MSG(name);							\
+      if (tsec_current->label[group_id] != NULL) {			\
+	current->security = 						\
+	  (void *)(tsec_current->label[group_id]);			\
+	func = (void *)acc[__KA_##name][group_id][0];			\
 	if(func(arg1) != 0) {						\
 	  current->security = tsec_current;				\
 	  return -1;							\
@@ -75,6 +73,7 @@ extern struct security_operations dummy_security_ops;
   }									\
   EXPORT_SYMBOL(ka_check_##name)			       
 
+/*
 #define FUNC3INT(acc, name, type1, arg1, type2, arg2, type3, arg3)	\
   int FUNCNAME(name)(type1 arg1, type2 arg2, type3 arg3)		\
   {									\
@@ -100,15 +99,19 @@ extern struct security_operations dummy_security_ops;
     return 0;								\
   }									\
   EXPORT_SYMBOL(ka_check_##name)			       
-/*
+*/
+
 #define FUNC3INT(acc, name, type1, arg1, type2, arg2, type3, arg3) \
   int FUNCNAME(name)(type1 arg1, type2 arg2, type3 arg3) \
   {							 \
-    printk("security id:%p\n", current->security);	 \
+    if (current->security != NULL) {			 \
+      printk("security id:%p\n", current->security);	 \
+    }							 \
     return 0;						 \
   }							 \
   EXPORT_SYMBOL(ka_check_##name)			 \
-*/
+
+
 
 #define FUNC4INT(acc, name, type1, arg1, type2, arg2, type3, arg3, type4, arg4) \
   int FUNCNAME(name)(type1 arg1, type2 arg2, type3 arg3, type4 arg4)	\
@@ -132,6 +135,7 @@ extern struct security_operations dummy_security_ops;
     return func(arg1, arg2, arg3, arg4);				\
   }									\
   EXPORT_SYMBOL(ka_check_##name)			       
+
 
 #define FUNC5INT(acc, name, type1, arg1, type2, arg2, type3, arg3, type4, arg4, type5, arg5) \
   int FUNCNAME(name)(type1 arg1, type2 arg2, type3 arg3, type4 arg4, type5 arg5) \
