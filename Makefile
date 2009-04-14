@@ -3,12 +3,13 @@ obj-m+=kadvice.o
 obj-m+=kadvice_lsm.o
 obj-m+=kadvice_proc_write.o
 obj-m+=advice_inode_permission.o
+obj-m+=securitycube.o
 #obj-m+=advice_file_permission.o
 #obj-m+=kadvice_io.o
 #obj-m+=shinpei.o
 #obj-m+=advice_iotest.o
-obj-m+=dummy_test.o
-obj-m+=commoncap.o root_plug.o
+#obj-m+=dummy_test.o
+#obj-m+=commoncap.o root_plug.o
 #obj-m+=advice_dentry_open.o
 kadvice-objs := $(CFILES:.c=.o)
 all:

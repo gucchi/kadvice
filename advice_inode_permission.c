@@ -31,7 +31,7 @@ int sample_inode_permission(struct inode *inode, int mask, struct nameidata *nd)
   return 0;
 }
 */
-/*
+
 int sample_inode_create(struct inode *dir, struct dentry *dentry, int mode)
 {
   printk("dir num%d %p\n", dir->i_ino, dir->i_security);
@@ -44,7 +44,7 @@ int sample_inode_create(struct inode *dir, struct dentry *dentry, int mode)
   }
   return 0;
 }
-*/
+
 
 int sample_inode_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_dentry)
 {

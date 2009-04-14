@@ -5,10 +5,10 @@
 #include "ka/secops.h"
 
 #include <linux/security.h>
-
 #include "ka/kadvice_lsm.h"
 #include "ka/resources.h"
-#include "securitycube/securitycube.h"
+
+extern void securitycube_fork(struct task_struct *);
 
 MODULE_LICENSE("GPL");
 
@@ -149,6 +149,7 @@ static void lsm_inode_free_security(struct inode * inode){
 static int lsm_inode_init_security(struct inode * inode, struct inode * dir, char ** name, void ** value, size_t * len){
 	return ka_check_inode_init_security(inode, dir, name, value, len);
 }
+
 static int lsm_inode_create(struct inode * dir, struct dentry * dentry, int mode){
   /*
   int ret;
@@ -241,6 +242,7 @@ static int lsm_inode_permission(struct inode * inode, int mask, struct nameidata
   */
   return ka_check_inode_permission(inode, mask, nd);
 }
+
 static int lsm_inode_setattr(struct dentry * dentry, struct iattr * attr){
 	return ka_check_inode_setattr(dentry, attr);
 }
@@ -284,7 +286,8 @@ static int lsm_file_permission(struct file * file, int mask){
 	return ka_check_file_permission(file, mask);
 }
 static int lsm_file_alloc_security(struct file * file){
-	return ka_check_file_alloc_security(file);
+  
+  return ka_check_file_alloc_security(file);
 }
 static void lsm_file_free_security(struct file * file){
 	return ka_check_file_free_security(file);
@@ -319,9 +322,16 @@ static int lsm_dentry_open(struct file * file){
 static int lsm_task_create(unsigned long clone_flags){
 	return ka_check_task_create(clone_flags);
 }
+
 static int lsm_task_alloc_security(struct task_struct * p){
-	return ka_check_task_alloc_security(p);
+  struct sc_task_security *isec = NULL;
+
+  if (p->security == NULL) {
+    securitycube_fork(p);
+  }
+  return ka_check_task_alloc_security(p);
 }
+
 static void lsm_task_free_security(struct task_struct * p){
 	return ka_check_task_free_security(p);
 }
