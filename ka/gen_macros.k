@@ -71,8 +71,8 @@ void gen_body(int num_args, String type)
 {   \\
     int group_id; \\
     %s{0}; \\
-    struct sc_task_security *tsec_current =	\\
-      (struct sc_task_security *)(current->security); \\
+    struct sc_task_security *tsec_current =	\			\
+      (struct sc_task_security *)(get_cured()->security); \\
     if (tsec_current != NULL) {	\\
       group_id  = tsec_current->gid; \\
     } else { \\

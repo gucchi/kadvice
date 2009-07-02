@@ -19,8 +19,8 @@ int FUNCNAME(name)(type1 arg1) \
 {   \
     int group_id; \
     int (*func)(type1 arg1); \
-    struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(current->security); \
+    struct sc_task_security *tsec_current =	\			\
+      (struct sc_task_security *)(get_cured()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -49,8 +49,8 @@ int FUNCNAME(name)(type1 arg1,type2 arg2) \
 {   \
     int group_id; \
     int (*func)(type1 arg1, type2 arg2); \
-    struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(current->security); \
+    struct sc_task_security *tsec_current =	\			\
+      (struct sc_task_security *)(get_cured()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -79,8 +79,8 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3) \
 {   \
     int group_id; \
     int (*func)(type1 arg1, type2 arg2, type3 arg3); \
-    struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(current->security); \
+    struct sc_task_security *tsec_current =	\			\
+      (struct sc_task_security *)(get_cured()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -109,8 +109,8 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
 {   \
     int group_id; \
     int (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4); \
-    struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(current->security); \
+    struct sc_task_security *tsec_current =	\			\
+      (struct sc_task_security *)(get_cured()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -139,8 +139,8 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
 {   \
     int group_id; \
     int (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4, type5 arg5); \
-    struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(current->security); \
+    struct sc_task_security *tsec_current =	\			\
+      (struct sc_task_security *)(get_cured()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -169,8 +169,8 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6 
 {   \
     int group_id; \
     int (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4, type5 arg5, type6 arg6); \
-    struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(current->security); \
+    struct sc_task_security *tsec_current =	\			\
+      (struct sc_task_security *)(get_cured()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -199,8 +199,8 @@ void FUNCNAME(name)() \
 {   \
     int group_id; \
     void (*func)(void); \
-    struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(current->security); \
+    struct sc_task_security *tsec_current =	\			\
+      (struct sc_task_security *)(get_cured()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -229,8 +229,8 @@ void FUNCNAME(name)(type1 arg1) \
 {   \
     int group_id; \
     void (*func)(type1 arg1); \
-    struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(current->security); \
+    struct sc_task_security *tsec_current =	\			\
+      (struct sc_task_security *)(get_cured()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -259,8 +259,8 @@ void FUNCNAME(name)(type1 arg1,type2 arg2) \
 {   \
     int group_id; \
     void (*func)(type1 arg1, type2 arg2); \
-    struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(current->security); \
+    struct sc_task_security *tsec_current =	\			\
+      (struct sc_task_security *)(get_cured()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -289,8 +289,8 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3) \
 {   \
     int group_id; \
     void (*func)(type1 arg1, type2 arg2, type3 arg3); \
-    struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(current->security); \
+    struct sc_task_security *tsec_current =	\			\
+      (struct sc_task_security *)(get_cured()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -319,8 +319,8 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
 {   \
     int group_id; \
     void (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4); \
-    struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(current->security); \
+    struct sc_task_security *tsec_current =	\			\
+      (struct sc_task_security *)(get_cured()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -349,8 +349,8 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
 {   \
     int group_id; \
     void (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4, type5 arg5); \
-    struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(current->security); \
+    struct sc_task_security *tsec_current =	\			\
+      (struct sc_task_security *)(get_cured()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -379,8 +379,8 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6
 {   \
     int group_id; \
     void (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4, type5 arg5, type6 arg6); \
-    struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(current->security); \
+    struct sc_task_security *tsec_current =	\			\
+      (struct sc_task_security *)(get_cured()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
