@@ -19,8 +19,8 @@ int FUNCNAME(name)(type1 arg1) \
 {   \
     int group_id; \
     int (*func)(type1 arg1); \
-    struct sc_task_security *tsec_current =	\			\
-      (struct sc_task_security *)(get_cured()->security); \
+    struct sc_task_security *tsec_current =	\
+      (struct sc_task_security *)(current_cred()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -29,14 +29,14 @@ int FUNCNAME(name)(type1 arg1) \
     if(acc[__KA_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		current->security =	\
+		current_cred()->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__KA_##name][group_id][0]; \
 		if(func(arg1) != 0) { \
-		  current->security = tsec_current; \
+		  current_cred()->security = tsec_current; \
 		  return -1; \
 		} \
-		current->security = tsec_current; \
+		current_cred()->security = tsec_current; \
       } \
     } \
     func = (void *)(dummy_security_ops.name); \
@@ -49,8 +49,8 @@ int FUNCNAME(name)(type1 arg1,type2 arg2) \
 {   \
     int group_id; \
     int (*func)(type1 arg1, type2 arg2); \
-    struct sc_task_security *tsec_current =	\			\
-      (struct sc_task_security *)(get_cured()->security); \
+    struct sc_task_security *tsec_current =	\
+      (struct sc_task_security *)(current_cred()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -59,14 +59,14 @@ int FUNCNAME(name)(type1 arg1,type2 arg2) \
     if(acc[__KA_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		current->security =	\
+		current_cred()->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__KA_##name][group_id][0]; \
 		if(func(arg1, arg2) != 0) { \
-		  current->security = tsec_current; \
+		  current_cred()->security = tsec_current; \
 		  return -1; \
 		} \
-		current->security = tsec_current; \
+		current_cred()->security = tsec_current; \
       } \
     } \
     func = (void *)(dummy_security_ops.name); \
@@ -79,8 +79,8 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3) \
 {   \
     int group_id; \
     int (*func)(type1 arg1, type2 arg2, type3 arg3); \
-    struct sc_task_security *tsec_current =	\			\
-      (struct sc_task_security *)(get_cured()->security); \
+    struct sc_task_security *tsec_current =	\
+      (struct sc_task_security *)(current_cred()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -89,14 +89,14 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3) \
     if(acc[__KA_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		current->security =	\
+		current_cred()->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__KA_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3) != 0) { \
-		  current->security = tsec_current; \
+		  current_cred()->security = tsec_current; \
 		  return -1; \
 		} \
-		current->security = tsec_current; \
+		current_cred()->security = tsec_current; \
       } \
     } \
     func = (void *)(dummy_security_ops.name); \
@@ -109,8 +109,8 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
 {   \
     int group_id; \
     int (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4); \
-    struct sc_task_security *tsec_current =	\			\
-      (struct sc_task_security *)(get_cured()->security); \
+    struct sc_task_security *tsec_current =	\
+      (struct sc_task_security *)(current_cred()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -119,14 +119,14 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
     if(acc[__KA_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		current->security =	\
+		current_cred()->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__KA_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3, arg4) != 0) { \
-		  current->security = tsec_current; \
+		  current_cred()->security = tsec_current; \
 		  return -1; \
 		} \
-		current->security = tsec_current; \
+		current_cred()->security = tsec_current; \
       } \
     } \
     func = (void *)(dummy_security_ops.name); \
@@ -139,8 +139,8 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
 {   \
     int group_id; \
     int (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4, type5 arg5); \
-    struct sc_task_security *tsec_current =	\			\
-      (struct sc_task_security *)(get_cured()->security); \
+    struct sc_task_security *tsec_current =	\
+      (struct sc_task_security *)(current_cred()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -149,14 +149,14 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
     if(acc[__KA_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		current->security =	\
+		current_cred()->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__KA_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3, arg4, arg5) != 0) { \
-		  current->security = tsec_current; \
+		  current_cred()->security = tsec_current; \
 		  return -1; \
 		} \
-		current->security = tsec_current; \
+		current_cred()->security = tsec_current; \
       } \
     } \
     func = (void *)(dummy_security_ops.name); \
@@ -169,8 +169,8 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6 
 {   \
     int group_id; \
     int (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4, type5 arg5, type6 arg6); \
-    struct sc_task_security *tsec_current =	\			\
-      (struct sc_task_security *)(get_cured()->security); \
+    struct sc_task_security *tsec_current =	\
+      (struct sc_task_security *)(current_cred()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -179,14 +179,14 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6 
     if(acc[__KA_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		current->security =	\
+		current_cred()->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__KA_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3, arg4, arg5, arg6) != 0) { \
-		  current->security = tsec_current; \
+		  current_cred()->security = tsec_current; \
 		  return -1; \
 		} \
-		current->security = tsec_current; \
+		current_cred()->security = tsec_current; \
       } \
     } \
     func = (void *)(dummy_security_ops.name); \
@@ -199,8 +199,8 @@ void FUNCNAME(name)() \
 {   \
     int group_id; \
     void (*func)(void); \
-    struct sc_task_security *tsec_current =	\			\
-      (struct sc_task_security *)(get_cured()->security); \
+    struct sc_task_security *tsec_current =	\
+      (struct sc_task_security *)(current_cred()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -209,14 +209,14 @@ void FUNCNAME(name)() \
     if(acc[__KA_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		current->security =	\
+		current_cred()->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__KA_##name][group_id][0]; \
 		if(func() != 0) { \
-		  current->security = tsec_current; \
+		  current_cred()->security = tsec_current; \
 		  return -1; \
 		} \
-		current->security = tsec_current; \
+		current_cred()->security = tsec_current; \
       } \
     } \
     func = (void *)(dummy_security_ops.name); \
@@ -229,8 +229,8 @@ void FUNCNAME(name)(type1 arg1) \
 {   \
     int group_id; \
     void (*func)(type1 arg1); \
-    struct sc_task_security *tsec_current =	\			\
-      (struct sc_task_security *)(get_cured()->security); \
+    struct sc_task_security *tsec_current =	\
+      (struct sc_task_security *)(current_cred()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -239,14 +239,14 @@ void FUNCNAME(name)(type1 arg1) \
     if(acc[__KA_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		current->security =	\
+		current_cred()->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__KA_##name][group_id][0]; \
 		if(func(arg1) != 0) { \
-		  current->security = tsec_current; \
+		  current_cred()->security = tsec_current; \
 		  return -1; \
 		} \
-		current->security = tsec_current; \
+		current_cred()->security = tsec_current; \
       } \
     } \
     func = (void *)(dummy_security_ops.name); \
@@ -259,8 +259,8 @@ void FUNCNAME(name)(type1 arg1,type2 arg2) \
 {   \
     int group_id; \
     void (*func)(type1 arg1, type2 arg2); \
-    struct sc_task_security *tsec_current =	\			\
-      (struct sc_task_security *)(get_cured()->security); \
+    struct sc_task_security *tsec_current =	\
+      (struct sc_task_security *)(current_cred()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -269,14 +269,14 @@ void FUNCNAME(name)(type1 arg1,type2 arg2) \
     if(acc[__KA_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		current->security =	\
+		current_cred()->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__KA_##name][group_id][0]; \
 		if(func(arg1, arg2) != 0) { \
-		  current->security = tsec_current; \
+		  current_cred()->security = tsec_current; \
 		  return -1; \
 		} \
-		current->security = tsec_current; \
+		current_cred()->security = tsec_current; \
       } \
     } \
     func = (void *)(dummy_security_ops.name); \
@@ -289,8 +289,8 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3) \
 {   \
     int group_id; \
     void (*func)(type1 arg1, type2 arg2, type3 arg3); \
-    struct sc_task_security *tsec_current =	\			\
-      (struct sc_task_security *)(get_cured()->security); \
+    struct sc_task_security *tsec_current =	\
+      (struct sc_task_security *)(current_cred()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -299,14 +299,14 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3) \
     if(acc[__KA_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		current->security =	\
+		current_cred()->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__KA_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3) != 0) { \
-		  current->security = tsec_current; \
+		  current_cred()->security = tsec_current; \
 		  return -1; \
 		} \
-		current->security = tsec_current; \
+		current_cred()->security = tsec_current; \
       } \
     } \
     func = (void *)(dummy_security_ops.name); \
@@ -319,8 +319,8 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
 {   \
     int group_id; \
     void (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4); \
-    struct sc_task_security *tsec_current =	\			\
-      (struct sc_task_security *)(get_cured()->security); \
+    struct sc_task_security *tsec_current =	\
+      (struct sc_task_security *)(current_cred()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -329,14 +329,14 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
     if(acc[__KA_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		current->security =	\
+		current_cred()->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__KA_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3, arg4) != 0) { \
-		  current->security = tsec_current; \
+		  current_cred()->security = tsec_current; \
 		  return -1; \
 		} \
-		current->security = tsec_current; \
+		current_cred()->security = tsec_current; \
       } \
     } \
     func = (void *)(dummy_security_ops.name); \
@@ -349,8 +349,8 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
 {   \
     int group_id; \
     void (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4, type5 arg5); \
-    struct sc_task_security *tsec_current =	\			\
-      (struct sc_task_security *)(get_cured()->security); \
+    struct sc_task_security *tsec_current =	\
+      (struct sc_task_security *)(current_cred()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -359,14 +359,14 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
     if(acc[__KA_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		current->security =	\
+		current_cred()->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__KA_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3, arg4, arg5) != 0) { \
-		  current->security = tsec_current; \
+		  current_cred()->security = tsec_current; \
 		  return -1; \
 		} \
-		current->security = tsec_current; \
+		current_cred()->security = tsec_current; \
       } \
     } \
     func = (void *)(dummy_security_ops.name); \
@@ -379,8 +379,8 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6
 {   \
     int group_id; \
     void (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4, type5 arg5, type6 arg6); \
-    struct sc_task_security *tsec_current =	\			\
-      (struct sc_task_security *)(get_cured()->security); \
+    struct sc_task_security *tsec_current =	\
+      (struct sc_task_security *)(current_cred()->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -389,14 +389,14 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6
     if(acc[__KA_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		current->security =	\
+		current_cred()->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__KA_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3, arg4, arg5, arg6) != 0) { \
-		  current->security = tsec_current; \
+		  current_cred()->security = tsec_current; \
 		  return -1; \
 		} \
-		current->security = tsec_current; \
+		current_cred()->security = tsec_current; \
       } \
     } \
     func = (void *)(dummy_security_ops.name); \

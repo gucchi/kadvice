@@ -71,8 +71,8 @@ void gen_body(int num_args, String type)
 {   \\
     int group_id; \\
     %s{0}; \\
-    struct sc_task_security *tsec_current =	\			\
-      (struct sc_task_security *)(get_cured()->security); \\
+    struct sc_task_security *tsec_current =	\\
+      (struct sc_task_security *)(current_cred()->security); \\
     if (tsec_current != NULL) {	\\
       group_id  = tsec_current->gid; \\
     } else { \\
@@ -81,14 +81,14 @@ void gen_body(int num_args, String type)
     if(acc[__KA_##name][group_id][0] != 0) { \\
       CHECK_MSG(name); \\
       if (tsec_current->label[group_id] != NULL) { \\
-		current->security =	\\
+		current_cred()->security =	\\
 		  (void *)(tsec_current->label[group_id]); \\
 		func = (void *)acc[__KA_##name][group_id][0]; \\
 		if(func(%s{1}) != 0) { \\
-		  current->security = tsec_current; \\
+		  current_cred()->security = tsec_current; \\
 		  return -1; \\
 		} \\
-		current->security = tsec_current; \\
+		current_cred()->security = tsec_current; \\
       } \\
     } \\
     func = (void *)(dummy_security_ops.name); \\
