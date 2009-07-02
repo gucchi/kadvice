@@ -163,9 +163,12 @@ extern struct security_operations dummy_security_ops;
 #define FUNC6INT(acc, name, type1, arg1, type2, arg2, type3, arg3, type4, arg4, type5, arg5, type6, arg6) \
   int FUNCNAME(name)(type1 arg1, type2 arg2, type3 arg3, type4 arg4, type5 arg5, type6 arg6) \
   {									\
+		    #ifdef USINGCABI					\
     struct cabi_account *cabi_ac;					\
+		    #endif						\
     int cabiid, i;							\
     int (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4, type5 arg5, type6 arg6); \
+    struct sc_task_security *tsec_current = \
     if((cabi_ac = (struct cabi_account *)(current->cabi_info)))	\
       cabiid = cabi_ac->cabi_id;\
     else 								\
