@@ -36,60 +36,60 @@ static int ka_show1(struct seq_file *m, void *p){
 }
 */
 
-#define KA_SHOW(aoid, acc, max)						\
+#define KA_SHOW(aoid, acc, max)									\
   static int ka_show##aoid(struct seq_file *m, void *p){		\
-    int n = (int)p-1;							\
-    int i;								\
-    seq_printf(m, "[%3d]", n);						\
-    for(i = 0; i < max; i++){						\
-      if((void *)acc[n][aoid][i] != NULL){				\
-	void *ptr = (void *)lsm_acc[n][aoid][i];			\
-	char symname[32];						\
-	char modname[32];						\
-	lookup_module_symbol_attrs((unsigned long)ptr, NULL, NULL, modname, symname); \
-	seq_printf(m, " %p:%s[%s] [%d]", ptr, symname, modname, i);	\
-      }									\
-    }									\
-    seq_puts(m, "\n");							\
-    return 0;								\
-  }									\
+    int n = (int)p-1;											\
+    int i;														\
+    seq_printf(m, "[%3d]", n);									\
+    for(i = 0; i < max; i++){									\
+      if((void *)acc[n][aoid][i] != NULL){						\
+		void *ptr = (void *)lsm_acc[n][aoid][i];				\
+		char symname[32];										\
+		char modname[32];												\
+		lookup_module_symbol_attrs((unsigned long)ptr, NULL, NULL, modname, symname); \
+		seq_printf(m, " %p:%s[%s] [%d]", ptr, symname, modname, i);		\
+      }																	\
+    }																	\
+    seq_puts(m, "\n");													\
+    return 0;															\
+  }																		\
 
 /* seq_file handler */
-#define CREATE_SEQ_OPS(aoid)				\
+#define CREATE_SEQ_OPS(aoid)							\
   static struct seq_operations lsmacc_seq_op##aoid = {	\
-    .start = ka_start,					\
-    .next = ka_next,					\
-    .stop = ka_stop,					\
-    .show = ka_show##aoid,				\
-  };							\
+    .start = ka_start,									\
+    .next = ka_next,									\
+    .stop = ka_stop,									\
+    .show = ka_show##aoid,								\
+  };													\
 
-#define CREATE_PROC_OPEN(aoid)						\
+#define CREATE_PROC_OPEN(aoid)											\
   static int lsmacc_proc_open##aoid(struct inode *inode, struct file *file) \
-  {									\
-    return seq_open(file, &lsmacc_seq_op##aoid);			\
-  }									\
+  {																		\
+    return seq_open(file, &lsmacc_seq_op##aoid);						\
+  }																		\
 
 /* procfs handler */
 #define CREATE_FILE_OPS(aoid)					\
   static struct file_operations lsmacc_file_ops##aoid = {	\
-    .open = lsmacc_proc_open##aoid,				\
-    .read = seq_read,						\
-    .llseek = seq_lseek,					\
-    .release = seq_release,					\
-  };								\
-
+    .open = lsmacc_proc_open##aoid,							\
+    .read = seq_read,										\
+    .llseek = seq_lseek,									\
+    .release = seq_release,									\
+  };														\
+  
 #define CREATE_ENTRY(aoid, entry, parent)		\
-  do{							\
+  do{												\
     entry = create_proc_entry(#aoid, 0666, parent);	\
-    if(entry)						\
+    if(entry)										\
       entry->proc_fops = &lsmacc_file_ops##aoid;	\
-  }while(0)						\
-
-#define REMOVE_ENTRY(aoid)			\
-  do{						\
+  }while(0)											\
+	
+#define REMOVE_ENTRY(aoid)				\
+  do{									\
     remove_proc_entry(#aoid, NULL);		\
-  }while(0)					\
-
+  }while(0)								\
+	
 
 #define CREATE_SEQ(aoid)			\
   CREATE_SEQ_OPS(aoid)				\
