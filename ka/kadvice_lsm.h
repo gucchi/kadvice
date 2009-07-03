@@ -17,7 +17,6 @@
 #include <linux/net.h>
 #include <linux/security.h>
 #include <linux/key.h>
-#include <cabi/common.h>
 
 extern int ka_check_ptrace(struct task_struct *, struct task_struct *);
 extern int ka_check_capget(struct task_struct *, kernel_cap_t *, kernel_cap_t *, kernel_cap_t *);

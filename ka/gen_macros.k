@@ -71,8 +71,9 @@ void gen_body(int num_args, String type)
 {   \\
     int group_id; \\
     %s{0}; \\
+    struct cred *cred = get_current_cred(); \\
     struct sc_task_security *tsec_current =	\\
-      (struct sc_task_security *)(current_cred()->security); \\
+      (struct sc_task_security *)(cred->security); \\
     if (tsec_current != NULL) {	\\
       group_id  = tsec_current->gid; \\
     } else { \\
@@ -81,27 +82,30 @@ void gen_body(int num_args, String type)
     if(acc[__KA_##name][group_id][0] != 0) { \\
       CHECK_MSG(name); \\
       if (tsec_current->label[group_id] != NULL) { \\
-		current_cred()->security =	\\
+		cred->security =	\\
 		  (void *)(tsec_current->label[group_id]); \\
 		func = (void *)acc[__KA_##name][group_id][0]; \\
 		if(func(%s{1}) != 0) { \\
-		  current_cred()->security = tsec_current; \\
-		  return -1; \\
+		  cred->security = tsec_current; \\
+		  return %s{2}; \\
 		} \\
-		current_cred()->security = tsec_current; \\
+		cred->security = tsec_current; \\
       } \\
     } \\
-    func = (void *)(dummy_security_ops.name); \\
     return func(%s{1}); \\
   } \\
   EXPORT_SYMBOL(ka_check_##name)
 ''';
-	String l1, l2;
+	// we ignore below statement just after the ret value;
+    //func = (void *)(dummy_security_ops.name);
+	String l1, l2, l3;
 	l2 = "";
 	if (type == 'int') {
 		l1 ="int (*func)(";
+		l3 = "-1";
 	} else if (type == 'void') {
 		l1 = "void (*func)(";
+		l3 = "";
 	} else {
 		OUT << "error" << EOL;
 		return ;
@@ -121,7 +125,8 @@ void gen_body(int num_args, String type)
 		}
 	}
 	l1 = l1 + ")";
-	line = %(line, l1, l2);
+
+	line = %(line, l1, l2, l3);
 	os << line << EOL;
 }
 	

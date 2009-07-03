@@ -6,7 +6,7 @@
 #include "ka/secops.h"
 
 #include <linux/security.h>
-#include <cabi/common.h>
+#include <linux/cred.h>
 
 #include "ka_proc.h"
 #include "ka_security_str_lsm.h"
@@ -418,7 +418,7 @@ FUNC2INT(lsm_acc, sb_umount, struct vfsmount *, mnt, int, flags);
 FUNC1VOID(lsm_acc, sb_umount_close, struct vfsmount *, mnt);
 FUNC1VOID(lsm_acc, sb_umount_busy, struct vfsmount *, mnt);
 FUNC3VOID(lsm_acc, sb_post_remount, struct vfsmount *, mnt, unsigned long, flags, void *, data);
-FUNC0VOID(lsm_acc, sb_post_mountroot, void);
+FUNC0VOID(lsm_acc, sb_post_mountroot);
 
 FUNC2VOID(lsm_acc, sb_post_addmount, struct vfsmount *, mnt, struct nameidata *, mountpoint_nd);
 FUNC2INT(lsm_acc, sb_pivotroot, struct nameidata *, old_nd, struct nameidata *, new_nd);

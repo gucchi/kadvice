@@ -6,7 +6,6 @@
 
 #include <linux/security.h>
 #include "ka/kadvice_lsm.h"
-#include "ka/resources.h"
 
 extern void securitycube_fork(struct task_struct *);
 
@@ -325,7 +324,8 @@ static int lsm_task_create(unsigned long clone_flags){
 
 static int lsm_task_alloc_security(struct task_struct * p){
   struct sc_task_security *isec = NULL;
-  if (p->security == NULL) {
+  
+  if (p->cred->security == NULL) {
     securitycube_fork(p);
   }
   return ka_check_task_alloc_security(p);

@@ -2,7 +2,7 @@
 #define __SECURITYCUBE_H
 
 #include <linux/sched.h>
-
+#include <linux/cred.h>
 #define MODEL_MAX 8
 
 struct sc_task_security {
