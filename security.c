@@ -783,7 +783,7 @@ int security_sem_semctl(struct sem_array *sma, int cmd)
 }
 
 int security_sem_semop(struct sem_array *sma, struct sembuf *sops,
-			unsigned nsops, int alter)
+			unsigned int nsops, int alter)
 {
 	return security_ops->sem_semop(sma, sops, nsops, alter);
 }
@@ -925,7 +925,7 @@ int security_sock_rcv_skb(struct sock *sk, struct sk_buff *skb)
 EXPORT_SYMBOL(security_sock_rcv_skb);
 
 int security_socket_getpeersec_stream(struct socket *sock, char __user *optval,
-				      int __user *optlen, unsigned len)
+				      int __user *optlen, unsigned int len)
 {
 	return security_ops->socket_getpeersec_stream(sock, optval, optlen, len);
 }
