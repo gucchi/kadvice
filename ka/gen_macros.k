@@ -79,12 +79,12 @@ void gen_body(int num_args, String type)
     } else { \\
       group_id = 0; \\
     } \\
-    if(acc[__KA_##name][group_id][0] != 0) { \\
+    if(acc[__SC_##name][group_id][0] != 0) { \\
       CHECK_MSG(name); \\
       if (tsec_current->label[group_id] != NULL) { \\
 		cred->security =	\\
 		  (void *)(tsec_current->label[group_id]); \\
-		func = (void *)acc[__KA_##name][group_id][0]; \\
+		func = (void *)acc[__SC_##name][group_id][0]; \\
 		if(func(%s{1}) != 0) { \\
 		  cred->security = tsec_current; \\
 		  return %s{2}; \\

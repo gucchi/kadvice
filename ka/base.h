@@ -27,12 +27,12 @@ int FUNCNAME(name)(type1 arg1) \
     } else { \
       group_id = 0; \
     } \
-    if(acc[__KA_##name][group_id][0] != 0) { \
+    if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
-		func = (void *)acc[__KA_##name][group_id][0]; \
+		func = (void *)acc[__SC_##name][group_id][0]; \
 		if(func(arg1) != 0) { \
 		  cred->security = tsec_current; \
 		  return -1; \
@@ -57,12 +57,12 @@ int FUNCNAME(name)(type1 arg1,type2 arg2) \
     } else { \
       group_id = 0; \
     } \
-    if(acc[__KA_##name][group_id][0] != 0) { \
+    if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
-		func = (void *)acc[__KA_##name][group_id][0]; \
+		func = (void *)acc[__SC_##name][group_id][0]; \
 		if(func(arg1, arg2) != 0) { \
 		  cred->security = tsec_current; \
 		  return -1; \
@@ -87,12 +87,12 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3) \
     } else { \
       group_id = 0; \
     } \
-    if(acc[__KA_##name][group_id][0] != 0) { \
+    if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
-		func = (void *)acc[__KA_##name][group_id][0]; \
+		func = (void *)acc[__SC_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3) != 0) { \
 		  cred->security = tsec_current; \
 		  return -1; \
@@ -117,12 +117,12 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
     } else { \
       group_id = 0; \
     } \
-    if(acc[__KA_##name][group_id][0] != 0) { \
+    if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
-		func = (void *)acc[__KA_##name][group_id][0]; \
+		func = (void *)acc[__SC_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3, arg4) != 0) { \
 		  cred->security = tsec_current; \
 		  return -1; \
@@ -147,12 +147,12 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
     } else { \
       group_id = 0; \
     } \
-    if(acc[__KA_##name][group_id][0] != 0) { \
+    if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
-		func = (void *)acc[__KA_##name][group_id][0]; \
+		func = (void *)acc[__SC_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3, arg4, arg5) != 0) { \
 		  cred->security = tsec_current; \
 		  return -1; \
@@ -177,12 +177,12 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6 
     } else { \
       group_id = 0; \
     } \
-    if(acc[__KA_##name][group_id][0] != 0) { \
+    if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
-		func = (void *)acc[__KA_##name][group_id][0]; \
+		func = (void *)acc[__SC_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3, arg4, arg5, arg6) != 0) { \
 		  cred->security = tsec_current; \
 		  return -1; \
@@ -207,12 +207,12 @@ void FUNCNAME(name)() \
     } else { \
       group_id = 0; \
     } \
-    if(acc[__KA_##name][group_id][0] != 0) { \
+    if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
-		func = (void *)acc[__KA_##name][group_id][0]; \
+		func = (void *)acc[__SC_##name][group_id][0]; \
 		if(func() != 0) { \
 		  cred->security = tsec_current; \
 		  return ; \
@@ -237,12 +237,12 @@ void FUNCNAME(name)(type1 arg1) \
     } else { \
       group_id = 0; \
     } \
-    if(acc[__KA_##name][group_id][0] != 0) { \
+    if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
-		func = (void *)acc[__KA_##name][group_id][0]; \
+		func = (void *)acc[__SC_##name][group_id][0]; \
 		if(func(arg1) != 0) { \
 		  cred->security = tsec_current; \
 		  return ; \
@@ -267,12 +267,12 @@ void FUNCNAME(name)(type1 arg1,type2 arg2) \
     } else { \
       group_id = 0; \
     } \
-    if(acc[__KA_##name][group_id][0] != 0) { \
+    if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
-		func = (void *)acc[__KA_##name][group_id][0]; \
+		func = (void *)acc[__SC_##name][group_id][0]; \
 		if(func(arg1, arg2) != 0) { \
 		  cred->security = tsec_current; \
 		  return ; \
@@ -297,12 +297,12 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3) \
     } else { \
       group_id = 0; \
     } \
-    if(acc[__KA_##name][group_id][0] != 0) { \
+    if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
-		func = (void *)acc[__KA_##name][group_id][0]; \
+		func = (void *)acc[__SC_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3) != 0) { \
 		  cred->security = tsec_current; \
 		  return ; \
@@ -327,12 +327,12 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
     } else { \
       group_id = 0; \
     } \
-    if(acc[__KA_##name][group_id][0] != 0) { \
+    if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
-		func = (void *)acc[__KA_##name][group_id][0]; \
+		func = (void *)acc[__SC_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3, arg4) != 0) { \
 		  cred->security = tsec_current; \
 		  return ; \
@@ -357,12 +357,12 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
     } else { \
       group_id = 0; \
     } \
-    if(acc[__KA_##name][group_id][0] != 0) { \
+    if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
-		func = (void *)acc[__KA_##name][group_id][0]; \
+		func = (void *)acc[__SC_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3, arg4, arg5) != 0) { \
 		  cred->security = tsec_current; \
 		  return ; \
@@ -387,12 +387,12 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6
     } else { \
       group_id = 0; \
     } \
-    if(acc[__KA_##name][group_id][0] != 0) { \
+    if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
-		func = (void *)acc[__KA_##name][group_id][0]; \
+		func = (void *)acc[__SC_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3, arg4, arg5, arg6) != 0) { \
 		  cred->security = tsec_current; \
 		  return ; \
