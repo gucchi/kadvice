@@ -11,7 +11,7 @@ os << '''
 extern int lookup_module_symbol_name(unsigned long, char *);
 extern int lookup_module_symbol_attrs(unsigned long, unsigned long *, unsigned long *, char *, char *);
 
-#define FUNCNAME(name) ka_check_##name
+#define FUNCNAME(name) sc_check_##name
 
 //#define CHECK
 
@@ -94,7 +94,7 @@ void gen_body(int num_args, String type)
     } \\
     return func(%s{1}); \\
   } \\
-  EXPORT_SYMBOL(ka_check_##name)
+  EXPORT_SYMBOL(sc_check_##name)
 ''';
 	// we ignore below statement just after the ret value;
     //func = (void *)(dummy_security_ops.name);

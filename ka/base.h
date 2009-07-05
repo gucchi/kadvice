@@ -3,7 +3,7 @@
 extern int lookup_module_symbol_name(unsigned long, char *);
 extern int lookup_module_symbol_attrs(unsigned long, unsigned long *, unsigned long *, char *, char *);
 
-#define FUNCNAME(name) ka_check_##name
+#define FUNCNAME(name) sc_check_##name
 
 //#define CHECK
 
@@ -42,7 +42,7 @@ int FUNCNAME(name)(type1 arg1) \
     } \
     return func(arg1); \
   } \
-  EXPORT_SYMBOL(ka_check_##name)
+  EXPORT_SYMBOL(sc_check_##name)
 
 #define FUNC2INT(acc, name,type1, arg1,type2, arg2) \
 int FUNCNAME(name)(type1 arg1,type2 arg2) \
@@ -72,7 +72,7 @@ int FUNCNAME(name)(type1 arg1,type2 arg2) \
     } \
     return func(arg1, arg2); \
   } \
-  EXPORT_SYMBOL(ka_check_##name)
+  EXPORT_SYMBOL(sc_check_##name)
 
 #define FUNC3INT(acc, name,type1, arg1,type2, arg2,type3, arg3) \
 int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3) \
@@ -102,7 +102,7 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3) \
     } \
     return func(arg1, arg2, arg3); \
   } \
-  EXPORT_SYMBOL(ka_check_##name)
+  EXPORT_SYMBOL(sc_check_##name)
 
 #define FUNC4INT(acc, name,type1, arg1,type2, arg2,type3, arg3,type4, arg4) \
 int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
@@ -132,7 +132,7 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
     } \
     return func(arg1, arg2, arg3, arg4); \
   } \
-  EXPORT_SYMBOL(ka_check_##name)
+  EXPORT_SYMBOL(sc_check_##name)
 
 #define FUNC5INT(acc, name,type1, arg1,type2, arg2,type3, arg3,type4, arg4,type5, arg5) \
 int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
@@ -162,7 +162,7 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
     } \
     return func(arg1, arg2, arg3, arg4, arg5); \
   } \
-  EXPORT_SYMBOL(ka_check_##name)
+  EXPORT_SYMBOL(sc_check_##name)
 
 #define FUNC6INT(acc, name,type1, arg1,type2, arg2,type3, arg3,type4, arg4,type5, arg5,type6, arg6) \
 int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6 arg6) \
@@ -192,7 +192,7 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6 
     } \
     return func(arg1, arg2, arg3, arg4, arg5, arg6); \
   } \
-  EXPORT_SYMBOL(ka_check_##name)
+  EXPORT_SYMBOL(sc_check_##name)
 
 #define FUNC0VOID(acc, name) \
 void FUNCNAME(name)() \
@@ -222,7 +222,7 @@ void FUNCNAME(name)() \
     } \
     return func(); \
   } \
-  EXPORT_SYMBOL(ka_check_##name)
+  EXPORT_SYMBOL(sc_check_##name)
 
 #define FUNC1VOID(acc, name,type1, arg1) \
 void FUNCNAME(name)(type1 arg1) \
@@ -252,7 +252,7 @@ void FUNCNAME(name)(type1 arg1) \
     } \
     return func(arg1); \
   } \
-  EXPORT_SYMBOL(ka_check_##name)
+  EXPORT_SYMBOL(sc_check_##name)
 
 #define FUNC2VOID(acc, name,type1, arg1,type2, arg2) \
 void FUNCNAME(name)(type1 arg1,type2 arg2) \
@@ -282,7 +282,7 @@ void FUNCNAME(name)(type1 arg1,type2 arg2) \
     } \
     return func(arg1, arg2); \
   } \
-  EXPORT_SYMBOL(ka_check_##name)
+  EXPORT_SYMBOL(sc_check_##name)
 
 #define FUNC3VOID(acc, name,type1, arg1,type2, arg2,type3, arg3) \
 void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3) \
@@ -312,7 +312,7 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3) \
     } \
     return func(arg1, arg2, arg3); \
   } \
-  EXPORT_SYMBOL(ka_check_##name)
+  EXPORT_SYMBOL(sc_check_##name)
 
 #define FUNC4VOID(acc, name,type1, arg1,type2, arg2,type3, arg3,type4, arg4) \
 void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
@@ -342,7 +342,7 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
     } \
     return func(arg1, arg2, arg3, arg4); \
   } \
-  EXPORT_SYMBOL(ka_check_##name)
+  EXPORT_SYMBOL(sc_check_##name)
 
 #define FUNC5VOID(acc, name,type1, arg1,type2, arg2,type3, arg3,type4, arg4,type5, arg5) \
 void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
@@ -372,7 +372,7 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
     } \
     return func(arg1, arg2, arg3, arg4, arg5); \
   } \
-  EXPORT_SYMBOL(ka_check_##name)
+  EXPORT_SYMBOL(sc_check_##name)
 
 #define FUNC6VOID(acc, name,type1, arg1,type2, arg2,type3, arg3,type4, arg4,type5, arg5,type6, arg6) \
 void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6 arg6) \
@@ -402,5 +402,5 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6
     } \
     return func(arg1, arg2, arg3, arg4, arg5, arg6); \
   } \
-  EXPORT_SYMBOL(ka_check_##name)
+  EXPORT_SYMBOL(sc_check_##name)
 
