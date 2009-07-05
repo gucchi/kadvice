@@ -13,7 +13,7 @@ extern int lookup_module_symbol_attrs(unsigned long, unsigned long *, unsigned l
 #define CHECK_MSG(name)
 #endif  
 
-extern struct security_operations dummy_security_ops;
+extern struct security_operations default_security_ops;
 #define FUNC1INT(acc, name,type1, arg1) \
 int FUNCNAME(name)(type1 arg1) \
 {   \
@@ -213,7 +213,10 @@ void FUNCNAME(name)() \
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__KA_##name][group_id][0]; \
-		func();					      \
+		if(func() != 0) { \
+		  cred->security = tsec_current; \
+		  return ; \
+		} \
 		cred->security = tsec_current; \
       } \
     } \
@@ -240,7 +243,10 @@ void FUNCNAME(name)(type1 arg1) \
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__KA_##name][group_id][0]; \
-		func(arg1); \
+		if(func(arg1) != 0) { \
+		  cred->security = tsec_current; \
+		  return ; \
+		} \
 		cred->security = tsec_current; \
       } \
     } \
@@ -267,7 +273,10 @@ void FUNCNAME(name)(type1 arg1,type2 arg2) \
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__KA_##name][group_id][0]; \
-		func(arg1, arg2); \
+		if(func(arg1, arg2) != 0) { \
+		  cred->security = tsec_current; \
+		  return ; \
+		} \
 		cred->security = tsec_current; \
       } \
     } \
@@ -294,7 +303,10 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3) \
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__KA_##name][group_id][0]; \
-		func(arg1, arg2, arg3); \
+		if(func(arg1, arg2, arg3) != 0) { \
+		  cred->security = tsec_current; \
+		  return ; \
+		} \
 		cred->security = tsec_current; \
       } \
     } \
@@ -320,8 +332,11 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
       if (tsec_current->label[group_id] != NULL) { \
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
-		func = (void *)acc[__KA_##name][group_id][0];	\
-		func(arg1, arg2, arg3, arg4);   \
+		func = (void *)acc[__KA_##name][group_id][0]; \
+		if(func(arg1, arg2, arg3, arg4) != 0) { \
+		  cred->security = tsec_current; \
+		  return ; \
+		} \
 		cred->security = tsec_current; \
       } \
     } \
@@ -348,7 +363,10 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__KA_##name][group_id][0]; \
-		func(arg1, arg2, arg3, arg4, arg5);      \
+		if(func(arg1, arg2, arg3, arg4, arg5) != 0) { \
+		  cred->security = tsec_current; \
+		  return ; \
+		} \
 		cred->security = tsec_current; \
       } \
     } \
@@ -375,7 +393,10 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6
 		cred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__KA_##name][group_id][0]; \
-		func(arg1, arg2, arg3, arg4, arg5, arg6);  \
+		if(func(arg1, arg2, arg3, arg4, arg5, arg6) != 0) { \
+		  cred->security = tsec_current; \
+		  return ; \
+		} \
 		cred->security = tsec_current; \
       } \
     } \

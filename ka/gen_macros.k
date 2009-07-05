@@ -21,7 +21,7 @@ extern int lookup_module_symbol_attrs(unsigned long, unsigned long *, unsigned l
 #define CHECK_MSG(name)
 #endif  
 
-extern struct security_operations dummy_security_ops;
+extern struct security_operations default_security_ops;
 ''';
 
 void gen_macroname (int num_args, String type)
