@@ -1,4 +1,5 @@
 #include "../securitycube/securitycube.h"
+//#include "kadvice_security_lsm.h"
 
 extern int lookup_module_symbol_name(unsigned long, char *);
 extern int lookup_module_symbol_attrs(unsigned long, unsigned long *, unsigned long *, char *, char *);
@@ -49,9 +50,9 @@ int FUNCNAME(name)(type1 arg1,type2 arg2) \
 {   \
     int group_id; \
     int (*func)(type1 arg1, type2 arg2); \
-    struct cred *cred = get_current_cred(); \
+    struct cred *locred = get_current_cred(); \
     struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(cred->security); \
+      (struct sc_task_security *)(locred->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -60,28 +61,29 @@ int FUNCNAME(name)(type1 arg1,type2 arg2) \
     if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		cred->security =	\
+		locred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__SC_##name][group_id][0]; \
 		if(func(arg1, arg2) != 0) { \
-		  cred->security = tsec_current; \
+		  locred->security = tsec_current; \
 		  return -1; \
 		} \
-		cred->security = tsec_current; \
+		locred->security = tsec_current; \
       } \
     } \
     return func(arg1, arg2); \
   } \
   EXPORT_SYMBOL(sc_check_##name)
 
+
 #define FUNC3INT(acc, name,type1, arg1,type2, arg2,type3, arg3) \
 int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3) \
 {   \
     int group_id; \
     int (*func)(type1 arg1, type2 arg2, type3 arg3); \
-    struct cred *cred = get_current_cred(); \
+    struct cred *locred = get_current_cred(); \
     struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(cred->security); \
+      (struct sc_task_security *)(locred->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -90,14 +92,14 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3) \
     if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		cred->security =	\
+		locred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__SC_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3) != 0) { \
-		  cred->security = tsec_current; \
+		  locred->security = tsec_current; \
 		  return -1; \
 		} \
-		cred->security = tsec_current; \
+		locred->security = tsec_current; \
       } \
     } \
     return func(arg1, arg2, arg3); \
@@ -109,9 +111,9 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
 {   \
     int group_id; \
     int (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4); \
-    struct cred *cred = get_current_cred(); \
+    struct cred *locred = get_current_cred(); \
     struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(cred->security); \
+      (struct sc_task_security *)(locred->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -120,14 +122,14 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
     if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		cred->security =	\
+		locred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__SC_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3, arg4) != 0) { \
-		  cred->security = tsec_current; \
+		  locred->security = tsec_current; \
 		  return -1; \
 		} \
-		cred->security = tsec_current; \
+		locred->security = tsec_current; \
       } \
     } \
     return func(arg1, arg2, arg3, arg4); \
@@ -139,9 +141,9 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
 {   \
     int group_id; \
     int (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4, type5 arg5); \
-    struct cred *cred = get_current_cred(); \
+    struct cred *locred = get_current_cred(); \
     struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(cred->security); \
+      (struct sc_task_security *)(locred->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -150,14 +152,14 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
     if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		cred->security =	\
+		locred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__SC_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3, arg4, arg5) != 0) { \
-		  cred->security = tsec_current; \
+		  locred->security = tsec_current; \
 		  return -1; \
 		} \
-		cred->security = tsec_current; \
+		locred->security = tsec_current; \
       } \
     } \
     return func(arg1, arg2, arg3, arg4, arg5); \
@@ -169,9 +171,9 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6 
 {   \
     int group_id; \
     int (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4, type5 arg5, type6 arg6); \
-    struct cred *cred = get_current_cred(); \
+    struct cred *locred = get_current_cred(); \
     struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(cred->security); \
+      (struct sc_task_security *)(locred->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -180,14 +182,14 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6 
     if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		cred->security =	\
+		locred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__SC_##name][group_id][0]; \
 		if(func(arg1, arg2, arg3, arg4, arg5, arg6) != 0) { \
-		  cred->security = tsec_current; \
+		  locred->security = tsec_current; \
 		  return -1; \
 		} \
-		cred->security = tsec_current; \
+		locred->security = tsec_current; \
       } \
     } \
     return func(arg1, arg2, arg3, arg4, arg5, arg6); \
@@ -199,9 +201,9 @@ void FUNCNAME(name)() \
 {   \
     int group_id; \
     void (*func)(void); \
-    struct cred *cred = get_current_cred(); \
+    struct cred *locred = get_current_cred(); \
     struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(cred->security); \
+      (struct sc_task_security *)(locred->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -210,14 +212,11 @@ void FUNCNAME(name)() \
     if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		cred->security =	\
+		locred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__SC_##name][group_id][0]; \
-		if(func() != 0) { \
-		  cred->security = tsec_current; \
-		  return ; \
-		} \
-		cred->security = tsec_current; \
+		func();\
+		locred->security = tsec_current; \
       } \
     } \
     return func(); \
@@ -229,9 +228,9 @@ void FUNCNAME(name)(type1 arg1) \
 {   \
     int group_id; \
     void (*func)(type1 arg1); \
-    struct cred *cred = get_current_cred(); \
+    struct cred *locred = get_current_cred(); \
     struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(cred->security); \
+      (struct sc_task_security *)(locred->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -240,14 +239,11 @@ void FUNCNAME(name)(type1 arg1) \
     if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		cred->security =	\
+		locred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__SC_##name][group_id][0]; \
-		if(func(arg1) != 0) { \
-		  cred->security = tsec_current; \
-		  return ; \
-		} \
-		cred->security = tsec_current; \
+		func(arg1);				      \
+		locred->security = tsec_current; \
       } \
     } \
     return func(arg1); \
@@ -259,9 +255,9 @@ void FUNCNAME(name)(type1 arg1,type2 arg2) \
 {   \
     int group_id; \
     void (*func)(type1 arg1, type2 arg2); \
-    struct cred *cred = get_current_cred(); \
+    struct cred *locred = get_current_cred(); \
     struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(cred->security); \
+      (struct sc_task_security *)(locred->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -270,14 +266,11 @@ void FUNCNAME(name)(type1 arg1,type2 arg2) \
     if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		cred->security =	\
+		locred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__SC_##name][group_id][0]; \
-		if(func(arg1, arg2) != 0) { \
-		  cred->security = tsec_current; \
-		  return ; \
-		} \
-		cred->security = tsec_current; \
+		func(arg1, arg2);     \
+		locred->security = tsec_current; \
       } \
     } \
     return func(arg1, arg2); \
@@ -289,9 +282,9 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3) \
 {   \
     int group_id; \
     void (*func)(type1 arg1, type2 arg2, type3 arg3); \
-    struct cred *cred = get_current_cred(); \
+    struct cred *locred = get_current_cred(); \
     struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(cred->security); \
+      (struct sc_task_security *)(locred->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -300,14 +293,11 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3) \
     if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		cred->security =	\
+		locred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__SC_##name][group_id][0]; \
-		if(func(arg1, arg2, arg3) != 0) { \
-		  cred->security = tsec_current; \
-		  return ; \
-		} \
-		cred->security = tsec_current; \
+		func(arg1, arg2, arg3);			      \
+		locred->security = tsec_current; \
       } \
     } \
     return func(arg1, arg2, arg3); \
@@ -319,9 +309,9 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
 {   \
     int group_id; \
     void (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4); \
-    struct cred *cred = get_current_cred(); \
+    struct cred *locred = get_current_cred(); \
     struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(cred->security); \
+      (struct sc_task_security *)(locred->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -330,14 +320,11 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
     if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		cred->security =	\
+		locred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__SC_##name][group_id][0]; \
-		if(func(arg1, arg2, arg3, arg4) != 0) { \
-		  cred->security = tsec_current; \
-		  return ; \
-		} \
-		cred->security = tsec_current; \
+		func(arg1, arg2, arg3, arg4);		      \
+		locred->security = tsec_current; \
       } \
     } \
     return func(arg1, arg2, arg3, arg4); \
@@ -349,9 +336,9 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
 {   \
     int group_id; \
     void (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4, type5 arg5); \
-    struct cred *cred = get_current_cred(); \
+    struct cred *locred = get_current_cred(); \
     struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(cred->security); \
+      (struct sc_task_security *)(locred->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -360,14 +347,11 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
     if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		cred->security =	\
+		locred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__SC_##name][group_id][0]; \
-		if(func(arg1, arg2, arg3, arg4, arg5) != 0) { \
-		  cred->security = tsec_current; \
-		  return ; \
-		} \
-		cred->security = tsec_current; \
+		func(arg1, arg2, arg3, arg4, arg5);  \
+		locred->security = tsec_current; \
       } \
     } \
     return func(arg1, arg2, arg3, arg4, arg5); \
@@ -379,9 +363,9 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6
 {   \
     int group_id; \
     void (*func)(type1 arg1, type2 arg2, type3 arg3, type4 arg4, type5 arg5, type6 arg6); \
-    struct cred *cred = get_current_cred(); \
+    struct cred *locred = get_current_cred(); \
     struct sc_task_security *tsec_current =	\
-      (struct sc_task_security *)(cred->security); \
+      (struct sc_task_security *)(locred->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
     } else { \
@@ -390,14 +374,11 @@ void FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6
     if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
       if (tsec_current->label[group_id] != NULL) { \
-		cred->security =	\
+		locred->security =	\
 		  (void *)(tsec_current->label[group_id]); \
 		func = (void *)acc[__SC_##name][group_id][0]; \
-		if(func(arg1, arg2, arg3, arg4, arg5, arg6) != 0) { \
-		  cred->security = tsec_current; \
-		  return ; \
-		} \
-		cred->security = tsec_current; \
+		func(arg1, arg2, arg3, arg4, arg5, arg6);    \
+		locred->security = tsec_current; \
       } \
     } \
     return func(arg1, arg2, arg3, arg4, arg5, arg6); \

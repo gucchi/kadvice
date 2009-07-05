@@ -388,4 +388,17 @@ int kadvice_set_selinux(int aoid, int priority){
 EXPORT_SYMBOL(kadvice_set_selinux);
 */
 
-#include "func.c"
+//FUNC3INT(lsm_acc, cred_prepare, strcut cred *, new, const struct cred *, old, gfp_t, gfp);
+
+FUNC2INT(lsm_acc, sysctl, struct ctl_table *, table, int, op);
+FUNC2INT(lsm_acc, bprm_set_creds, struct ctl_table *, table, int, op);
+FUNC1INT(lsm_acc, bprm_check_security, struct linux_binprm *, bprm);
+
+FUNC4INT(lsm_acc, path_mknod, struct path *, path, struct dentry *, dentry, int, mode, unsigned int, dev);
+FUNC3INT(lsm_acc, path_mkdir, struct path *, path, struct dentry *, dentry, int, mode);
+FUNC2INT(lsm_acc, path_rmdir, struct path *, path, struct dentry *, dentry);
+FUNC2INT(lsm_acc, path_unlink, struct path *, path, struct dentry *, dentry);
+FUNC3INT(lsm_acc, path_symlink, struct path *, path, struct dentry *, dentry, const char *, old_name);
+FUNC3INT(lsm_acc, path_link, struct dentry *, old_dentry, struct path *, new_dir, struct dentry *, new_dentry);
+FUNC4INT(lsm_acc, path_rename, struct path *, old_dir, struct dentry *, old_dentry, struct path *, new_dir, struct dentry *, new_dentry);
+FUNC3INT(lsm_acc, path_truncate, struct path *, path, loff_t, length, unsigned int, time_attrs);
