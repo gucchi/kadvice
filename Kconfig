@@ -1,4 +1,4 @@
-config SECURITY_TOMOYO
+config SECURITY_SECURITYCUBE
 	bool "SecurityCube Support"
 	depends on SECURITY
 	select SECURITYFS
