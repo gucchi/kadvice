@@ -1,6 +1,4 @@
 
-using posix.*;
-
 int main(String[] args)
 {
     

@@ -1,6 +1,7 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/security.h>
+
 #include "ka/kadvice_lsm.h"
 
 
@@ -74,7 +75,6 @@ static	int sc_path_rename (struct path *old_dir, struct dentry *old_dentry,
 {
   return sc_check_path_rename(old_dir, old_dentry, new_dir, new_dentry);
 }
-
 
 
 struct security_operations sc_security_ops = {

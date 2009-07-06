@@ -1,5 +1,5 @@
 #include "../securitycube/securitycube.h"
-//#include "kadvice_security_lsm.h"
+#include "kadvice_security_lsm.h"
 
 extern int lookup_module_symbol_name(unsigned long, char *);
 extern int lookup_module_symbol_attrs(unsigned long, unsigned long *, unsigned long *, char *, char *);
@@ -77,7 +77,7 @@ int FUNCNAME(name)(type1 arg1,type2 arg2) \
 
 
 #define FUNC3INT(acc, name,type1, arg1,type2, arg2,type3, arg3) \
-int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3) \
+int FUNCNAME(name)(type1 arg1, type2 arg2, type3 arg3) \
 {   \
     int group_id; \
     int (*func)(type1 arg1, type2 arg2, type3 arg3); \

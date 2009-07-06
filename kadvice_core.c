@@ -3,38 +3,20 @@
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 
-#include "ka/secops.h"
+//#include "ka/secops.h"
 
 #include <linux/security.h>
 #include <linux/cred.h>
 
-#include "ka_proc.h"
-#include "ka_security_str_lsm.h"
-#include "ka_def.h"
 
 #include "ka/base.h"
+#include "ka_def.h"
+#include "ka_security_str_lsm.h"
 
-unsigned long lsm_acc[LSMIDMAX + 1][AOIDMAX][FUNCMAX];
+long lsm_acc[LSMIDMAX + 1][AOIDMAX][FUNCMAX];
 
 MODULE_LICENSE("GPL");
-/*
-static int ka_show1(struct seq_file *m, void *p){
-  int n = (int)p-1;
-  int i;
-  seq_printf(m, "[%3d]", n);
-  for(i = 0; i < 8; i++){
-    if(lsm_acc[n][1][i] != NULL){
-      void *ptr = (void *)lsm_acc[n][1][i];
-      char symname[32];
-      char modname[32];
-      lookup_module_symbol_attrs((unsigned long)ptr, NULL, NULL, modname, symname);
-      seq_printf(m, " %p:%s[%s]", ptr, symname, modname);
-    }
-  }
-  seq_puts(m, "\n");
-  return 0;
-}
-*/
+
 
 #define KA_SHOW(aoid, acc, max)									\
   static int ka_show##aoid(struct seq_file *m, void *p){		\
@@ -95,6 +77,7 @@ static int ka_show1(struct seq_file *m, void *p){
   CREATE_SEQ_OPS(aoid)				\
   CREATE_PROC_OPEN(aoid)			\
   CREATE_FILE_OPS(aoid)				\
+
 
 static void *ka_start(struct seq_file *m, loff_t *pos){	
   loff_t n = *pos;						
@@ -388,8 +371,8 @@ int kadvice_set_selinux(int aoid, int priority){
 EXPORT_SYMBOL(kadvice_set_selinux);
 */
 
-//FUNC3INT(lsm_acc, cred_prepare, strcut cred *, new, const struct cred *, old, gfp_t, gfp);
 
+FUNC3INT(lsm_acc, cred_prepare, struct cred *, new, struct cred *, old, gfp_t, gfp);
 FUNC2INT(lsm_acc, sysctl, struct ctl_table *, table, int, op);
 FUNC2INT(lsm_acc, bprm_set_creds, struct ctl_table *, table, int, op);
 FUNC1INT(lsm_acc, bprm_check_security, struct linux_binprm *, bprm);
