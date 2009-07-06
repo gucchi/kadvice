@@ -1,0 +1,8 @@
+config SECURITY_TOMOYO
+	bool "SecurityCube Support"
+	depends on SECURITY
+	select SECURITYFS
+	select SECURITY_PATH
+	default n
+	help
+	  This is support security cube.
