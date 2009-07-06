@@ -73,6 +73,7 @@ static	int sc_path_link (struct dentry *old_dentry, struct path *new_dir,
 static	int sc_path_rename (struct path *old_dir, struct dentry *old_dentry,
 			    struct path *new_dir, struct dentry *new_dentry)
 {
+  printk("hi!!!\n");
   return sc_check_path_rename(old_dir, old_dentry, new_dir, new_dentry);
 }
 
@@ -93,12 +94,16 @@ struct security_operations sc_security_ops = {
   .path_link = sc_path_link,
 };
 
-static int securitycube_init(void)
+static int __init securitycube_init(void)
 {
+  if(!security_module_enable(&sc_security_ops))
+    return 0;
+
   if(register_security(&sc_security_ops)) {
 	printk(KERN_INFO "failure register\n");
   }
   printk(KERN_INFO "security cube properly registered\n");
+  
   return 0;
 }
 
@@ -107,6 +112,6 @@ static void security_exit(void)
 
 }
 
-module_init(securitycube_init);
+security_initcall(securitycube_init);
 module_exit(security_exit);
 EXPORT_SYMBOL(sc_security_ops);

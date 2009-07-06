@@ -79,6 +79,7 @@ int FUNCNAME(name)(type1 arg1,type2 arg2) \
 #define FUNC3INT(acc, name,type1, arg1,type2, arg2,type3, arg3) \
 int FUNCNAME(name)(type1 arg1, type2 arg2, type3 arg3) \
 {   \
+  printk("shinpei!!\n");			\
     int group_id; \
     int (*func)(type1 arg1, type2 arg2, type3 arg3); \
     struct cred *locred = get_current_cred(); \
