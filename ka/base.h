@@ -79,7 +79,6 @@ int FUNCNAME(name)(type1 arg1,type2 arg2) \
 #define FUNC3INT(acc, name,type1, arg1,type2, arg2,type3, arg3) \
 int FUNCNAME(name)(type1 arg1, type2 arg2, type3 arg3) \
 {   \
-  printk("shinpei!!\n");			\
     int group_id; \
     int (*func)(type1 arg1, type2 arg2, type3 arg3); \
     struct cred *locred = get_current_cred(); \
@@ -101,7 +100,7 @@ int FUNCNAME(name)(type1 arg1, type2 arg2, type3 arg3) \
 		  return -1; \
 		} \
 		locred->security = tsec_current; \
-      } \
+      }					 \
     } \
     return func(arg1, arg2, arg3); \
   } \
@@ -119,6 +118,7 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
       group_id  = tsec_current->gid; \
     } else { \
       group_id = 0; \
+      return 0; \
     } \
     if(acc[__SC_##name][group_id][0] != 0) { \
       CHECK_MSG(name); \
@@ -131,7 +131,9 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
 		  return -1; \
 		} \
 		locred->security = tsec_current; \
-      } \
+      }					 \
+    } else { \
+      return 0;					\
     } \
     return func(arg1, arg2, arg3, arg4); \
   } \

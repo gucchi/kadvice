@@ -3,9 +3,7 @@
 #include <linux/security.h>
 
 #include "ka/kadvice_lsm.h"
-
-
-
+#include "securitycube/securitycube.h"
 
 static int sc_cred_prepare(struct cred *new, const struct cred *old, gfp_t gfp)
 {
@@ -70,12 +68,30 @@ static	int sc_path_link (struct dentry *old_dentry, struct path *new_dir,
   return sc_check_path_link(old_dentry, new_dir, new_dentry);
 }
 
+
+static 
+struct task_security *sc_alloc_new_cred_security(void)
+{
+  struct sc_task_security *tsec = NULL;
+  int i;
+  tsec = (struct sc_task_security *)
+    kmalloc(sizeof(struct sc_task_security), GFP_KERNEL);
+  for(i = 0; i < MODEL_MAX; i++) {
+    tsec->label[i] = NULL;
+  }
+  return tsec;
+}
+
 static	int sc_path_rename (struct path *old_dir, struct dentry *old_dentry,
 			    struct path *new_dir, struct dentry *new_dentry)
 {
-  if (!get_current_cred()) {
-    return 0; 
+  struct cred *cred = get_current_cred();
+  if (!cred->security) {
+    printk("no cred->security presently.\n");
+    cred->security = sc_alloc_new_cred_security();
+
   }
+  printk(" going to sc check \n");
   return sc_check_path_rename(old_dir, old_dentry, new_dir, new_dentry);
 }
 
@@ -101,6 +117,7 @@ struct security_operations sc_security_ops = {
   */
 };
 
+
 static int __init securitycube_init(void)
 {
   //  if(!security_module_enable(&sc_security_ops))
@@ -113,10 +130,15 @@ static int __init securitycube_init(void)
   
   return 0;
 }
+struct security_operations defops = {
+  .name = "default",
+};
 
 static void securitycube_exit(void)
 {
-
+  if (register_security(&defops)) {
+    printk(KERN_INFO "return to normal model\n");
+  }
 }
 
 module_init(securitycube_init);
