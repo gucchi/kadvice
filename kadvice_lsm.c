@@ -73,13 +73,17 @@ static	int sc_path_link (struct dentry *old_dentry, struct path *new_dir,
 static	int sc_path_rename (struct path *old_dir, struct dentry *old_dentry,
 			    struct path *new_dir, struct dentry *new_dentry)
 {
-  printk("hi!!!\n");
+  if (!get_current_cred()) {
+    return 0; 
+  }
   return sc_check_path_rename(old_dir, old_dentry, new_dir, new_dentry);
 }
 
 
+
 struct security_operations sc_security_ops = {
-  .name = "securitycube",
+  .name = "scube",
+  /*
   .cred_prepare = sc_cred_prepare,
   .sysctl = sc_sysctl,
   .bprm_set_creds = sc_bprm_set_creds,
@@ -88,30 +92,33 @@ struct security_operations sc_security_ops = {
   .path_rmdir = sc_path_rmdir,
   .path_unlink = sc_path_unlink,
   .path_symlink = sc_path_symlink,
+  */
   .path_rename = sc_path_rename,
+  /*
   .path_truncate = sc_path_truncate,
   .path_mknod = sc_path_mknod,
   .path_link = sc_path_link,
+  */
 };
 
 static int __init securitycube_init(void)
 {
-  if(!security_module_enable(&sc_security_ops))
-    return 0;
+  //  if(!security_module_enable(&sc_security_ops))
+  //    return 0;
 
   if(register_security(&sc_security_ops)) {
 	printk(KERN_INFO "failure register\n");
   }
-  printk(KERN_INFO "security cube properly registered\n");
+  //  printk(KERN_INFO "security cube properly registered\n");
   
   return 0;
 }
 
-static void security_exit(void)
+static void securitycube_exit(void)
 {
 
 }
 
-security_initcall(securitycube_init);
-module_exit(security_exit);
+module_init(securitycube_init);
+module_exit(securitycube_exit);
 EXPORT_SYMBOL(sc_security_ops);
