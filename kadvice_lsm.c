@@ -77,6 +77,7 @@ struct task_security *sc_alloc_new_cred_security(void)
   tsec = (struct sc_task_security *)
     kmalloc(sizeof(struct sc_task_security), GFP_KERNEL);
   for(i = 0; i < MODEL_MAX; i++) {
+    tsec->gid = 0;
     tsec->label[i] = NULL;
   }
   return tsec;
@@ -130,15 +131,13 @@ static int __init securitycube_init(void)
   
   return 0;
 }
-struct security_operations defops = {
-  .name = "default",
-};
 
+extern struct security_operations default_security_ops;
 static void securitycube_exit(void)
 {
-  if (register_security(&defops)) {
-    printk(KERN_INFO "return to normal model\n");
-  }
+  // if (register_security(&defops)) {
+  //    printk(KERN_INFO "return to normal model\n");
+  //  }
 }
 
 module_init(securitycube_init);

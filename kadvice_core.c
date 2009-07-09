@@ -171,20 +171,21 @@ int ka_check_inode_permission(struct inode * inode, int mask, struct nameidata *
 EXPORT_SYMBOL(ka_check_inode_permission);
 */
 
-int kadvice_register_advice(int aoid, int lsmid, void *func, int priority){
+int kadvice_register_advice(int gid, int lsmid, void *func, int priority){
   int i = priority;
-  if(lsm_acc[lsmid][aoid][priority] == 0){
-    lsm_acc[lsmid][aoid][priority] = (unsigned long)func;
-     //    printk("register advice lsmid:%d aoid:%d [%d] %p\n", lsmid, aoid, i, func);
+  if(lsm_acc[lsmid][gid][priority] == 0){
+    lsm_acc[lsmid][gid][priority] = (unsigned long)func;
+    printk("register advice lsmid:%d gid:%d [%d] %p\n", lsmid, gid, i, func);
     return 0;
   }
-  for(i += 1; i < 8; i++){
-    if(lsm_acc[lsmid][aoid][i] == 0){
-      lsm_acc[lsmid][aoid][i] = (unsigned long)func;
-      //printk("register advice lsmid:%d aoid:%d [%d] %p\n", lsmid, aoid, i, func);
+  /*  for(i += 1; i < 8; i++){
+    if(lsm_acc[lsmid][gid][i] == 0){
+      lsm_acc[lsmid][gid][i] = (unsigned long)func;
+      //printk("register advice lsmid:%d gid:%d [%d] %p\n", lsmid, gid, i, func);
       return 0;
     }
-  }
+    }*/
+
   return -1;
 }
 

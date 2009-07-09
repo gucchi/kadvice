@@ -72,17 +72,19 @@ int sample_inode_link(struct dentry *old_dentry, struct inode *dir, struct dentr
   return 0;
 }
 
-int sample_inode_rename(struct inode *old_dir, struct dentry * old_dentry, struct inode *new_dir, struct dentry * new_dentry)
+int sample_path_rename(struct path *old_dir, struct dentry *old_dentry,
+		       struct path *new_dir, struct dentry *new_dentry)
 {
-  struct ka_sample_isec *isec;
-  printk("rename:%s %p\n", old_dentry->d_name.name, old_dentry->d_inode->i_security);
-  isec = old_dentry->d_inode->i_security;
-  if (isec != NULL) {
-    printk("security %p %d\n", isec, isec->permission);
-    isec->permission = 1;
-    return 0;
-  }
-  return 1;
+  //  struct ka_sample_isec *isec;
+  //  printk("rename:%s %p\n", old_dentry->d_name.name, old_dentry->d_inode->i_security);
+  //  isec = old_dentry->d_inode->i_security;
+  //  if (isec != NULL) {
+  //    printk("security %p %d\n", isec, isec->permission);
+  //    isec->permission = 1;
+  //    return 0;
+  //  }
+  printk("security\n");
+  return 0;
 }
 
 int sample_inode_alloc_security(struct inode *inode)
