@@ -1,5 +1,0 @@
-#!/bin/sh
-insmod kadvice.ko
-insmod kadvice_lsm.ko
-insmod kadvice_proc_write.ko
-
