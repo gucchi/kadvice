@@ -8,139 +8,82 @@
 
 
 static  int sc_ptrace_may_access(struct task_struct *child,
-
 					     unsigned int mode)
-
 {
-
 	/* return cap_ptrace_may_access(child, mode); */
 	return sc_check_ptrace_may_access(child,mode);
 }
 
-
-
 static  int sc_ptrace_traceme(struct task_struct *parent)
-
 {
-
 	/* return cap_ptrace_traceme(parent); */
 	return sc_check_ptrace_traceme(parent);
 }
 
-
-
 static  int sc_capget(struct task_struct *target,
-
 				   kernel_cap_t *effective,
-
 				   kernel_cap_t *inheritable,
-
 				   kernel_cap_t *permitted)
-
 {
-
 	/* return cap_capget(target, effective, inheritable, permitted); */
 	return sc_check_capget(target,effective,inheritable,permitted);
 }
 
-
-
 static  int sc_capset(struct cred *new,
-
 				   const struct cred *old,
-
 				   const kernel_cap_t *effective,
-
 				   const kernel_cap_t *inheritable,
-
 				   const kernel_cap_t *permitted)
-
 {
-
 	/* return cap_capset(new, old, effective, inheritable, permitted); */
 	return sc_check_capset(new,old,effective,inheritable,permitted);
 }
 
-
-
 static  int sc_capable(int cap)
-
 {
-
 	/* return cap_capable(current, current_cred(), cap, SECURITY_CAP_AUDIT); */
 	return sc_check_capable(cap);
 }
 
-
-
 static  int sc_real_capable(struct task_struct *tsk, int cap)
-
 {
-
 	int ret;
-
-
-
 	rcu_read_lock();
-
 	ret = cap_capable(tsk, __task_cred(tsk), cap, SECURITY_CAP_AUDIT);
-
 	rcu_read_unlock();
-
 	/* return ret; */
 	return sc_check_real_capable(tsk,cap);
 }
-
-
 
 static 
-
 int security_real_capable_noaudit(struct task_struct *tsk, int cap)
-
 {
-
 	int ret;
 
-
-
 	rcu_read_lock();
-
 	ret = cap_capable(tsk, __task_cred(tsk), cap,
-
 			       SECURITY_CAP_NOAUDIT);
-
 	rcu_read_unlock();
 
 	/* return ret; */
 	return sc_check_real_capable(tsk,cap);
 }
 
-
-
 static  int sc_acct(struct file *file)
-
 {
-
 	return sc_check_acct(file);
 }
 
-
-
 static  int sc_sysctl(struct ctl_table *table, int op)
-
 {
-
 	return sc_check_sysctl(table,op);
 }
 
 
 
 static  int sc_quotactl(int cmds, int type, int id,
-
 				     struct super_block *sb)
-
 {
-
 	return sc_check_quotactl(cmds,type,id,sb);
 }
 
@@ -1111,11 +1054,10 @@ static  void sc_ipc_getsecid(struct kern_ipc_perm *ipcp, u32 *secid)
 
 
 
-static  int sc_msg_msg_alloc(struct msg_msg *msg)
-
+static  int sc_msg_msg_alloc_security(struct msg_msg *msg)
 {
 
-	return sc_check_msg_msg_alloc(msg);
+	return sc_check_msg_msg_alloc_security(msg);
 }
 
 
