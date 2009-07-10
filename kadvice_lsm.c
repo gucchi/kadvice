@@ -2,1860 +2,555 @@
 #include <linux/kernel.h>
 #include <linux/security.h>
 
-
 #include "ka/kadvice_lsm.h"
 #include "securitycube/securitycube.h"
 
 
-static  int sc_ptrace_may_access(struct task_struct *child,
-					     unsigned int mode)
-{
-	/* return cap_ptrace_may_access(child, mode); */
-	return sc_check_ptrace_may_access(child,mode);
-}
 
-static  int sc_ptrace_traceme(struct task_struct *parent)
-{
-	/* return cap_ptrace_traceme(parent); */
-	return sc_check_ptrace_traceme(parent);
+static int sc_ptrace_may_access(struct task_struct * child,unsigned int mode)
+{	return sc_check_ptrace_may_access( child, mode);
 }
 
-static  int sc_capget(struct task_struct *target,
-				   kernel_cap_t *effective,
-				   kernel_cap_t *inheritable,
-				   kernel_cap_t *permitted)
-{
-	/* return cap_capget(target, effective, inheritable, permitted); */
-	return sc_check_capget(target,effective,inheritable,permitted);
+static int sc_ptrace_traceme(struct task_struct * parent)
+{	return sc_check_ptrace_traceme( parent);
 }
-
-static  int sc_capset(struct cred *new,
-				   const struct cred *old,
-				   const kernel_cap_t *effective,
-				   const kernel_cap_t *inheritable,
-				   const kernel_cap_t *permitted)
-{
-	/* return cap_capset(new, old, effective, inheritable, permitted); */
-	return sc_check_capset(new,old,effective,inheritable,permitted);
+static int sc_capget(struct task_struct * target,kernel_cap_t * effective,kernel_cap_t * inheritable,kernel_cap_t * permitted)
+{	return sc_check_capget( target, effective, inheritable, permitted);
 }
-
-static  int sc_capable(int cap)
-{
-	/* return cap_capable(current, current_cred(), cap, SECURITY_CAP_AUDIT); */
-	return sc_check_capable(cap);
+static int sc_capset(struct cred * new,const struct cred * old,const kernel_cap_t * effective,const kernel_cap_t * inheritable,const kernel_cap_t * permitted)
+{	return sc_check_capset( new, old, effective, inheritable, permitted);
 }
-
-static  int sc_real_capable(struct task_struct *tsk, int cap)
-{
-	int ret;
-	rcu_read_lock();
-	ret = cap_capable(tsk, __task_cred(tsk), cap, SECURITY_CAP_AUDIT);
-	rcu_read_unlock();
-	/* return ret; */
-	return sc_check_real_capable(tsk,cap);
+static int sc_capable(struct task_struct * tsk,const struct cred * cred,int cap,int audit)
+{	return sc_check_capable( tsk, cred, cap, audit);
 }
-
-static 
-int security_real_capable_noaudit(struct task_struct *tsk, int cap)
-{
-	int ret;
-
-	rcu_read_lock();
-	ret = cap_capable(tsk, __task_cred(tsk), cap,
-			       SECURITY_CAP_NOAUDIT);
-	rcu_read_unlock();
-
-	/* return ret; */
-	return sc_check_real_capable(tsk,cap);
+static int sc_acct(struct file * file)
+{	return sc_check_acct( file);
 }
-
-static  int sc_acct(struct file *file)
-{
-	return sc_check_acct(file);
+static int sc_sysctl(struct ctl_table * table,int op)
+{	return sc_check_sysctl( table, op);
 }
-
-static  int sc_sysctl(struct ctl_table *table, int op)
-{
-	return sc_check_sysctl(table,op);
+static int sc_quotactl(int cmds,int type,int id,struct super_block * sb)
+{	return sc_check_quotactl( cmds, type, id, sb);
 }
-
-
-
-static  int sc_quotactl(int cmds, int type, int id,
-				     struct super_block *sb)
-{
-	return sc_check_quotactl(cmds,type,id,sb);
+static int sc_quota_on(struct dentry * dentry)
+{	return sc_check_quota_on( dentry);
 }
-
-
-
-static  int sc_quota_on(struct dentry *dentry)
-
-{
-
-	return sc_check_quota_on(dentry);
+static int sc_syslog(int type)
+{	return sc_check_syslog( type);
 }
-
-
-
-static  int sc_syslog(int type)
-
-{
-
-	/* return cap_syslog(type); */
-	return sc_check_syslog(type);
+static int sc_settime(struct timespec * ts,struct timezone * tz)
+{	return sc_check_settime( ts, tz);
 }
-
-
-
-static  int sc_settime(struct timespec *ts, struct timezone *tz)
-
-{
-
-	/* return cap_settime(ts, tz); */
-	return sc_check_settime(ts,tz);
+static int sc_vm_enough_memory(struct mm_struct * mm,long pages)
+{	return sc_check_vm_enough_memory( mm, pages);
 }
-
-
-
-static  int sc_vm_enough_memory(struct long pages)
-
-{
-	WARN_ON(current->mm == NULL);
-	/* return cap_vm_enough_memory(current->mm, pages); */
-	return sc_check_vm_enough_memory(current->mm, pages);
+static int sc_bprm_set_creds(struct linux_binprm * bprm)
+{	return sc_check_bprm_set_creds( bprm);
 }
-
-
-
-static  int sc_vm_enough_memory_mm(struct mm_struct *mm, long pages)
-
-{
-
-	WARN_ON(mm == NULL);
-
-	/* return cap_vm_enough_memory(mm, pages); */
-	return sc_check_vm_enough_memory_mm(mm,pages);
+static int sc_bprm_check_security(struct linux_binprm * bprm)
+{	return sc_check_bprm_check_security( bprm);
 }
-
-
-
-static  int sc_vm_enough_memory_kern(long pages)
-
-{
-
-	/* If current->mm is a kernel thread then we will pass NULL,
-
-	   for this specific case that is fine */
-
-	/* return cap_vm_enough_memory(current->mm, pages); */
-	return sc_check_vm_enough_memory_kern(pages);
+static int sc_bprm_secureexec(struct linux_binprm * bprm)
+{	return sc_check_bprm_secureexec( bprm);
 }
-
-
-
-static  int sc_bprm_set_creds(struct linux_binprm *bprm)
-
-{
-
-	/* return cap_bprm_set_creds(bprm); */
-	return sc_check_bprm_set_creds(bprm);
+static void sc_bprm_committing_creds(struct linux_binprm * bprm)
+{	return sc_check_bprm_committing_creds( bprm);
 }
-
-
-
-static  int sc_bprm_check(struct linux_binprm *bprm)
-
-{
-
-	return sc_check_bprm_check(bprm);
+static void sc_bprm_committed_creds(struct linux_binprm * bprm)
+{	return sc_check_bprm_committed_creds( bprm);
 }
-
-
-
-static  void sc_bprm_committing_creds(struct linux_binprm *bprm)
-
-{
-	return sc_check_bprm_committing_creds(bprm);
+static int sc_sb_alloc_security(struct super_block * sb)
+{	return sc_check_sb_alloc_security( sb);
 }
-
-
-
-static  void sc_bprm_committed_creds(struct linux_binprm *bprm)
-
-{
-	return sc_check_bprm_committed_creds(bprm);
+static void sc_sb_free_security(struct super_block * sb)
+{	return sc_check_sb_free_security( sb);
 }
-
-
-
-static  int sc_bprm_secureexec(struct linux_binprm *bprm)
-
-{
-
-	/* return cap_bprm_secureexec(bprm); */
-	return sc_check_bprm_secureexec(bprm);
+static int sc_sb_copy_data(char * orig,char * copy)
+{	return sc_check_sb_copy_data( orig, copy);
 }
-
-
-
-static  int sc_sb_alloc(struct super_block *sb)
-
-{
-
-	return sc_check_sb_alloc(sb);
+static int sc_sb_kern_mount(struct super_block * sb,int flags,void * data)
+{	return sc_check_sb_kern_mount( sb, flags, data);
 }
-
-
-
-static  void sc_sb_free(struct super_block *sb)
-
-{	return sc_check_sb_free(sb);}
-
-
-static  int sc_sb_copy_data(char *orig, char *copy)
-
-{
-
-	return sc_check_sb_copy_data(orig,copy);
+static int sc_sb_show_options(struct seq_file * m,struct super_block * sb)
+{	return sc_check_sb_show_options( m, sb);
 }
-
-
-
-static  int sc_sb_kern_mount(struct super_block *sb, int flags, void *data)
-
-{
-
-	return sc_check_sb_kern_mount(sb,flags,data);
+static int sc_sb_statfs(struct dentry * dentry)
+{	return sc_check_sb_statfs( dentry);
 }
-
-
-
-static  int sc_sb_show_options(struct seq_file *m,
-
-					   struct super_block *sb)
-
-{
-
-	return sc_check_sb_show_options(m,sb);
+static int sc_sb_mount(char * dev_name,struct path * path,char * type,unsigned long flags,void * data)
+{	return sc_check_sb_mount( dev_name, path, type, flags, data);
 }
-
-
-
-static  int sc_sb_statfs(struct dentry *dentry)
-
-{
-
-	return sc_check_sb_statfs(dentry);
+static int sc_sb_check_sb(struct vfsmount * mnt,struct path * path)
+{	return sc_check_sb_check_sb( mnt, path);
 }
-
-
-
-static  int sc_sb_mount(char *dev_name, struct path *path,
-
-				    char *type, unsigned long flags,
-
-				    void *data)
-
-{
-
-	return sc_check_sb_mount(dev_name,path,type,flags,data);
+static int sc_sb_umount(struct vfsmount * mnt,int flags)
+{	return sc_check_sb_umount( mnt, flags);
 }
-
-
-
-static  int sc_sb_check_sb(struct vfsmount *mnt,
-
-				       struct path *path)
-
-{
-
-	return sc_check_sb_check_sb(mnt,path);
+static void sc_sb_umount_close(struct vfsmount * mnt)
+{	return sc_check_sb_umount_close( mnt);
 }
-
-
-
-static  int sc_sb_umount(struct vfsmount *mnt, int flags)
-
-{
-
-	return sc_check_sb_umount(mnt,flags);
+static void sc_sb_umount_busy(struct vfsmount * mnt)
+{	return sc_check_sb_umount_busy( mnt);
 }
-
-
-
-static  void sc_sb_umount_close(struct vfsmount *mnt)
-
-{	return sc_check_sb_umount_close(mnt);}
-
-
-static  void sc_sb_umount_busy(struct vfsmount *mnt)
-
-{	return sc_check_sb_umount_busy(mnt);}
-
-
-static  void sc_sb_post_remount(struct vfsmount *mnt,
-
-					     unsigned long flags, void *data)
-
-{	return sc_check_sb_post_remount(mnt,flags,data);}
-
-
-static  void sc_sb_post_addmount(struct vfsmount *mnt,
-
-					     struct path *mountpoint)
-
-{	return sc_check_sb_post_addmount(mnt,mountpoint);}
-
-
-static  int sc_sb_pivotroot(struct path *old_path,
-
-					struct path *new_path)
-
-{
-
-	return sc_check_sb_pivotroot(old_path,new_path);
+static void sc_sb_post_remount(struct vfsmount * mnt,unsigned long flags,void * data)
+{	return sc_check_sb_post_remount( mnt, flags, data);
 }
-
-
-
-static  void sc_sb_post_pivotroot(struct path *old_path,
-
-					      struct path *new_path)
-
-{	return sc_check_sb_post_pivotroot(old_path,new_path);}
-
-
-static  int sc_sb_set_mnt_opts(struct super_block *sb,
-
-					   struct security_mnt_opts *opts)
-
-{
-
-	return sc_check_sb_set_mnt_opts(sb,opts);
+static void sc_sb_post_addmount(struct vfsmount * mnt,struct path * mountpoint)
+{	return sc_check_sb_post_addmount( mnt, mountpoint);
 }
-
-
-
-static  void sc_sb_clone_mnt_opts(const struct super_block *oldsb,
-
-					      struct super_block *newsb)
-
-{	return sc_check_sb_clone_mnt_opts(oldsb,newsb);}
-
-
-static  int sc_sb_parse_opts_str(char *options, struct sc_mnt_opts *opts)
-
-{
-
-	return sc_check_sb_parse_opts_str(options,opts);
+static int sc_sb_pivotroot(struct path * old_path,struct path * new_path)
+{	return sc_check_sb_pivotroot( old_path, new_path);
 }
-
-
-
-static  int sc_inode_alloc(struct inode *inode)
-
-{
-
-	return sc_check_inode_alloc(inode);
+static void sc_sb_post_pivotroot(struct path * old_path,struct path * new_path)
+{	return sc_check_sb_post_pivotroot( old_path, new_path);
 }
-
-
-
-static  void sc_inode_free(struct inode *inode)
-
-{	return sc_check_inode_free(inode);}
-
-
-static  int sc_inode_init_security(struct inode *inode,
-
-						struct inode *dir,
-
-						char **name,
-
-						void **value,
-
-						size_t *len)
-
-{
-
-	/* return -EOPNOTSUPP; */
-	return sc_check_inode_init_security(inode,dir,name,value,len);
+static int sc_sb_set_mnt_opts(struct super_block * sb,struct security_mnt_opts * opts)
+{	return sc_check_sb_set_mnt_opts( sb, opts);
 }
-
-
-
-static  int sc_inode_create(struct inode *dir,
-
-					 struct dentry *dentry,
-
-					 int mode)
-
-{
-
-	return sc_check_inode_create(dir,dentry,mode);
+static void sc_sb_clone_mnt_opts(const struct super_block * oldsb,struct super_block * newsb)
+{	return sc_check_sb_clone_mnt_opts( oldsb, newsb);
 }
-
-
-
-static  int sc_inode_link(struct dentry *old_dentry,
-
-				       struct inode *dir,
-
-				       struct dentry *new_dentry)
-
-{
-
-	return sc_check_inode_link(old_dentry,dir,new_dentry);
+static int sc_sb_parse_opts_str(char * options,struct security_mnt_opts * opts)
+{	return sc_check_sb_parse_opts_str( options, opts);
 }
-
-
-
-static  int sc_inode_unlink(struct inode *dir,
-
-					 struct dentry *dentry)
-
-{
-
-	return sc_check_inode_unlink(dir,dentry);
+static int sc_path_unlink(struct path * dir,struct dentry * dentry)
+{	return sc_check_path_unlink( dir, dentry);
 }
-
-
-
-static  int sc_inode_symlink(struct inode *dir,
-
-					  struct dentry *dentry,
-
-					  const char *old_name)
-
-{
-
-	return sc_check_inode_symlink(dir,dentry,old_name);
+static int sc_path_mkdir(struct path * dir,struct dentry * dentry,int mode)
+{	return sc_check_path_mkdir( dir, dentry, mode);
 }
-
-
-
-static  int sc_inode_mkdir(struct inode *dir,
-
-					struct dentry *dentry,
-
-					int mode)
-
-{
-
-	return sc_check_inode_mkdir(dir,dentry,mode);
+static int sc_path_rmdir(struct path * dir,struct dentry * dentry)
+{	return sc_check_path_rmdir( dir, dentry);
 }
-
-
-
-static  int sc_inode_rmdir(struct inode *dir,
-
-					struct dentry *dentry)
-
-{
-
-	return sc_check_inode_rmdir(dir,dentry);
+static int sc_path_mknod(struct path * dir,struct dentry * dentry,int mode,unsigned int dev)
+{	return sc_check_path_mknod( dir, dentry, mode, dev);
 }
-
-
-
-static  int sc_inode_mknod(struct inode *dir,
-
-					struct dentry *dentry,
-
-					int mode, dev_t dev)
-
-{
-
-	return sc_check_inode_mknod(dir,dentry,mode,dev);
+static int sc_path_truncate(struct path * path,loff_t length,unsigned int time_attrs)
+{	return sc_check_path_truncate( path, length, time_attrs);
 }
-
-
-
-static  int sc_inode_rename(struct inode *old_dir,
-
-					 struct dentry *old_dentry,
-
-					 struct inode *new_dir,
-
-					 struct dentry *new_dentry)
-
-{
-
-	return sc_check_inode_rename(old_dir,old_dentry,new_dir,new_dentry);
+static int sc_path_symlink(struct path * dir,struct dentry * dentry,const char * old_name)
+{	return sc_check_path_symlink( dir, dentry, old_name);
 }
-
-
-
-static  int sc_inode_readlink(struct dentry *dentry)
-
-{
-
-	return sc_check_inode_readlink(dentry);
+static int sc_path_link(struct dentry * old_dentry,struct path * new_dir,struct dentry * new_dentry)
+{	return sc_check_path_link( old_dentry, new_dir, new_dentry);
 }
-
-
-
-static  int sc_inode_follow_link(struct dentry *dentry,
-
-					      struct nameidata *nd)
-
-{
-
-	return sc_check_inode_follow_link(dentry,nd);
+static int sc_path_rename(struct path * old_dir,struct dentry * old_dentry,struct path * new_dir,struct dentry * new_dentry)
+{	return sc_check_path_rename( old_dir, old_dentry, new_dir, new_dentry);
 }
-
-
-
-static  int sc_inode_permission(struct inode *inode, int mask)
-
-{
-
-	return sc_check_inode_permission(inode,mask);
+static int sc_inode_alloc_security(struct inode * inode)
+{	return sc_check_inode_alloc_security( inode);
 }
-
-
-
-static  int sc_inode_setattr(struct dentry *dentry,
-
-					  struct iattr *attr)
-
-{
-
-	return sc_check_inode_setattr(dentry,attr);
+static void sc_inode_free_security(struct inode * inode)
+{	return sc_check_inode_free_security( inode);
 }
-
-
-
-static  int sc_inode_getattr(struct vfsmount *mnt,
-
-					  struct dentry *dentry)
-
-{
-
-	return sc_check_inode_getattr(mnt,dentry);
+static int sc_inode_init_security(struct inode * inode,struct inode * dir,char ** name,void ** value,size_t * len)
+{	return sc_check_inode_init_security( inode, dir, name, value, len);
 }
-
-
-
-static  void sc_inode_delete(struct inode *inode)
-
-{	return sc_check_inode_delete(inode);}
-
-
-static  int sc_inode_setxattr(struct dentry *dentry,
-
-		const char *name, const void *value, size_t size, int flags)
-
-{
-
-	/* return cap_inode_setxattr(dentry, name, value, size, flags); */
-	return sc_check_inode_setxattr(dentry,name,value,size,flags);
+static int sc_inode_create(struct inode * dir,struct dentry * dentry,int mode)
+{	return sc_check_inode_create( dir, dentry, mode);
 }
-
-
-
-static  void sc_inode_post_setxattr(struct dentry *dentry,
-
-		const char *name, const void *value, size_t size, int flags)
-
-{	return sc_check_inode_post_setxattr(dentry,name,value,size,flags);}
-
-
-static  int sc_inode_getxattr(struct dentry *dentry,
-
-			const char *name)
-
-{
-
-	return sc_check_inode_getxattr(dentry,name);
+static int sc_inode_link(struct dentry * old_dentry,struct inode * dir,struct dentry * new_dentry)
+{	return sc_check_inode_link( old_dentry, dir, new_dentry);
 }
-
-
-
-static  int sc_inode_listxattr(struct dentry *dentry)
-
-{
-
-	return sc_check_inode_listxattr(dentry);
+static int sc_inode_unlink(struct inode * dir,struct dentry * dentry)
+{	return sc_check_inode_unlink( dir, dentry);
 }
-
-
-
-static  int sc_inode_removexattr(struct dentry *dentry,
-
-			const char *name)
-
-{
-
-	/* return cap_inode_removexattr(dentry, name); */
-	return sc_check_inode_removexattr(dentry,name);
+static int sc_inode_symlink(struct inode * dir,struct dentry * dentry,const char * old_name)
+{	return sc_check_inode_symlink( dir, dentry, old_name);
 }
-
-
-
-static  int sc_inode_need_killpriv(struct dentry *dentry)
-
-{
-
-	/* return cap_inode_need_killpriv(dentry); */
-	return sc_check_inode_need_killpriv(dentry);
+static int sc_inode_mkdir(struct inode * dir,struct dentry * dentry,int mode)
+{	return sc_check_inode_mkdir( dir, dentry, mode);
 }
-
-
-
-static  int sc_inode_killpriv(struct dentry *dentry)
-
-{
-
-	/* return cap_inode_killpriv(dentry); */
-	return sc_check_inode_killpriv(dentry);
+static int sc_inode_rmdir(struct inode * dir,struct dentry * dentry)
+{	return sc_check_inode_rmdir( dir, dentry);
 }
-
-
-
-static  int sc_inode_getsecurity(const struct inode *inode, const char *name, void **buffer, bool alloc)
-
-{
-
-	/* return -EOPNOTSUPP; */
-	return sc_check_inode_getsecurity(inode,name,buffer,alloc);
+static int sc_inode_mknod(struct inode * dir,struct dentry * dentry,int mode,dev_t dev)
+{	return sc_check_inode_mknod( dir, dentry, mode, dev);
 }
-
-
-
-static  int sc_inode_setsecurity(struct inode *inode, const char *name, const void *value, size_t size, int flags)
-
-{
-
-	/* return -EOPNOTSUPP; */
-	return sc_check_inode_setsecurity(inode,name,value,size,flags);
+static int sc_inode_rename(struct inode * old_dir,struct dentry * old_dentry,struct inode * new_dir,struct dentry * new_dentry)
+{	return sc_check_inode_rename( old_dir, old_dentry, new_dir, new_dentry);
 }
-
-
-
-static  int sc_inode_listsecurity(struct inode *inode, char *buffer, size_t buffer_size)
-
-{
-
-	return sc_check_inode_listsecurity(inode,buffer,buffer_size);
+static int sc_inode_readlink(struct dentry * dentry)
+{	return sc_check_inode_readlink( dentry);
 }
-
-
-
-static  void sc_inode_getsecid(const struct inode *inode, u32 *secid)
-
-{
-	return sc_check_inode_getsecid(inode,secid);
-	*secid = 0;
-
+static int sc_inode_follow_link(struct dentry * dentry,struct nameidata * nd)
+{	return sc_check_inode_follow_link( dentry, nd);
 }
-
-
-
-static  int sc_file_permission(struct file *file, int mask)
-
-{
-
-	return sc_check_file_permission(file,mask);
+static int sc_inode_permission(struct inode * inode,int mask)
+{	return sc_check_inode_permission( inode, mask);
 }
-
-
-
-static  int sc_file_alloc(struct file *file)
-
-{
-
-	return sc_check_file_alloc(file);
+static int sc_inode_setattr(struct dentry * dentry,struct iattr * attr)
+{	return sc_check_inode_setattr( dentry, attr);
 }
-
-
-
-static  void sc_file_free(struct file *file)
-
-{	return sc_check_file_free(file);}
-
-
-static  int sc_file_ioctl(struct file *file, unsigned int cmd,
-
-				      unsigned long arg)
-
-{
-
-	return sc_check_file_ioctl(file,cmd,arg);
+static int sc_inode_getattr(struct vfsmount * mnt,struct dentry * dentry)
+{	return sc_check_inode_getattr( mnt, dentry);
 }
-
-
-
-static  int sc_file_mmap(struct file *file, unsigned long reqprot,
-
-				     unsigned long prot,
-
-				     unsigned long flags,
-
-				     unsigned long addr,
-
-				     unsigned long addr_only)
-
-{
-
-	return sc_check_file_mmap(file,reqprot,prot,flags,addr,addr_only);
+static void sc_inode_delete(struct inode * inode)
+{	return sc_check_inode_delete( inode);
 }
-
-
-
-static  int sc_file_mprotect(struct vm_area_struct *vma,
-
-					 unsigned long reqprot,
-
-					 unsigned long prot)
-
-{
-
-	return sc_check_file_mprotect(vma,reqprot,prot);
+static int sc_inode_setxattr(struct dentry * dentry,const char * name,const void * value,size_t size,int flags)
+{	return sc_check_inode_setxattr( dentry, name, value, size, flags);
 }
-
-
-
-static  int sc_file_lock(struct file *file, unsigned int cmd)
-
-{
-
-	return sc_check_file_lock(file,cmd);
+static void sc_inode_post_setxattr(struct dentry * dentry,const char * name,const void * value,size_t size,int flags)
+{	return sc_check_inode_post_setxattr( dentry, name, value, size, flags);
 }
-
-
-
-static  int sc_file_fcntl(struct file *file, unsigned int cmd,
-
-				      unsigned long arg)
-
-{
-
-	return sc_check_file_fcntl(file,cmd,arg);
+static int sc_inode_getxattr(struct dentry * dentry,const char * name)
+{	return sc_check_inode_getxattr( dentry, name);
 }
-
-
-
-static  int sc_file_set_fowner(struct file *file)
-
-{
-
-	return sc_check_file_set_fowner(file);
+static int sc_inode_listxattr(struct dentry * dentry)
+{	return sc_check_inode_listxattr( dentry);
 }
-
-
-
-static  int sc_file_send_sigiotask(struct task_struct *tsk,
-
-					       struct fown_struct *fown,
-
-					       int sig)
-
-{
-
-	return sc_check_file_send_sigiotask(tsk,fown,sig);
+static int sc_inode_removexattr(struct dentry * dentry,const char * name)
+{	return sc_check_inode_removexattr( dentry, name);
 }
-
-
-
-static  int sc_file_receive(struct file *file)
-
-{
-
-	return sc_check_file_receive(file);
+static int sc_inode_need_killpriv(struct dentry * dentry)
+{	return sc_check_inode_need_killpriv( dentry);
 }
-
-
-
-static  int sc_dentry_open(struct file *file,
-
-				       const struct cred *cred)
-
-{
-
-	return sc_check_dentry_open(file,cred);
+static int sc_inode_killpriv(struct dentry * dentry)
+{	return sc_check_inode_killpriv( dentry);
 }
-
-
-
-static  int sc_task_create(unsigned long clone_flags)
-
-{
-
-	return sc_check_task_create(clone_flags);
+static int sc_inode_getsecurity(const struct inode * inode,const char * name,void ** buffer,bool alloc)
+{	return sc_check_inode_getsecurity( inode, name, buffer, alloc);
 }
-
-
-
-static  void sc_cred_free(struct cred *cred)
-
-{	return sc_check_cred_free(cred);}
-
-
-static  int sc_prepare_creds(struct cred *new,
-
-					 const struct cred *old,
-
-					 gfp_t gfp)
-
-{
-
-	return sc_check_prepare_creds(new,old,gfp);
+static int sc_inode_setsecurity(struct inode * inode,const char * name,const void * value,size_t size,int flags)
+{	return sc_check_inode_setsecurity( inode, name, value, size, flags);
 }
-
-
-
-static  void sc_commit_creds(struct cred *new,
-
-					 const struct cred *old)
-
-{
-	return sc_check_commit_creds(new,old);
+static int sc_inode_listsecurity(struct inode * inode,char * buffer,size_t buffer_size)
+{	return sc_check_inode_listsecurity( inode, buffer, buffer_size);
 }
-
-
-
-static  int sc_kernel_act_as(struct cred *cred, u32 secid)
-
-{
-
-	return sc_check_kernel_act_as(cred,secid);
+static void sc_inode_getsecid(const struct inode * inode,u32 * secid)
+{	return sc_check_inode_getsecid( inode, secid);
 }
-
-
-
-static  int sc_kernel_create_files_as(struct cred *cred,
-
-						  struct inode *inode)
-
-{
-
-	return sc_check_kernel_create_files_as(cred,inode);
+static int sc_file_permission(struct file * file,int mask)
+{	return sc_check_file_permission( file, mask);
 }
-
-
-
-static  int sc_task_setuid(uid_t id0, uid_t id1, uid_t id2,
-
-				       int flags)
-
-{
-
-	return sc_check_task_setuid(id0,id1,id2,flags);
+static int sc_file_alloc_security(struct file * file)
+{	return sc_check_file_alloc_security( file);
 }
-
-
-
-static  int sc_task_fix_setuid(struct cred *new,
-
-					   const struct cred *old,
-
-					   int flags)
-
-{
-
-	/* return cap_task_fix_setuid(new, old, flags); */
-	return sc_check_task_fix_setuid(new,old,flags);
+static void sc_file_free_security(struct file * file)
+{	return sc_check_file_free_security( file);
 }
-
-
-
-static  int sc_task_setgid(gid_t id0, gid_t id1, gid_t id2,
-
-				       int flags)
-
-{
-
-	return sc_check_task_setgid(id0,id1,id2,flags);
+static int sc_file_ioctl(struct file * file,unsigned int cmd,unsigned long arg)
+{	return sc_check_file_ioctl( file, cmd, arg);
 }
-
-
-
-static  int sc_task_setpgid(struct task_struct *p, pid_t pgid)
-
-{
-
-	return sc_check_task_setpgid(p,pgid);
+static int sc_file_mmap(struct file * file,unsigned long reqprot,unsigned long prot,unsigned long flags,unsigned long addr,unsigned long addr_only)
+{	return sc_check_file_mmap( file, reqprot, prot, flags, addr, addr_only);
 }
-
-
-
-static  int sc_task_getpgid(struct task_struct *p)
-
-{
-
-	return sc_check_task_getpgid(p);
+static int sc_file_mprotect(struct vm_area_struct * vma,unsigned long reqprot,unsigned long prot)
+{	return sc_check_file_mprotect( vma, reqprot, prot);
 }
-
-
-
-static  int sc_task_getsid(struct task_struct *p)
-
-{
-
-	return sc_check_task_getsid(p);
+static int sc_file_lock(struct file * file,unsigned int cmd)
+{	return sc_check_file_lock( file, cmd);
 }
-
-
-
-static  void sc_task_getsecid(struct task_struct *p, u32 *secid)
-
-{
-	return sc_check_task_getsecid(p,secid);
-	*secid = 0;
-
+static int sc_file_fcntl(struct file * file,unsigned int cmd,unsigned long arg)
+{	return sc_check_file_fcntl( file, cmd, arg);
 }
-
-
-
-static  int sc_task_setgroups(struct group_info *group_info)
-
-{
-
-	return sc_check_task_setgroups(group_info);
+static int sc_file_set_fowner(struct file * file)
+{	return sc_check_file_set_fowner( file);
 }
-
-
-
-static  int sc_task_setnice(struct task_struct *p, int nice)
-
-{
-
-	/* return cap_task_setnice(p, nice); */
-	return sc_check_task_setnice(p,nice);
+static int sc_file_send_sigiotask(struct task_struct * tsk,struct fown_struct * fown,int sig)
+{	return sc_check_file_send_sigiotask( tsk, fown, sig);
 }
-
-
-
-static  int sc_task_setioprio(struct task_struct *p, int ioprio)
-
-{
-
-	/* return cap_task_setioprio(p, ioprio); */
-	return sc_check_task_setioprio(p,ioprio);
+static int sc_file_receive(struct file * file)
+{	return sc_check_file_receive( file);
 }
-
-
-
-static  int sc_task_getioprio(struct task_struct *p)
-
-{
-
-	return sc_check_task_getioprio(p);
+static int sc_dentry_open(struct file * file,const struct cred * cred)
+{	return sc_check_dentry_open( file, cred);
 }
-
-
-
-static  int sc_task_setrlimit(unsigned int resource,
-
-					  struct rlimit *new_rlim)
-
-{
-
-	return sc_check_task_setrlimit(resource,new_rlim);
+static int sc_task_create(unsigned long clone_flags)
+{	return sc_check_task_create( clone_flags);
 }
-
-
-
-static  int sc_task_setscheduler(struct task_struct *p,
-
-					     int policy,
-
-					     struct sched_param *lp)
-
-{
-
-	/* return cap_task_setscheduler(p, policy, lp); */
-	return sc_check_task_setscheduler(p,policy,lp);
+static void sc_cred_free(struct cred * cred)
+{	return sc_check_cred_free( cred);
 }
-
-
-
-static  int sc_task_getscheduler(struct task_struct *p)
-
-{
-
-	return sc_check_task_getscheduler(p);
+static int sc_cred_prepare(struct cred * new,const struct cred * old,gfp_t gfp)
+{	return sc_check_cred_prepare( new, old, gfp);
 }
-
-
-
-static  int sc_task_movememory(struct task_struct *p)
-
-{
-
-	return sc_check_task_movememory(p);
+static void sc_cred_commit(struct cred * new,const struct cred * old)
+{	return sc_check_cred_commit( new, old);
 }
-
-
-
-static  int sc_task_kill(struct task_struct *p,
-
-				     struct siginfo *info, int sig,
-
-				     u32 secid)
-
-{
-
-	return sc_check_task_kill(p,info,sig,secid);
+static int sc_kernel_act_as(struct cred * new,u32 secid)
+{	return sc_check_kernel_act_as( new, secid);
 }
-
-
-
-static  int sc_task_wait(struct task_struct *p)
-
-{
-
-	return sc_check_task_wait(p);
+static int sc_kernel_create_files_as(struct cred * new,struct inode * inode)
+{	return sc_check_kernel_create_files_as( new, inode);
 }
-
-
-
-static  int sc_task_prctl(int option, unsigned long arg2,
-
-				      unsigned long arg3,
-
-				      unsigned long arg4,
-
-				      unsigned long arg5)
-
-{
-
-	/* return cap_task_prctl(option, arg2, arg3, arg3, arg5); */
-	return sc_check_task_prctl(option,arg2,arg3,arg4,arg5);
+static int sc_task_setuid(uid_t id0,uid_t id1,uid_t id2,int flags)
+{	return sc_check_task_setuid( id0, id1, id2, flags);
 }
-
-
-
-static  void sc_task_to_inode(struct task_struct *p, struct inode *inode)
-
-{	return sc_check_task_to_inode(p,inode);}
-
-
-static  int sc_ipc_permission(struct kern_ipc_perm *ipcp,
-
-					  short flag)
-
-{
-
-	return sc_check_ipc_permission(ipcp,flag);
+static int sc_task_fix_setuid(struct cred * new,const struct cred * old,int flags)
+{	return sc_check_task_fix_setuid( new, old, flags);
 }
-
-
-
-static  void sc_ipc_getsecid(struct kern_ipc_perm *ipcp, u32 *secid)
-
-{
-	return sc_check_ipc_getsecid(ipcp,secid);
-	*secid = 0;
-
+static int sc_task_setgid(gid_t id0,gid_t id1,gid_t id2,int flags)
+{	return sc_check_task_setgid( id0, id1, id2, flags);
 }
-
-
-
-static  int sc_msg_msg_alloc_security(struct msg_msg *msg)
-{
-
-	return sc_check_msg_msg_alloc_security(msg);
+static int sc_task_setpgid(struct task_struct * p,pid_t pgid)
+{	return sc_check_task_setpgid( p, pgid);
 }
-
-
-
-static  void sc_msg_msg_free(struct msg_msg *msg)
-
-{	return sc_check_msg_msg_free(msg);}
-
-
-static  int sc_msg_queue_alloc(struct msg_queue *msq)
-
-{
-
-	return sc_check_msg_queue_alloc(msq);
+static int sc_task_getpgid(struct task_struct * p)
+{	return sc_check_task_getpgid( p);
 }
-
-
-
-static  void sc_msg_queue_free(struct msg_queue *msq)
-
-{	return sc_check_msg_queue_free(msq);}
-
-
-static  int sc_msg_queue_associate(struct msg_queue *msq,
-
-					       int msqflg)
-
-{
-
-	return sc_check_msg_queue_associate(msq,msqflg);
+static int sc_task_getsid(struct task_struct * p)
+{	return sc_check_task_getsid( p);
 }
-
-
-
-static  int sc_msg_queue_msgctl(struct msg_queue *msq, int cmd)
-
-{
-
-	return sc_check_msg_queue_msgctl(msq,cmd);
+static void sc_task_getsecid(struct task_struct * p,u32 * secid)
+{	return sc_check_task_getsecid( p, secid);
 }
-
-
-
-static  int sc_msg_queue_msgsnd(struct msg_queue *msq,
-
-					    struct msg_msg *msg, int msqflg)
-
-{
-
-	return sc_check_msg_queue_msgsnd(msq,msg,msqflg);
+static int sc_task_setgroups(struct group_info * group_info)
+{	return sc_check_task_setgroups( group_info);
 }
-
-
-
-static  int sc_msg_queue_msgrcv(struct msg_queue *msq,
-
-					    struct msg_msg *msg,
-
-					    struct task_struct *target,
-
-					    long type, int mode)
-
-{
-
-	return sc_check_msg_queue_msgrcv(msq,msg,target,type,mode);
+static int sc_task_setnice(struct task_struct * p,int nice)
+{	return sc_check_task_setnice( p, nice);
 }
-
-
-
-static  int sc_shm_alloc(struct shmid_kernel *shp)
-
-{
-
-	return sc_check_shm_alloc(shp);
+static int sc_task_setioprio(struct task_struct * p,int ioprio)
+{	return sc_check_task_setioprio( p, ioprio);
 }
-
-
-
-static  void sc_shm_free(struct shmid_kernel *shp)
-
-{	return sc_check_shm_free(shp);}
-
-
-static  int sc_shm_associate(struct shmid_kernel *shp,
-
-					 int shmflg)
-
-{
-
-	return sc_check_shm_associate(shp,shmflg);
+static int sc_task_getioprio(struct task_struct * p)
+{	return sc_check_task_getioprio( p);
 }
-
-
-
-static  int sc_shm_shmctl(struct shmid_kernel *shp, int cmd)
-
-{
-
-	return sc_check_shm_shmctl(shp,cmd);
+static int sc_task_setrlimit(unsigned int resource,struct rlimit * new_rlim)
+{	return sc_check_task_setrlimit( resource, new_rlim);
 }
-
-
-
-static  int sc_shm_shmat(struct shmid_kernel *shp,
-
-				     char __user *shmaddr, int shmflg)
-
-{
-
-	return sc_check_shm_shmat(shp,shmaddr,shmflg);
+static int sc_task_setscheduler(struct task_struct * p,int policy,struct sched_param * lp)
+{	return sc_check_task_setscheduler( p, policy, lp);
 }
-
-
-
-static  int sc_sem_alloc(struct sem_array *sma)
-
-{
-
-	return sc_check_sem_alloc(sma);
+static int sc_task_getscheduler(struct task_struct * p)
+{	return sc_check_task_getscheduler( p);
 }
-
-
-
-static  void sc_sem_free(struct sem_array *sma)
-
-{	return sc_check_sem_free(sma);}
-
-
-static  int sc_sem_associate(struct sem_array *sma, int semflg)
-
-{
-
-	return sc_check_sem_associate(sma,semflg);
+static int sc_task_movememory(struct task_struct * p)
+{	return sc_check_task_movememory( p);
 }
-
-
-
-static  int sc_sem_semctl(struct sem_array *sma, int cmd)
-
-{
-
-	return sc_check_sem_semctl(sma,cmd);
+static int sc_task_kill(struct task_struct * p,struct siginfo * info,int sig,u32 secid)
+{	return sc_check_task_kill( p, info, sig, secid);
 }
-
-
-
-static  int sc_sem_semop(struct sem_array *sma,
-
-				     struct sembuf *sops, unsigned int nsops,
-
-				     int alter)
-
-{
-
-	return sc_check_sem_semop(sma,sops,nsops,alter);
+static int sc_task_wait(struct task_struct * p)
+{	return sc_check_task_wait( p);
 }
-
-
-
-static  void sc_d_instantiate(struct dentry *dentry, struct inode *inode)
-
-{	return sc_check_d_instantiate(dentry,inode);}
-
-
-static  int sc_getprocattr(struct task_struct *p, char *name, char **value)
-
-{
-
-	/* return -EINVAL; */
-	return sc_check_getprocattr(p,name,value);
+static int sc_task_prctl(int option,unsigned long arg2,unsigned long arg3,unsigned long arg4,unsigned long arg5)
+{	return sc_check_task_prctl( option, arg2, arg3, arg4, arg5);
 }
-
-
-
-static  int sc_setprocattr(struct task_struct *p, char *name, void *value, size_t size)
-
-{
-
-	/* return -EINVAL; */
-	return sc_check_setprocattr(p,name,value,size);
+static void sc_task_to_inode(struct task_struct * p,struct inode * inode)
+{	return sc_check_task_to_inode( p, inode);
 }
-
-
-
-static  int sc_netlink_send(struct sock *sk, struct sk_buff *skb)
-
-{
-
-	/* return cap_netlink_send(sk, skb); */
-	return sc_check_netlink_send(sk,skb);
+static int sc_ipc_permission(struct kern_ipc_perm * ipcp,short flag)
+{	return sc_check_ipc_permission( ipcp, flag);
 }
-
-
-
-static  int sc_netlink_recv(struct sk_buff *skb, int cap)
-
-{
-
-	/* return cap_netlink_recv(skb, cap); */
-	return sc_check_netlink_recv(skb,cap);
+static void sc_ipc_getsecid(struct kern_ipc_perm * ipcp,u32 * secid)
+{	return sc_check_ipc_getsecid( ipcp, secid);
 }
-
-
-
-static  int sc_secid_to_secctx(u32 secid, char **secdata, u32 *seclen)
-
-{
-
-	/* return -EOPNOTSUPP; */
-	return sc_check_secid_to_secctx(secid,secdata,seclen);
+static int sc_msg_msg_alloc_security(struct msg_msg * msg)
+{	return sc_check_msg_msg_alloc_security( msg);
 }
-
-
-
-static  int sc_secctx_to_secid(const char *secdata,
-
-					   u32 seclen,
-
-					   u32 *secid)
-
-{
-
-	/* return -EOPNOTSUPP; */
-	return sc_check_secctx_to_secid(secdata,seclen,secid);
+static void sc_msg_msg_free_security(struct msg_msg * msg)
+{	return sc_check_msg_msg_free_security( msg);
 }
-
-
-
-static  void sc_release_secctx(char *secdata, u32 seclen)
-
-{
-	return sc_check_release_secctx(secdata,seclen);
+static int sc_msg_queue_alloc_security(struct msg_queue * msq)
+{	return sc_check_msg_queue_alloc_security( msq);
 }
-
-
-static  int sc_unix_stream_connect(struct socket *sock,
-				   struct socket *other,
-				   struct sock *newsk)
-{
-
-	return sc_check_unix_stream_connect(sock,other,newsk);
+static void sc_msg_queue_free_security(struct msg_queue * msq)
+{	return sc_check_msg_queue_free_security( msq);
 }
-
-
-
-static  int sc_unix_may_send(struct socket *sock,
-
-					 struct socket *other)
-
-{
-
-	return sc_check_unix_may_send(sock,other);
+static int sc_msg_queue_associate(struct msg_queue * msq,int msqflg)
+{	return sc_check_msg_queue_associate( msq, msqflg);
 }
-
-
-
-static  int sc_socket_create(int family, int type,
-
-					 int protocol, int kern)
-
-{
-
-	return sc_check_socket_create(family,type,protocol,kern);
+static int sc_msg_queue_msgctl(struct msg_queue * msq,int cmd)
+{	return sc_check_msg_queue_msgctl( msq, cmd);
 }
-
-
-
-static  int sc_socket_post_create(struct socket *sock,
-
-					      int family,
-
-					      int type,
-
-					      int protocol, int kern)
-
-{
-
-	return sc_check_socket_post_create(sock,family,type,protocol,kern);
+static int sc_msg_queue_msgsnd(struct msg_queue * msq,struct msg_msg * msg,int msqflg)
+{	return sc_check_msg_queue_msgsnd( msq, msg, msqflg);
 }
-
-
-
-static  int sc_socket_bind(struct socket *sock,
-
-				       struct sockaddr *address,
-
-				       int addrlen)
-
-{
-
-	return sc_check_socket_bind(sock,address,addrlen);
+static int sc_msg_queue_msgrcv(struct msg_queue * msq,struct msg_msg * msg,struct task_struct * target,long type,int mode)
+{	return sc_check_msg_queue_msgrcv( msq, msg, target, type, mode);
 }
-
-
-
-static  int sc_socket_connect(struct socket *sock,
-
-					  struct sockaddr *address,
-
-					  int addrlen)
-
-{
-
-	return sc_check_socket_connect(sock,address,addrlen);
+static int sc_shm_alloc_security(struct shmid_kernel * shp)
+{	return sc_check_shm_alloc_security( shp);
 }
-
-
-
-static  int sc_socket_listen(struct socket *sock, int backlog)
-
-{
-
-	return sc_check_socket_listen(sock,backlog);
+static void sc_shm_free_security(struct shmid_kernel * shp)
+{	return sc_check_shm_free_security( shp);
 }
-
-
-
-static  int sc_socket_accept(struct socket *sock,
-
-					 struct socket *newsock)
-
-{
-
-	return sc_check_socket_accept(sock,newsock);
+static int sc_shm_associate(struct shmid_kernel * shp,int shmflg)
+{	return sc_check_shm_associate( shp, shmflg);
+}
+static int sc_shm_shmctl(struct shmid_kernel * shp,int cmd)
+{	return sc_check_shm_shmctl( shp, cmd);
+}
+static int sc_shm_shmat(struct shmid_kernel * shp,char * shmaddr,int shmflg)
+{	return sc_check_shm_shmat( shp, shmaddr, shmflg);
+}
+static int sc_sem_alloc_security(struct sem_array * sma)
+{	return sc_check_sem_alloc_security( sma);
+}
+static void sc_sem_free_security(struct sem_array * sma)
+{	return sc_check_sem_free_security( sma);
+}
+static int sc_sem_associate(struct sem_array * sma,int semflg)
+{	return sc_check_sem_associate( sma, semflg);
+}
+static int sc_sem_semctl(struct sem_array * sma,int cmd)
+{	return sc_check_sem_semctl( sma, cmd);
+}
+static int sc_sem_semop(struct sem_array * sma,struct sembuf * sops,unsigned int nsops,int alter)
+{	return sc_check_sem_semop( sma, sops, nsops, alter);
+}
+static int sc_netlink_send(struct sock * sk,struct sk_buff * skb)
+{	return sc_check_netlink_send( sk, skb);
+}
+static int sc_netlink_recv(struct sk_buff * skb,int cap)
+{	return sc_check_netlink_recv( skb, cap);
+}
+static void sc_d_instantiate(struct dentry * dentry,struct inode * inode)
+{	return sc_check_d_instantiate( dentry, inode);
+}
+static int sc_getprocattr(struct task_struct * p,char * name,char ** value)
+{	return sc_check_getprocattr( p, name, value);
+}
+static int sc_setprocattr(struct task_struct * p,char * name,void * value,size_t size)
+{	return sc_check_setprocattr( p, name, value, size);
 }
-
-
-
-static  int sc_socket_sendmsg(struct socket *sock,
-
-					  struct msghdr *msg, int size)
-
-{
-
-	return sc_check_socket_sendmsg(sock,msg,size);
+static int sc_secid_to_secctx(u32 secid,char ** secdata,u32 * seclen)
+{	return sc_check_secid_to_secctx( secid, secdata, seclen);
 }
-
-
-
-static  int sc_socket_recvmsg(struct socket *sock,
-
-					  struct msghdr *msg, int size,
-
-					  int flags)
-
-{
-
-	return sc_check_socket_recvmsg(sock,msg,size,flags);
+static int sc_secctx_to_secid(const char * secdata,u32 seclen,u32 * secid)
+{	return sc_check_secctx_to_secid( secdata, seclen, secid);
 }
-
-
-
-static  int sc_socket_getsockname(struct socket *sock)
-
-{
-
-	return sc_check_socket_getsockname(sock);
+static void sc_release_secctx(char * secdata,u32 seclen)
+{	return sc_check_release_secctx( secdata, seclen);
 }
-
-
-
-static int sc_socket_getpeername(struct socket *sock)
-
-{
-
-	return sc_check_socket_getpeername(sock);
+static int sc_unix_stream_connect(struct socket * sock,struct socket * other,struct sock * newsk)
+{	return sc_check_unix_stream_connect( sock, other, newsk);
 }
-
-
-
-static  int sc_socket_getsockopt(struct socket *sock,
-
-					     int level, int optname)
-
-{
-
-	return sc_check_socket_getsockopt(sock,level,optname);
+static int sc_unix_may_send(struct socket * sock,struct socket * other)
+{	return sc_check_unix_may_send( sock, other);
 }
-
-
-
-static  int sc_socket_setsockopt(struct socket *sock,
-
-					     int level, int optname)
-
-{
-
-	return sc_check_socket_setsockopt(sock,level,optname);
+static int sc_socket_create(int family,int type,int protocol,int kern)
+{	return sc_check_socket_create( family, type, protocol, kern);
 }
-
-
-
-static  int sc_socket_shutdown(struct socket *sock, int how)
-
-{
-
-	return sc_check_socket_shutdown(sock,how);
+static int sc_socket_post_create(struct socket * sock,int family,int type,int protocol,int kern)
+{	return sc_check_socket_post_create( sock, family, type, protocol, kern);
 }
-
-static  int sc_sock_rcv_skb(struct sock *sk,
-
-					struct sk_buff *skb)
-
-{
-
-	return sc_check_sock_rcv_skb(sk,skb);
+static int sc_socket_bind(struct socket * sock,struct sockaddr * address,int addrlen)
+{	return sc_check_socket_bind( sock, address, addrlen);
 }
-
-
-
-static  int sc_socket_getpeersec_stream(struct socket *sock, char __user *optval,
-
-						    int __user *optlen, unsigned int len)
-
-{
-
-	/* return -ENOPROTOOPT; */
-	return sc_check_socket_getpeersec_stream(sock,optval,optlen,len);
+static int sc_socket_connect(struct socket * sock,struct sockaddr * address,int addrlen)
+{	return sc_check_socket_connect( sock, address, addrlen);
 }
-
-
-
-static  int sc_socket_getpeersec_dgram(struct socket *sock, struct sk_buff *skb, u32 *secid)
-
-{
-
-	/* return -ENOPROTOOPT; */
-	return sc_check_socket_getpeersec_dgram(sock,skb,secid);
+static int sc_socket_listen(struct socket * sock,int backlog)
+{	return sc_check_socket_listen( sock, backlog);
 }
-
-
-
-static  int sc_sk_alloc(struct sock *sk, int family, gfp_t priority)
-
-{
-
-	return sc_check_sk_alloc(sk,family,priority);
+static int sc_socket_accept(struct socket * sock,struct socket * newsock)
+{	return sc_check_socket_accept( sock, newsock);
 }
-
-
-
-static  void sc_sk_free(struct sock *sk)
-
-{
-	return sc_check_sk_free(sk);
+static int sc_socket_sendmsg(struct socket * sock,struct msghdr * msg,int size)
+{	return sc_check_socket_sendmsg( sock, msg, size);
 }
-
-
-
-static  void sc_sk_clone(const struct sock *sk, struct sock *newsk)
-
-{
-	return sc_check_sk_clone(sk,newsk);
+static int sc_socket_recvmsg(struct socket * sock,struct msghdr * msg,int size,int flags)
+{	return sc_check_socket_recvmsg( sock, msg, size, flags);
 }
-
-
-
-static  void sc_sk_classify_flow(struct sock *sk, struct flowi *fl)
-
-{
-	return sc_check_sk_classify_flow(sk,fl);
+static int sc_socket_getsockname(struct socket * sock)
+{	return sc_check_socket_getsockname( sock);
 }
-
-
-
-static  void sc_req_classify_flow(const struct request_sock *req, struct flowi *fl)
-
-{
-	return sc_check_req_classify_flow(req,fl);
+static int sc_socket_getpeername(struct socket * sock)
+{	return sc_check_socket_getpeername( sock);
 }
-
-
-
-static  void sc_sock_graft(struct sock *sk, struct socket *parent)
-
-{
-	return sc_check_sock_graft(sk,parent);
+static int sc_socket_getsockopt(struct socket * sock,int level,int optname)
+{	return sc_check_socket_getsockopt( sock, level, optname);
 }
-
-
-
-static  int sc_inet_conn_request(struct sock *sk,
-
-			struct sk_buff *skb, struct request_sock *req)
-
-{
-
-	return sc_check_inet_conn_request(sk,skb,req);
+static int sc_socket_setsockopt(struct socket * sock,int level,int optname)
+{	return sc_check_socket_setsockopt( sock, level, optname);
 }
-
-
-
-static  void sc_inet_csk_clone(struct sock *newsk,
-
-			const struct request_sock *req)
-
-{
-	return sc_check_inet_csk_clone(newsk,req);
+static int sc_socket_shutdown(struct socket * sock,int how)
+{	return sc_check_socket_shutdown( sock, how);
 }
-
-
-
-static  void sc_inet_conn_established(struct sock *sk,
-
-			struct sk_buff *skb)
-
-{
-	return sc_check_inet_conn_established(sk,skb);
+static int sc_socket_sock_rcv_skb(struct sock * sk,struct sk_buff * skb)
+{	return sc_check_socket_sock_rcv_skb( sk, skb);
 }
-
-
-
-
-
-static  int sc_xfrm_policy_alloc(struct xfrm_sec_ctx **ctxp, struct xfrm_user_sec_ctx *sec_ctx)
-
-{
-
-	return sc_check_xfrm_policy_alloc(ctxp,sec_ctx);
+static int sc_socket_getpeersec_stream(struct socket * sock,char * optval,int * optlen,unsigned int len)
+{	return sc_check_socket_getpeersec_stream( sock, optval, optlen, len);
 }
-
-
-
-static  int sc_xfrm_policy_clone(struct xfrm_sec_ctx *old, struct xfrm_sec_ctx **new_ctxp)
-
-{
-
-	return sc_check_xfrm_policy_clone(old,new_ctxp);
+static int sc_socket_getpeersec_dgram(struct socket * sock,struct sk_buff * skb,u32 * secid)
+{	return sc_check_socket_getpeersec_dgram( sock, skb, secid);
 }
-
-
-
-static  void sc_xfrm_policy_free(struct xfrm_sec_ctx *ctx)
-
-{
-	return sc_check_xfrm_policy_free(ctx);
+static int sc_sk_alloc_security(struct sock * sk,int family,gfp_t priority)
+{	return sc_check_sk_alloc_security( sk, family, priority);
 }
-
-
-
-static  int sc_xfrm_policy_delete(struct xfrm_sec_ctx *ctx)
-
-{
-
-	return sc_check_xfrm_policy_delete(ctx);
+static void sc_sk_free_security(struct sock * sk)
+{	return sc_check_sk_free_security( sk);
 }
-
-
-
-static  int sc_xfrm_state_alloc(struct xfrm_state *x,
-
-					struct xfrm_user_sec_ctx *sec_ctx)
-
-{
-
-	return sc_check_xfrm_state_alloc(x,sec_ctx);
+static void sc_sk_clone_security(const struct sock * sk,struct sock * newsk)
+{	return sc_check_sk_clone_security( sk, newsk);
 }
-
-
-
-static  int sc_xfrm_state_alloc_acquire(struct xfrm_state *x,
-
-					struct xfrm_sec_ctx *polsec, u32 secid)
-
-{
-
-	return sc_check_xfrm_state_alloc_acquire(x,polsec,secid);
+static void sc_sk_getsecid(struct sock * sk,u32 * secid)
+{	return sc_check_sk_getsecid( sk, secid);
 }
-
-
-
-static  void sc_xfrm_state_free(struct xfrm_state *x)
-
-{
-	return sc_check_xfrm_state_free(x);
+static void sc_sock_graft(struct sock * sk,struct socket * parent)
+{	return sc_check_sock_graft( sk, parent);
 }
-
-
-
-static  int sc_xfrm_state_delete(struct xfrm_state *x)
-
-{
-
-	return sc_check_xfrm_state_delete(x);
+static int sc_inet_conn_request(struct sock * sk,struct sk_buff * skb,struct request_sock * req)
+{	return sc_check_inet_conn_request( sk, skb, req);
 }
-
-
-
-static  int sc_xfrm_policy_lookup(struct xfrm_sec_ctx *ctx, u32 fl_secid, u8 dir)
-
-{
-
-	return sc_check_xfrm_policy_lookup(ctx,fl_secid,dir);
+static void sc_inet_csk_clone(struct sock * newsk,const struct request_sock * req)
+{	return sc_check_inet_csk_clone( newsk, req);
 }
-
-
-
-static  int sc_xfrm_state_pol_flow_match(struct xfrm_state *x,
-
-			struct xfrm_policy *xp, struct flowi *fl)
-
-{
-
-	/* return 1; */
-	return sc_check_xfrm_state_pol_flow_match(x,xp,fl);
+static void sc_inet_conn_established(struct sock * sk,struct sk_buff * skb)
+{	return sc_check_inet_conn_established( sk, skb);
 }
-
-
-
-static  int sc_xfrm_decode_session(struct sk_buff *skb, u32 *secid)
-
-{
-
-	return sc_check_xfrm_decode_session(skb,secid);
+static void sc_req_classify_flow(const struct request_sock * req,struct flowi * fl)
+{	return sc_check_req_classify_flow( req, fl);
 }
-
-
-
-static  void sc_skb_classify_flow(struct sk_buff *skb, struct flowi *fl)
-
-{
-	return sc_check_skb_classify_flow(skb,fl);
+static int sc_xfrm_policy_alloc_security(struct xfrm_sec_ctx ** ctxp,struct xfrm_user_sec_ctx * sec_ctx)
+{	return sc_check_xfrm_policy_alloc_security( ctxp, sec_ctx);
 }
-
-
-
-
-
-static  int sc_path_unlink(struct path *dir, struct dentry *dentry)
-
-{
-
-	return sc_check_path_unlink(dir,dentry);
+static int sc_xfrm_policy_clone_security(struct xfrm_sec_ctx * old_ctx,struct xfrm_sec_ctx ** new_ctx)
+{	return sc_check_xfrm_policy_clone_security( old_ctx, new_ctx);
 }
-
-
-
-static  int sc_path_mkdir(struct path *dir, struct dentry *dentry,
-
-				      int mode)
-
-{
-
-	return sc_check_path_mkdir(dir,dentry,mode);
+static void sc_xfrm_policy_free_security(struct xfrm_sec_ctx * ctx)
+{	return sc_check_xfrm_policy_free_security( ctx);
 }
-
-
-
-static  int sc_path_rmdir(struct path *dir, struct dentry *dentry)
-
-{
-
-	return sc_check_path_rmdir(dir,dentry);
+static int sc_xfrm_policy_delete_security(struct xfrm_sec_ctx * ctx)
+{	return sc_check_xfrm_policy_delete_security( ctx);
 }
-
-
-
-static  int sc_path_mknod(struct path *dir, struct dentry *dentry,
-
-				      int mode, unsigned int dev)
-
-{
-
-	return sc_check_path_mknod(dir,dentry,mode,dev);
+static int sc_xfrm_state_alloc_security(struct xfrm_state * x,struct xfrm_user_sec_ctx * sec_ctx,u32 secid)
+{	return sc_check_xfrm_state_alloc_security( x, sec_ctx, secid);
 }
-
-
-
-static  int sc_path_truncate(struct path *path, loff_t length,
-
-					 unsigned int time_attrs)
-
-{
-
-	return sc_check_path_truncate(path,length,time_attrs);
+static void sc_xfrm_state_free_security(struct xfrm_state * x)
+{	return sc_check_xfrm_state_free_security( x);
 }
-
-
-
-static  int sc_path_symlink(struct path *dir, struct dentry *dentry,
-
-					const char *old_name)
-
-{
-
-	return sc_check_path_symlink(dir,dentry,old_name);
+static int sc_xfrm_state_delete_security(struct xfrm_state * x)
+{	return sc_check_xfrm_state_delete_security( x);
 }
-
-
-
-static  int sc_path_link(struct dentry *old_dentry,
-
-				     struct path *new_dir,
-
-				     struct dentry *new_dentry)
-
-{
-
-	return sc_check_path_link(old_dentry,new_dir,new_dentry);
+static int sc_xfrm_policy_lookup(struct xfrm_sec_ctx * ctx,u32 fl_secid,u8 dir)
+{	return sc_check_xfrm_policy_lookup( ctx, fl_secid, dir);
 }
-
-
-
-static  int sc_path_rename(struct path *old_dir,
-
-				       struct dentry *old_dentry,
-
-				       struct path *new_dir,
-
-				       struct dentry *new_dentry)
-
-{
-
-	return sc_check_path_rename(old_dir,old_dentry,new_dir,new_dentry);
+static int sc_xfrm_state_pol_flow_match(struct xfrm_state * x,struct xfrm_policy * xp,struct flowi * fl)
+{	return sc_check_xfrm_state_pol_flow_match( x, xp, fl);
 }
-
-
-
-static  int sc_key_alloc(struct key *key,
-
-				     const struct cred *cred,
-
-				     unsigned long flags)
-
-{
-
-	return sc_check_key_alloc(key,cred,flags);
+static int sc_xfrm_decode_session(struct sk_buff * skb,u32 * secid,int ckall)
+{	return sc_check_xfrm_decode_session( skb, secid, ckall);
 }
-
-
-
-static  void sc_key_free(struct key *key)
-
-{
-	return sc_check_key_free(key);
+static int sc_key_alloc(struct key * key,const struct cred * cred,unsigned long flags)
+{	return sc_check_key_alloc( key, cred, flags);
 }
-
-
-
-static  int sc_key_permission(key_ref_t key_ref,
-
-					  const struct cred *cred,
-
-					  key_perm_t perm)
-
-{
-
-	return sc_check_key_permission(key_ref,cred,perm);
+static void sc_key_free(struct key * key)
+{	return sc_check_key_free( key);
 }
-
-
-
-static  int sc_key_getsecurity(struct key *key, char **_buffer)
-
-{
-
-	*_buffer = NULL;
-
-	return sc_check_key_getsecurity(key,_buffer);
+static int sc_key_permission(key_ref_t key_ref,const struct cred * cred,key_perm_t perm)
+{	return sc_check_key_permission( key_ref, cred, perm);
 }
-
-
-static  int sc_audit_rule_init(u32 field, u32 op, char *rulestr,
-
-					   void **lsmrule)
-
-{
-
-	return sc_check_audit_rule_init(field,op,rulestr,lsmrule);
+static int sc_key_getsecurity(struct key * key,char ** _buffer)
+{	return sc_check_key_getsecurity( key, _buffer);
 }
-
-
-
-static  int sc_audit_rule_known(struct audit_krule *krule)
-
-{
-
-	return sc_check_audit_rule_known(krule);
+static int sc_audit_rule_init(u32 field,u32 op,char * rulestr,void ** lsmrule)
+{	return sc_check_audit_rule_init( field, op, rulestr, lsmrule);
 }
-
-
-
-static  int sc_audit_rule_match(u32 secid, u32 field, u32 op,
-
-				   void *lsmrule, struct audit_context *actx)
-
-{
-
-	return sc_check_audit_rule_match(secid,field,op,lsmrule,actx);
+static int sc_audit_rule_known(struct audit_krule * krule)
+{	return sc_check_audit_rule_known( krule);
 }
-
-
-
-static  void sc_audit_rule_free(void *lsmrule)
-
-{	return sc_check_audit_rule_free(lsmrule);}
-
-
+static int sc_audit_rule_match(u32 secid,u32 field,u32 op,void * lsmrule,struct audit_context * actx)
+{	return sc_check_audit_rule_match( secid, field, op, lsmrule, actx);
+}
+static void sc_audit_rule_free(void * lsmrule)
+{	return sc_check_audit_rule_free( lsmrule);
+}
 struct security_operations sc_ops = {
 .ptrace_may_access = sc_ptrace_may_access,
 .ptrace_traceme = sc_ptrace_traceme,
@@ -2041,6 +736,7 @@ struct security_operations sc_ops = {
 };
 
 
+
 static int __init kadvicelsm_init(void){
   if(register_security(&sc_ops)){
     printk(KERN_INFO "failure register\n");
@@ -2061,4 +757,3 @@ static void __exit kadvicelsm_exit(void){
 //security_initcall(kadvicelsm_init);
 module_init(kadvicelsm_init);
 module_exit(kadvicelsm_exit);
-EXPORT_SYMBOL(lsm_security_ops);
