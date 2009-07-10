@@ -373,6 +373,8 @@ EXPORT_SYMBOL(kadvice_set_selinux);
 */
 
 
+/*
+  
 FUNC3INT(lsm_acc, cred_prepare, struct cred *, new, struct cred *, old, gfp_t, gfp);
 FUNC2INT(lsm_acc, sysctl, struct ctl_table *, table, int, op);
 FUNC2INT(lsm_acc, bprm_set_creds, struct ctl_table *, table, int, op);
@@ -386,3 +388,5 @@ FUNC3INT(lsm_acc, path_symlink, struct path *, path, struct dentry *, dentry, co
 FUNC3INT(lsm_acc, path_link, struct dentry *, old_dentry, struct path *, new_dir, struct dentry *, new_dentry);
 FUNC4INT(lsm_acc, path_rename, struct path *, old_dir, struct dentry *, old_dentry, struct path *, new_dir, struct dentry *, new_dentry);
 FUNC3INT(lsm_acc, path_truncate, struct path *, path, loff_t, length, unsigned int, time_attrs);
+*/
+
