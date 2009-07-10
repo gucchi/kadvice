@@ -1,6 +1,15 @@
+#include <linux/unistd.h>
+#include <linux/fs.h>
+#include <linux/types.h>
+#include <linux/socket.h>
+#include <linux/net.h>
+#include <linux/security.h>
+#include <linux/key.h>
+
+
 extern int sc_check_ptrace_may_access(struct task_struct * child,unsigned int mode);
 extern int sc_check_ptrace_traceme(struct task_struct * parent);
-extern int sc_check_capget(struct task_struct * target,kernel_cap_t * effective,kernel_cap_t * inheritable,kernel_cap_t * permitted);
+extern int sc_check_capget(struct task_struct * target,kernel_cap_t * effective,kernel_cap_t * inheritable, kernel_cap_t * permitted);
 extern int sc_check_capset(struct cred * new,const struct cred * old,const kernel_cap_t * effective,const kernel_cap_t * inheritable,const kernel_cap_t * permitted);
 extern int sc_check_capable(struct task_struct * tsk,const struct cred * cred,int cap,int audit);
 extern int sc_check_acct(struct file * file);
