@@ -96,9 +96,11 @@ for s in xrange(len(L)):
         if rettype == 'int':
             outline = 'FUNC%sINT(lsm_acc, %s' % (len(argvalues), funcname)
             outline2 = 'extern int sc_check_%s(' % funcname
+            outline5 = 'static int sc_%s(' % funcname
         elif rettype == 'void':
             outline = 'FUNC%sVOID(lsm_acc, %s' % (len(argvalues), funcname)
             outline2 = 'extern void sc_check_%s(' % funcname
+            outline5 = 'static void sc_%s(' % funcname
         else:
             print "ERROR!!"
             
@@ -110,10 +112,17 @@ for s in xrange(len(L)):
         for n in xrange(len(argtypes)):
             outline = outline + ", %s, %s" % (argtypes[n], argvalues[n])
             outline2 = outline2 + ",%s %s" % (argtypes[n], argvalues[n])
+            outline5 = outline5 + ",%s %s" % (argtypes[n], argvalues[n])
+        outline5 = outline5 + ")\n{\treturn sc_%s(" % funcname
+        for n in xrange(len(argtypes)):
+            outline5 = outline5 + ", %s" % argvalues[n]
         outline = outline + ");"
         outline2 = outline2.replace("(,", "(")
         outline2 = outline2 + ");"
-        print outline3
+        outline5 = outline5.replace("(,", "(")
+        outline5 = outline5 + ");\n}"
+        
+        print outline5
         
         counter = counter + 1
         

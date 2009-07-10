@@ -6,6 +6,7 @@ L = inf.readlines()
 inf.close()
 
 funcname = ''
+
 for s in xrange(len(L)):
 
     funcform = re.compile('static \w+ cap_([a-zA-Z_]+)')
