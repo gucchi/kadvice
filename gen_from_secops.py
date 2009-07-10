@@ -113,7 +113,7 @@ for s in xrange(len(L)):
             outline = outline + ", %s, %s" % (argtypes[n], argvalues[n])
             outline2 = outline2 + ",%s %s" % (argtypes[n], argvalues[n])
             outline5 = outline5 + ",%s %s" % (argtypes[n], argvalues[n])
-        outline5 = outline5 + ")\n{\treturn sc_%s(" % funcname
+        outline5 = outline5 + ")\n{\treturn sc_check_%s(" % funcname
         for n in xrange(len(argtypes)):
             outline5 = outline5 + ", %s" % argvalues[n]
         outline = outline + ");"
