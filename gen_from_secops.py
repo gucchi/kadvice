@@ -121,8 +121,8 @@ for s in xrange(len(L)):
         outline2 = outline2 + ");"
         outline5 = outline5.replace("(,", "(")
         outline5 = outline5 + ");\n}"
-        
-        print '"' + funcname + '",'
+        outline6 = '"' + funcname + '",'
+        print outline6
         
         counter = counter + 1
         
