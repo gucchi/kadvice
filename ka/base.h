@@ -116,23 +116,25 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
       (struct sc_task_security *)(locred->security); \
     if (tsec_current != NULL) {	\
       group_id  = tsec_current->gid; \
+      printk("group id is %d\n", group_id);   \
     } else { \
       group_id = 0; \
       return 0; \
     } \
     if(acc[__SC_##name][group_id][0] != 0) { \
-      CHECK_MSG(name); \
-      if (tsec_current->label[group_id] != NULL) { \
-		locred->security =	\
-		  (void *)(tsec_current->label[group_id]); \
-		func = (void *)acc[__SC_##name][group_id][0]; \
-		if(func(arg1, arg2, arg3, arg4) != 0) { \
-		  locred->security = tsec_current; \
-		  return -1; \
-		} \
-		locred->security = tsec_current; \
-      }					 \
-    } else { \
+	func = (void *)acc[__SC_##name][group_id][0];	\
+	if (tsec_current->label[group_id] != NULL) {	\
+	  printk("resolving func addr\n");		\
+	  locred->security = (void *)(tsec_current->label[group_id]); \
+	  if(func(arg1, arg2, arg3, arg4) != 0) {	\
+	    locred->security = tsec_current;		\
+	    return -1;					\
+	  }						\
+	  locred->security = tsec_current; \
+	} else {					\
+	  printk("its null, group label\n");		\
+	}						\
+    } else {						\
       return 0;					\
     } \
     return func(arg1, arg2, arg3, arg4); \

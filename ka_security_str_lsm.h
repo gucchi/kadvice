@@ -6,6 +6,7 @@ char *lsm_security_str[] = {
   "path_rmdir",
   "path_unlink",
   "path_symlink",
+  "path_link",
   "path_rename",
   "path_truncate",
   "bprm_set_creds",

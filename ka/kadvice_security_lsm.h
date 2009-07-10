@@ -1,6 +1,5 @@
 
 
-
 #define __SC_cred_prepare 0
 #define __SC_sysctl  1
 #define __SC_path_mknod  2
