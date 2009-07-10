@@ -1,3 +1,4 @@
+struct security_operations sc_ops = {
 .ptrace_may_access = sc_ptrace_may_access,
 .ptrace_traceme = sc_ptrace_traceme,
 .capget = sc_capget,
@@ -179,3 +180,5 @@
 .audit_rule_known = sc_audit_rule_known,
 .audit_rule_match = sc_audit_rule_match,
 .audit_rule_free = sc_audit_rule_free,
+};
+
