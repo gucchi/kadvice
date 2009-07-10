@@ -175,14 +175,12 @@ static  int sc_settime(struct timespec *ts, struct timezone *tz)
 
 
 
-static  int sc_vm_enough_memory(long pages)
+static  int sc_vm_enough_memory(struct long pages)
 
 {
-
 	WARN_ON(current->mm == NULL);
-
 	/* return cap_vm_enough_memory(current->mm, pages); */
-	return sc_check_vm_enough_memory(pages);
+	return sc_check_vm_enough_memory(current->mm, pages);
 }
 
 

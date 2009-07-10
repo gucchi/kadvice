@@ -1,4 +1,5 @@
 CFILES = kadvice_core.c
+obj-m+=nbus.o
 obj-m+=kadvice.o
 obj-m+=kadvice_lsm.o
 obj-m+=kadvice_proc_write.o

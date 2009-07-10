@@ -390,3 +390,4 @@ FUNC4INT(lsm_acc, path_rename, struct path *, old_dir, struct dentry *, old_dent
 FUNC3INT(lsm_acc, path_truncate, struct path *, path, loff_t, length, unsigned int, time_attrs);
 */
 
+#include "func.c"
