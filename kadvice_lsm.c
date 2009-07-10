@@ -5,7 +5,11 @@
 #include "ka/kadvice_lsm.h"
 #include "securitycube/securitycube.h"
 
-
+#define CONFIG_SECURITY_PATH 1
+#define CONFIG_SECURITY_NETWORK_XFRM 1
+#define CONFIG_SECURITY_NETWORK 1
+#define CONFIG_KEYS 1
+#define CONFIG_AUDIT 1
 
 static int sc_ptrace_may_access(struct task_struct * child,unsigned int mode)
 {	return sc_check_ptrace_may_access( child, mode);
@@ -104,15 +108,22 @@ static int sc_sb_pivotroot(struct path * old_path,struct path * new_path)
 static void sc_sb_post_pivotroot(struct path * old_path,struct path * new_path)
 {	return sc_check_sb_post_pivotroot( old_path, new_path);
 }
+
 static int sc_sb_set_mnt_opts(struct super_block * sb,struct security_mnt_opts * opts)
-{	return sc_check_sb_set_mnt_opts( sb, opts);
+{	
+  if (unlikely(opts->num_mnt_opts))
+    return -EOPNOTSUPP;
+  return sc_check_sb_set_mnt_opts( sb, opts);
 }
+
 static void sc_sb_clone_mnt_opts(const struct super_block * oldsb,struct super_block * newsb)
 {	return sc_check_sb_clone_mnt_opts( oldsb, newsb);
 }
 static int sc_sb_parse_opts_str(char * options,struct security_mnt_opts * opts)
 {	return sc_check_sb_parse_opts_str( options, opts);
 }
+#ifdef CONFIG_SECURITY_PATH
+
 static int sc_path_unlink(struct path * dir,struct dentry * dentry)
 {	return sc_check_path_unlink( dir, dentry);
 }
@@ -137,6 +148,8 @@ static int sc_path_link(struct dentry * old_dentry,struct path * new_dir,struct 
 static int sc_path_rename(struct path * old_dir,struct dentry * old_dentry,struct path * new_dir,struct dentry * new_dentry)
 {	return sc_check_path_rename( old_dir, old_dentry, new_dir, new_dentry);
 }
+
+#endif
 static int sc_inode_alloc_security(struct inode * inode)
 {	return sc_check_inode_alloc_security( inode);
 }
@@ -219,8 +232,15 @@ static int sc_inode_listsecurity(struct inode * inode,char * buffer,size_t buffe
 {	return sc_check_inode_listsecurity( inode, buffer, buffer_size);
 }
 static void sc_inode_getsecid(const struct inode * inode,u32 * secid)
-{	return sc_check_inode_getsecid( inode, secid);
+{
+
+  // *secid = 0;
+  return sc_check_inode_getsecid( inode, secid);
+
+
 }
+
+
 static int sc_file_permission(struct file * file,int mask)
 {	return sc_check_file_permission( file, mask);
 }
@@ -233,9 +253,14 @@ static void sc_file_free_security(struct file * file)
 static int sc_file_ioctl(struct file * file,unsigned int cmd,unsigned long arg)
 {	return sc_check_file_ioctl( file, cmd, arg);
 }
+
 static int sc_file_mmap(struct file * file,unsigned long reqprot,unsigned long prot,unsigned long flags,unsigned long addr,unsigned long addr_only)
-{	return sc_check_file_mmap( file, reqprot, prot, flags, addr, addr_only);
+{
+  if ((addr < mmap_min_addr) && !capable(CAP_SYS_RAWIO))
+    return -EACCES;
+  return sc_check_file_mmap( file, reqprot, prot, flags, addr, addr_only);
 }
+
 static int sc_file_mprotect(struct vm_area_struct * vma,unsigned long reqprot,unsigned long prot)
 {	return sc_check_file_mprotect( vma, reqprot, prot);
 }
@@ -416,6 +441,8 @@ static int sc_secctx_to_secid(const char * secdata,u32 seclen,u32 * secid)
 static void sc_release_secctx(char * secdata,u32 seclen)
 {	return sc_check_release_secctx( secdata, seclen);
 }
+
+#ifdef CONFIG_SECURITY_NETWORK
 static int sc_unix_stream_connect(struct socket * sock,struct socket * other,struct sock * newsk)
 {	return sc_check_unix_stream_connect( sock, other, newsk);
 }
@@ -497,6 +524,10 @@ static void sc_inet_conn_established(struct sock * sk,struct sk_buff * skb)
 static void sc_req_classify_flow(const struct request_sock * req,struct flowi * fl)
 {	return sc_check_req_classify_flow( req, fl);
 }
+
+#endif /* CONFIG_SECURITY_NETWORK */
+
+#ifdef CONFIG_SECURITY_NETWORK_XFRM
 static int sc_xfrm_policy_alloc_security(struct xfrm_sec_ctx ** ctxp,struct xfrm_user_sec_ctx * sec_ctx)
 {	return sc_check_xfrm_policy_alloc_security( ctxp, sec_ctx);
 }
@@ -522,11 +553,17 @@ static int sc_xfrm_policy_lookup(struct xfrm_sec_ctx * ctx,u32 fl_secid,u8 dir)
 {	return sc_check_xfrm_policy_lookup( ctx, fl_secid, dir);
 }
 static int sc_xfrm_state_pol_flow_match(struct xfrm_state * x,struct xfrm_policy * xp,struct flowi * fl)
-{	return sc_check_xfrm_state_pol_flow_match( x, xp, fl);
+{	
+  return 1;
+  return sc_check_xfrm_state_pol_flow_match( x, xp, fl);
 }
 static int sc_xfrm_decode_session(struct sk_buff * skb,u32 * secid,int ckall)
 {	return sc_check_xfrm_decode_session( skb, secid, ckall);
 }
+
+#endif /* CONFIG_SECURITY_NETWORK_XFRM */
+
+#ifdef CONFIG_KEYS
 static int sc_key_alloc(struct key * key,const struct cred * cred,unsigned long flags)
 {	return sc_check_key_alloc( key, cred, flags);
 }
@@ -537,8 +574,14 @@ static int sc_key_permission(key_ref_t key_ref,const struct cred * cred,key_perm
 {	return sc_check_key_permission( key_ref, cred, perm);
 }
 static int sc_key_getsecurity(struct key * key,char ** _buffer)
-{	return sc_check_key_getsecurity( key, _buffer);
+{
+  *_buffer = NULL;
+  return sc_check_key_getsecurity( key, _buffer);
 }
+
+#endif /* CONFIG_KEYS */
+
+#ifdef CONFIG_AUDIT
 static int sc_audit_rule_init(u32 field,u32 op,char * rulestr,void ** lsmrule)
 {	return sc_check_audit_rule_init( field, op, rulestr, lsmrule);
 }
@@ -551,6 +594,8 @@ static int sc_audit_rule_match(u32 secid,u32 field,u32 op,void * lsmrule,struct 
 static void sc_audit_rule_free(void * lsmrule)
 {	return sc_check_audit_rule_free( lsmrule);
 }
+
+#endif /* CONFIG_AUDIT */
 struct security_operations sc_ops = {
 .ptrace_may_access = sc_ptrace_may_access,
 .ptrace_traceme = sc_ptrace_traceme,
@@ -587,6 +632,7 @@ struct security_operations sc_ops = {
 .sb_set_mnt_opts = sc_sb_set_mnt_opts,
 .sb_clone_mnt_opts = sc_sb_clone_mnt_opts,
 .sb_parse_opts_str = sc_sb_parse_opts_str,
+#ifdef CONFIG_SECURITY_PATH
 .path_unlink = sc_path_unlink,
 .path_mkdir = sc_path_mkdir,
 .path_rmdir = sc_path_rmdir,
@@ -595,6 +641,7 @@ struct security_operations sc_ops = {
 .path_symlink = sc_path_symlink,
 .path_link = sc_path_link,
 .path_rename = sc_path_rename,
+#endif
 .inode_alloc_security = sc_inode_alloc_security,
 .inode_free_security = sc_inode_free_security,
 .inode_init_security = sc_inode_init_security,
@@ -715,6 +762,7 @@ struct security_operations sc_ops = {
 .inet_csk_clone = sc_inet_csk_clone,
 .inet_conn_established = sc_inet_conn_established,
 .req_classify_flow = sc_req_classify_flow,
+#ifdef CONFIG_SECURITY_NETWORK_XFRM
 .xfrm_policy_alloc_security = sc_xfrm_policy_alloc_security,
 .xfrm_policy_clone_security = sc_xfrm_policy_clone_security,
 .xfrm_policy_free_security = sc_xfrm_policy_free_security,
@@ -725,14 +773,19 @@ struct security_operations sc_ops = {
 .xfrm_policy_lookup = sc_xfrm_policy_lookup,
 .xfrm_state_pol_flow_match = sc_xfrm_state_pol_flow_match,
 .xfrm_decode_session = sc_xfrm_decode_session,
+#endif
+#ifdef CONFIG_KEYS
 .key_alloc = sc_key_alloc,
 .key_free = sc_key_free,
 .key_permission = sc_key_permission,
 .key_getsecurity = sc_key_getsecurity,
+#endif
+#ifdef CONFIG_AUDIT
 .audit_rule_init = sc_audit_rule_init,
 .audit_rule_known = sc_audit_rule_known,
 .audit_rule_match = sc_audit_rule_match,
 .audit_rule_free = sc_audit_rule_free,
+#endif
 };
 
 
