@@ -11,6 +11,7 @@
 #define CONFIG_KEYS 1
 #define CONFIG_AUDIT 1
 
+
 static int sc_ptrace_may_access(struct task_struct * child,unsigned int mode)
 {	return sc_check_ptrace_may_access( child, mode);
 }
@@ -254,6 +255,7 @@ static int sc_file_ioctl(struct file * file,unsigned int cmd,unsigned long arg)
 {	return sc_check_file_ioctl( file, cmd, arg);
 }
 
+unsigned long mmap_min_addr = 65539;
 static int sc_file_mmap(struct file * file,unsigned long reqprot,unsigned long prot,unsigned long flags,unsigned long addr,unsigned long addr_only)
 {
   if ((addr < mmap_min_addr) && !capable(CAP_SYS_RAWIO))
