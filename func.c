@@ -2,13 +2,18 @@ FUNC2INT(lsm_acc, ptrace_may_access, struct task_struct *, child, unsigned int, 
 FUNC1INT(lsm_acc, ptrace_traceme, struct task_struct *, parent);
 FUNC4INT(lsm_acc, capget, struct task_struct *, target, kernel_cap_t *, effective, kernel_cap_t *, inheritable, kernel_cap_t *, permitted);
 FUNC5INT(lsm_acc, capset, struct cred *, new, const struct cred *, old, const kernel_cap_t *, effective, const kernel_cap_t *, inheritable, const kernel_cap_t *, permitted);
-FUNC4INT(lsm_acc, capable, struct task_struct *, tsk, const struct cred *, cred, int, cap, int, audit);
+
+
+//FUNC4INT(lsm_acc, capable, struct task_struct *, tsk, const struct cred *, cred, int, cap, int, audit);
+
+
 FUNC1INT(lsm_acc, acct, struct file *, file);
 FUNC2INT(lsm_acc, sysctl, struct ctl_table *, table, int, op);
 FUNC4INT(lsm_acc, quotactl, int, cmds, int, type, int, id, struct super_block *, sb);
 FUNC1INT(lsm_acc, quota_on, struct dentry *, dentry);
 FUNC1INT(lsm_acc, syslog, int, type);
 FUNC2INT(lsm_acc, settime, struct timespec *, ts, struct timezone *, tz);
+
 FUNC2INT(lsm_acc, vm_enough_memory, struct mm_struct *, mm, long, pages);
 FUNC1INT(lsm_acc, bprm_set_creds, struct linux_binprm *, bprm);
 FUNC1INT(lsm_acc, bprm_check_security, struct linux_binprm *, bprm);
@@ -93,6 +98,7 @@ FUNC4INT(lsm_acc, task_setgid, gid_t, id0, gid_t, id1, gid_t, id2, int, flags);
 FUNC2INT(lsm_acc, task_setpgid, struct task_struct *, p, pid_t, pgid);
 FUNC1INT(lsm_acc, task_getpgid, struct task_struct *, p);
 FUNC1INT(lsm_acc, task_getsid, struct task_struct *, p);
+
 FUNC2VOID(lsm_acc, task_getsecid, struct task_struct *, p, u32 *, secid);
 FUNC1INT(lsm_acc, task_setgroups, struct group_info *, group_info);
 FUNC2INT(lsm_acc, task_setnice, struct task_struct *, p, int, nice);
@@ -179,3 +185,4 @@ FUNC4INT(lsm_acc, audit_rule_init, u32, field, u32, op, char *, rulestr, void **
 FUNC1INT(lsm_acc, audit_rule_known, struct audit_krule *, krule);
 FUNC5INT(lsm_acc, audit_rule_match, u32, secid, u32, field, u32, op, void *, lsmrule, struct audit_context *, actx);
 FUNC1VOID(lsm_acc, audit_rule_free, void *, lsmrule);
+

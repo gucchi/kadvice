@@ -11,6 +11,8 @@
 #define CONFIG_KEYS 1
 #define CONFIG_AUDIT 1
 
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Shinpei NAKATA");
 
 static int sc_ptrace_may_access(struct task_struct * child,unsigned int mode)
 {	return sc_check_ptrace_may_access( child, mode);
@@ -25,9 +27,9 @@ static int sc_capget(struct task_struct * target,kernel_cap_t * effective,kernel
 static int sc_capset(struct cred * new,const struct cred * old,const kernel_cap_t * effective,const kernel_cap_t * inheritable,const kernel_cap_t * permitted)
 {	return sc_check_capset( new, old, effective, inheritable, permitted);
 }
-static int sc_capable(struct task_struct * tsk,const struct cred * cred,int cap,int audit)
-{	return sc_check_capable( tsk, cred, cap, audit);
-}
+//static int sc_capable(struct task_struct * tsk,const struct cred * cred,int cap,int audit)
+//{	return sc_check_capable( tsk, cred, cap, audit);
+//}
 static int sc_acct(struct file * file)
 {	return sc_check_acct( file);
 }
@@ -603,7 +605,7 @@ struct security_operations sc_ops = {
 .ptrace_traceme = sc_ptrace_traceme,
 .capget = sc_capget,
 .capset = sc_capset,
-.capable = sc_capable,
+//.capable = sc_capable,
 .acct = sc_acct,
 .sysctl = sc_sysctl,
 .quotactl = sc_quotactl,
@@ -791,6 +793,7 @@ struct security_operations sc_ops = {
 };
 
 
+extern int register_security (struct security_operations*);
 
 static int __init kadvicelsm_init(void){
   if(register_security(&sc_ops)){
