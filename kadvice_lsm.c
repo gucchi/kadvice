@@ -27,9 +27,9 @@ static int sc_capget(struct task_struct * target,kernel_cap_t * effective,kernel
 static int sc_capset(struct cred * new,const struct cred * old,const kernel_cap_t * effective,const kernel_cap_t * inheritable,const kernel_cap_t * permitted)
 {	return sc_check_capset( new, old, effective, inheritable, permitted);
 }
-//static int sc_capable(struct task_struct * tsk,const struct cred * cred,int cap,int audit)
-//{	return sc_check_capable( tsk, cred, cap, audit);
-//}
+static int sc_capable(struct task_struct * tsk,const struct cred * cred,int cap,int audit)
+{	return sc_check_capable( tsk, cred, cap, audit);
+}
 static int sc_acct(struct file * file)
 {	return sc_check_acct( file);
 }
@@ -304,6 +304,7 @@ static int sc_kernel_act_as(struct cred * new,u32 secid)
 static int sc_kernel_create_files_as(struct cred * new,struct inode * inode)
 {	return sc_check_kernel_create_files_as( new, inode);
 }
+#if 0
 static int sc_task_setuid(uid_t id0,uid_t id1,uid_t id2,int flags)
 {	return sc_check_task_setuid( id0, id1, id2, flags);
 }
@@ -316,6 +317,8 @@ static int sc_task_setgid(gid_t id0,gid_t id1,gid_t id2,int flags)
 static int sc_task_setpgid(struct task_struct * p,pid_t pgid)
 {	return sc_check_task_setpgid( p, pgid);
 }
+
+
 static int sc_task_getpgid(struct task_struct * p)
 {	return sc_check_task_getpgid( p);
 }
@@ -529,9 +532,11 @@ static void sc_req_classify_flow(const struct request_sock * req,struct flowi * 
 {	return sc_check_req_classify_flow( req, fl);
 }
 
+
 #endif /* CONFIG_SECURITY_NETWORK */
 
 #ifdef CONFIG_SECURITY_NETWORK_XFRM
+
 static int sc_xfrm_policy_alloc_security(struct xfrm_sec_ctx ** ctxp,struct xfrm_user_sec_ctx * sec_ctx)
 {	return sc_check_xfrm_policy_alloc_security( ctxp, sec_ctx);
 }
@@ -564,6 +569,7 @@ static int sc_xfrm_state_pol_flow_match(struct xfrm_state * x,struct xfrm_policy
 static int sc_xfrm_decode_session(struct sk_buff * skb,u32 * secid,int ckall)
 {	return sc_check_xfrm_decode_session( skb, secid, ckall);
 }
+
 
 #endif /* CONFIG_SECURITY_NETWORK_XFRM */
 
@@ -600,7 +606,12 @@ static void sc_audit_rule_free(void * lsmrule)
 }
 
 #endif /* CONFIG_AUDIT */
+#endif
+
+
 struct security_operations sc_ops = {
+  .name = "scube",
+  /*
 .ptrace_may_access = sc_ptrace_may_access,
 .ptrace_traceme = sc_ptrace_traceme,
 .capget = sc_capget,
@@ -612,6 +623,7 @@ struct security_operations sc_ops = {
 .quota_on = sc_quota_on,
 .syslog = sc_syslog,
 .settime = sc_settime,
+
 .vm_enough_memory = sc_vm_enough_memory,
 .bprm_set_creds = sc_bprm_set_creds,
 .bprm_check_security = sc_bprm_check_security,
@@ -636,6 +648,7 @@ struct security_operations sc_ops = {
 .sb_set_mnt_opts = sc_sb_set_mnt_opts,
 .sb_clone_mnt_opts = sc_sb_clone_mnt_opts,
 .sb_parse_opts_str = sc_sb_parse_opts_str,
+*/
 #ifdef CONFIG_SECURITY_PATH
 .path_unlink = sc_path_unlink,
 .path_mkdir = sc_path_mkdir,
@@ -646,6 +659,7 @@ struct security_operations sc_ops = {
 .path_link = sc_path_link,
 .path_rename = sc_path_rename,
 #endif
+/*
 .inode_alloc_security = sc_inode_alloc_security,
 .inode_free_security = sc_inode_free_security,
 .inode_init_security = sc_inode_init_security,
@@ -692,6 +706,7 @@ struct security_operations sc_ops = {
 .cred_commit = sc_cred_commit,
 .kernel_act_as = sc_kernel_act_as,
 .kernel_create_files_as = sc_kernel_create_files_as,
+
 .task_setuid = sc_task_setuid,
 .task_fix_setuid = sc_task_fix_setuid,
 .task_setgid = sc_task_setgid,
@@ -790,6 +805,7 @@ struct security_operations sc_ops = {
 .audit_rule_match = sc_audit_rule_match,
 .audit_rule_free = sc_audit_rule_free,
 #endif
+*/
 };
 
 

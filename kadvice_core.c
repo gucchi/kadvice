@@ -358,19 +358,6 @@ int kadvice_post(char *head, char *name, int aoid, int priority){
 }
 EXPORT_SYMBOL(kadvice_post);
 
-/*
-int kadvice_set_selinux(int aoid, int priority){
-  int i = 0;
-  while(lsm_security_str[i]){
-    int ret = kadvice_post("selinux", lsm_security_str[i], 1, 1);
-    if(!ret)
-      return -1;
-    i++;
-  }
-  return 0;
-}
-EXPORT_SYMBOL(kadvice_set_selinux);
-*/
 
 
 /*

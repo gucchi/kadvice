@@ -1,10 +1,11 @@
+/*
 FUNC2INT(lsm_acc, ptrace_may_access, struct task_struct *, child, unsigned int, mode);
 FUNC1INT(lsm_acc, ptrace_traceme, struct task_struct *, parent);
 FUNC4INT(lsm_acc, capget, struct task_struct *, target, kernel_cap_t *, effective, kernel_cap_t *, inheritable, kernel_cap_t *, permitted);
 FUNC5INT(lsm_acc, capset, struct cred *, new, const struct cred *, old, const kernel_cap_t *, effective, const kernel_cap_t *, inheritable, const kernel_cap_t *, permitted);
 
 
-//FUNC4INT(lsm_acc, capable, struct task_struct *, tsk, const struct cred *, cred, int, cap, int, audit);
+FUNC4INT(lsm_acc, capable, struct task_struct *, tsk, const struct cred *, cred, int, cap, int, audit);
 
 
 FUNC1INT(lsm_acc, acct, struct file *, file);
@@ -13,7 +14,6 @@ FUNC4INT(lsm_acc, quotactl, int, cmds, int, type, int, id, struct super_block *,
 FUNC1INT(lsm_acc, quota_on, struct dentry *, dentry);
 FUNC1INT(lsm_acc, syslog, int, type);
 FUNC2INT(lsm_acc, settime, struct timespec *, ts, struct timezone *, tz);
-
 FUNC2INT(lsm_acc, vm_enough_memory, struct mm_struct *, mm, long, pages);
 FUNC1INT(lsm_acc, bprm_set_creds, struct linux_binprm *, bprm);
 FUNC1INT(lsm_acc, bprm_check_security, struct linux_binprm *, bprm);
@@ -38,6 +38,8 @@ FUNC2VOID(lsm_acc, sb_post_pivotroot, struct path *, old_path, struct path *, ne
 FUNC2INT(lsm_acc, sb_set_mnt_opts, struct super_block *, sb, struct security_mnt_opts *, opts);
 FUNC2VOID(lsm_acc, sb_clone_mnt_opts, const struct super_block *, oldsb, struct super_block *, newsb);
 FUNC2INT(lsm_acc, sb_parse_opts_str, char *, options, struct security_mnt_opts *, opts);
+*/
+
 FUNC2INT(lsm_acc, path_unlink, struct path *, dir, struct dentry *, dentry);
 FUNC3INT(lsm_acc, path_mkdir, struct path *, dir, struct dentry *, dentry, int, mode);
 FUNC2INT(lsm_acc, path_rmdir, struct path *, dir, struct dentry *, dentry);
@@ -46,6 +48,7 @@ FUNC3INT(lsm_acc, path_truncate, struct path *, path, loff_t, length, unsigned i
 FUNC3INT(lsm_acc, path_symlink, struct path *, dir, struct dentry *, dentry, const char *, old_name);
 FUNC3INT(lsm_acc, path_link, struct dentry *, old_dentry, struct path *, new_dir, struct dentry *, new_dentry);
 FUNC4INT(lsm_acc, path_rename, struct path *, old_dir, struct dentry *, old_dentry, struct path *, new_dir, struct dentry *, new_dentry);
+/*
 FUNC1INT(lsm_acc, inode_alloc_security, struct inode *, inode);
 FUNC1VOID(lsm_acc, inode_free_security, struct inode *, inode);
 FUNC5INT(lsm_acc, inode_init_security, struct inode *, inode, struct inode *, dir, char **, name, void **, value, size_t *, len);
@@ -92,13 +95,13 @@ FUNC3INT(lsm_acc, cred_prepare, struct cred *, new, const struct cred *, old, gf
 FUNC2VOID(lsm_acc, cred_commit, struct cred *, new, const struct cred *, old);
 FUNC2INT(lsm_acc, kernel_act_as, struct cred *, new, u32, secid);
 FUNC2INT(lsm_acc, kernel_create_files_as, struct cred *, new, struct inode *, inode);
+
 FUNC4INT(lsm_acc, task_setuid, uid_t, id0, uid_t, id1, uid_t, id2, int, flags);
 FUNC3INT(lsm_acc, task_fix_setuid, struct cred *, new, const struct cred *, old, int, flags);
 FUNC4INT(lsm_acc, task_setgid, gid_t, id0, gid_t, id1, gid_t, id2, int, flags);
 FUNC2INT(lsm_acc, task_setpgid, struct task_struct *, p, pid_t, pgid);
 FUNC1INT(lsm_acc, task_getpgid, struct task_struct *, p);
 FUNC1INT(lsm_acc, task_getsid, struct task_struct *, p);
-
 FUNC2VOID(lsm_acc, task_getsecid, struct task_struct *, p, u32 *, secid);
 FUNC1INT(lsm_acc, task_setgroups, struct group_info *, group_info);
 FUNC2INT(lsm_acc, task_setnice, struct task_struct *, p, int, nice);
@@ -186,3 +189,4 @@ FUNC1INT(lsm_acc, audit_rule_known, struct audit_krule *, krule);
 FUNC5INT(lsm_acc, audit_rule_match, u32, secid, u32, field, u32, op, void *, lsmrule, struct audit_context *, actx);
 FUNC1VOID(lsm_acc, audit_rule_free, void *, lsmrule);
 
+*/
