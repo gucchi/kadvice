@@ -10,20 +10,20 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("shinpei Nakata");
 
 
-SC_POST("tomoyo", cred_prepare);
-SC_POST("tomoyo", bprm_set_creds);
-SC_POST("tomoyo", sysctl);
-SC_POST("tomoyo", bprm_check_security);
-SC_POST("tomoyo", path_truncate);
-SC_POST("tomoyo", path_unlink);
-SC_POST("tomoyo", path_mkdir);
-SC_POST("tomoyo", path_rmdir);
-SC_POST("tomoyo", path_symlink);
-SC_POST("tomoyo", path_mknod);
-SC_POST("tomoyo", path_link);
-SC_POST("tomoyo", path_rename);
-SC_POST("tomoyo", file_fcntl);
-SC_POST("tomoyo", dentry_open);
+DEF_SC_QUERY("tomoyo", cred_prepare);
+DEF_SC_QUERY("tomoyo", bprm_set_creds);
+DEF_SC_QUERY("tomoyo", sysctl);
+DEF_SC_QUERY("tomoyo", bprm_check_security);
+DEF_SC_QUERY("tomoyo", path_truncate);
+DEF_SC_QUERY("tomoyo", path_unlink);
+DEF_SC_QUERY("tomoyo", path_mkdir);
+DEF_SC_QUERY("tomoyo", path_rmdir);
+DEF_SC_QUERY("tomoyo", path_symlink);
+DEF_SC_QUERY("tomoyo", path_mknod);
+DEF_SC_QUERY("tomoyo", path_link);
+DEF_SC_QUERY("tomoyo", path_rename);
+DEF_SC_QUERY("tomoyo", file_fcntl);
+DEF_SC_QUERY("tomoyo", dentry_open);
 
 static int __init tomoyohook_init(void){
   scube_post_query(&scq_cred_prepare);
