@@ -11,7 +11,7 @@
 
 #include "ka/base.h"
 #include "ka_def.h"
-#include "ka_security_str_lsm.h"
+#include "sc_lsm_strdef.h"
 
 long lsm_acc[LSMIDMAX + 1][AOIDMAX][FUNCMAX];
 
@@ -86,7 +86,7 @@ static void *ka_start(struct seq_file *m, loff_t *pos){
     seq_printf(m, "%-35s", "## access control cube ## aoid");	
     seq_puts(m, "\n\n");					
   }								
-  for(i = 0; lsm_acc[i][0] && lsm_security_str[i]; i++){		
+  for(i = 0; lsm_acc[i][0]; i++){		
     n--;							
     if(n < 0)							
       return (void *)(i + 1);					
@@ -98,7 +98,7 @@ static void *ka_start(struct seq_file *m, loff_t *pos){
 static void *ka_next(struct seq_file *m, void *p, loff_t *pos){	
   int n = (int)p;						
   (*pos)++;							
-  if(lsm_acc[n-1][0] && lsm_security_str[n-1]){				
+  if(lsm_acc[n-1][0]){				
     return (void *)(n + 1);					
   }								
   return 0;							
@@ -246,8 +246,8 @@ extern unsigned long kallsyms_lookup_name(const char *);
 
 int ka_find_lsmid_from_str(char *name){
   int i;
-  for(i = 0; i < LSMIDMAX && lsm_security_str[i]; i++){
-    if(strcmp(lsm_security_str[i], name) == 0)
+  for(i = 0; i < LSMIDMAX; i++){
+    if(strcmp(sc_security_str[i], name) == 0)
       return i;
   }
   return -1;

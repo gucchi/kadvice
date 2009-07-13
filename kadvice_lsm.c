@@ -304,7 +304,7 @@ static int sc_kernel_act_as(struct cred * new,u32 secid)
 static int sc_kernel_create_files_as(struct cred * new,struct inode * inode)
 {	return sc_check_kernel_create_files_as( new, inode);
 }
-#if 0
+
 static int sc_task_setuid(uid_t id0,uid_t id1,uid_t id2,int flags)
 {	return sc_check_task_setuid( id0, id1, id2, flags);
 }
@@ -606,7 +606,7 @@ static void sc_audit_rule_free(void * lsmrule)
 }
 
 #endif /* CONFIG_AUDIT */
-#endif
+
 
 
 struct security_operations sc_ops = {
@@ -616,20 +616,23 @@ struct security_operations sc_ops = {
 .ptrace_traceme = sc_ptrace_traceme,
 .capget = sc_capget,
 .capset = sc_capset,
-//.capable = sc_capable,
+.capable = sc_capable,
 .acct = sc_acct,
+  */
 .sysctl = sc_sysctl,
+  /*
 .quotactl = sc_quotactl,
 .quota_on = sc_quota_on,
 .syslog = sc_syslog,
 .settime = sc_settime,
-
 .vm_enough_memory = sc_vm_enough_memory,
+  */
 .bprm_set_creds = sc_bprm_set_creds,
 .bprm_check_security = sc_bprm_check_security,
-.bprm_secureexec = sc_bprm_secureexec,
-.bprm_committing_creds = sc_bprm_committing_creds,
-.bprm_committed_creds = sc_bprm_committed_creds,
+  //.bprm_secureexec = sc_bprm_secureexec,
+  //.bprm_committing_creds = sc_bprm_committing_creds,
+  //.bprm_committed_creds = sc_bprm_committed_creds,
+  /*
 .sb_alloc_security = sc_sb_alloc_security,
 .sb_free_security = sc_sb_free_security,
 .sb_copy_data = sc_sb_copy_data,
@@ -659,7 +662,7 @@ struct security_operations sc_ops = {
 .path_link = sc_path_link,
 .path_rename = sc_path_rename,
 #endif
-/*
+  /*
 .inode_alloc_security = sc_inode_alloc_security,
 .inode_free_security = sc_inode_free_security,
 .inode_init_security = sc_inode_init_security,
@@ -695,14 +698,20 @@ struct security_operations sc_ops = {
 .file_mmap = sc_file_mmap,
 .file_mprotect = sc_file_mprotect,
 .file_lock = sc_file_lock,
+  */
 .file_fcntl = sc_file_fcntl,
+  /*
 .file_set_fowner = sc_file_set_fowner,
 .file_send_sigiotask = sc_file_send_sigiotask,
 .file_receive = sc_file_receive,
+  */
 .dentry_open = sc_dentry_open,
+  /*
 .task_create = sc_task_create,
 .cred_free = sc_cred_free,
+  */
 .cred_prepare = sc_cred_prepare,
+/*
 .cred_commit = sc_cred_commit,
 .kernel_act_as = sc_kernel_act_as,
 .kernel_create_files_as = sc_kernel_create_files_as,
@@ -805,7 +814,8 @@ struct security_operations sc_ops = {
 .audit_rule_match = sc_audit_rule_match,
 .audit_rule_free = sc_audit_rule_free,
 #endif
-*/
+  */
+
 };
 
 

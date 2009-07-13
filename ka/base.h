@@ -31,10 +31,8 @@ extern int lookup_module_symbol_attrs(unsigned long, unsigned long *, unsigned l
       if(func(arg1) != 0) {				\
 	return -1;					\
       }							\
-    } else { \
-      printk("nothing...\n");			\
     }							\
-    return 0;					\
+    return 0;						\
   }							\
   EXPORT_SYMBOL(sc_check_##name)
 
@@ -52,8 +50,6 @@ int FUNCNAME(name)(type1 arg1,type2 arg2) \
     if(func(arg1, arg2) != 0) {				\
       return -1;					\
     }							\
-  } else {						\
-    printk("nothing...\n");				\
   }							\
   return 0;						\
 }							\
@@ -74,8 +70,6 @@ int FUNCNAME(name)(type1 arg1, type2 arg2, type3 arg3) \
       if(func(arg1, arg2, arg3) != 0) {			\
 	return -1;					\
       }							\
-    } else {						\
-      printk("nothing...\n");				\
     }							\
     return 0;						\
 }							\
@@ -94,9 +88,7 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4) \
 	if(func(arg1, arg2, arg3, arg4) != 0) {		\
 	  return -1;					\
 	}						\
-    } else {						\
-      printk("nothing...\n");				\
-    }							\
+    } 						\
     return 0;						\
   } \
   EXPORT_SYMBOL(sc_check_##name)
@@ -115,10 +107,8 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
       if(func(arg1, arg2, arg3, arg4, arg5) != 0) {	      \
 	return -1;					      \
       }							      \
-    } else {						\
-      printk("nothing...\n");				\
-    }							\
-    return 0;						\
+    }							      \
+    return 0;						      \
   } \
   EXPORT_SYMBOL(sc_check_##name)
 
@@ -136,9 +126,7 @@ int FUNCNAME(name)(type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6 
       if(func(arg1, arg2, arg3, arg4, arg5, arg6) != 0) {	    \
 	return -1;						    \
       }								    \
-    } else {						\
-      printk("nothing...\n");				\
-    }							\
+    }						\
     return 0;						\
   } \
   EXPORT_SYMBOL(sc_check_##name)
