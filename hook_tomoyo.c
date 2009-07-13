@@ -39,7 +39,7 @@ static int __init tomoyohook_init(void){
   scube_post_query(&scq_path_link);
   scube_post_query(&scq_path_rename);
   scube_post_query(&scq_file_fcntl);
-  scube_post_query(&scq_dentry_open);
+  //  scube_post_query(&scq_dentry_open);
   return 0;
 }
 

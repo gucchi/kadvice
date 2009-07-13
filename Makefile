@@ -4,6 +4,7 @@ obj-m+=kadvice.o
 obj-m+=kadvice_lsm.o
 obj-m+=kadvice_proc_write.o
 obj-m+=hook_tomoyo.o
+obj-m+=hook_smack.o
 #obj-m+=advice_file_permission.o
 #obj-m+=kadvice_io.o
 #obj-m+=shinpei.o

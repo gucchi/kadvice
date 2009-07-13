@@ -34,24 +34,49 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Shinpei NAKATA");
 
 static int sc_ptrace_may_access(struct task_struct * child,unsigned int mode)
-{	return sc_check_ptrace_may_access( child, mode);
+{
+  int ret = 0;
+
+  rcu_read_lock();
+  if (!cap_issubset(__task_cred(child)->cap_permitted,
+		    current_cred()->cap_permitted) &&
+      !capable(CAP_SYS_PTRACE))
+    ret = -EPERM;
+  rcu_read_unlock();
+  if (ret == 0)
+    return sc_check_ptrace_may_access( child, mode);
+  return ret;
 }
+
+extern int security_real_capable(struct task_struct *tsk, int cap);
 
 static int sc_ptrace_traceme(struct task_struct * parent)
-{	return sc_check_ptrace_traceme( parent);
+{
+  int ret = 0;
+
+  rcu_read_lock();
+  if (!cap_issubset(current_cred()->cap_permitted,
+		    __task_cred(parent)->cap_permitted) &&
+      !has_capability(parent, CAP_SYS_PTRACE))
+    ret = -EPERM;
+  rcu_read_unlock();
+  if (ret == 0)
+    return sc_check_ptrace_traceme( parent);
+  return ret;
 }
+
 static int sc_capget(struct task_struct * target,kernel_cap_t * effective,kernel_cap_t * inheritable,kernel_cap_t * permitted)
 {
-	const struct cred *cred;
-
-	/* Derived from kernel/capability.c:sys_capget. */
-	rcu_read_lock();
-	cred = __task_cred(target);
-	*effective   = cred->cap_effective;
-	*inheritable = cred->cap_inheritable;
-	*permitted   = cred->cap_permitted;
-	rcu_read_unlock();
-	return sc_check_capget( target, effective, inheritable, permitted);
+  const struct cred *cred;
+  
+  /* Derived from kernel/capability.c:sys_capget. */
+  rcu_read_lock();
+  cred = __task_cred(target);
+  *effective   = cred->cap_effective;
+  *inheritable = cred->cap_inheritable;
+  *permitted   = cred->cap_permitted;
+  rcu_read_unlock();
+  return sc_check_capget( target, effective, inheritable, permitted);
 }
 
 extern int cap_inh_is_capped(void);
@@ -84,9 +109,13 @@ static int sc_capset(struct cred * new,const struct cred * old,const kernel_cap_
 	new->cap_permitted   = *permitted;
 	return sc_check_capset( new, old, effective, inheritable, permitted);
 }
+
 static int sc_capable(struct task_struct * tsk,const struct cred * cred,int cap,int audit)
-{	return sc_check_capable( tsk, cred, cap, audit);
+{
+  return cap_raised(cred->cap_effective, cap) ? sc_check_capable( tsk, cred, cap, audit) : -EPERM;
+
 }
+
 static int sc_acct(struct file * file)
 {	return sc_check_acct( file);
 }
@@ -97,10 +126,14 @@ static int sc_quotactl(int cmds,int type,int id,struct super_block * sb)
 {	return sc_check_quotactl( cmds, type, id, sb);
 }
 static int sc_quota_on(struct dentry * dentry)
-{	return sc_check_quota_on( dentry);
+{
+  return sc_check_quota_on( dentry);
 }
 static int sc_syslog(int type)
-{	return sc_check_syslog( type);
+{
+  if ((type != 3 && type != 10) && !capable(CAP_SYS_ADMIN))
+    return -EPERM;
+  return sc_check_syslog( type);
 }
 static int sc_settime(struct timespec * ts,struct timezone * tz)
 {	
@@ -108,17 +141,37 @@ static int sc_settime(struct timespec * ts,struct timezone * tz)
     return -EPERM;
   return sc_check_settime( ts, tz);
 }
+
 static int sc_vm_enough_memory(struct mm_struct * mm,long pages)
-{	return sc_check_vm_enough_memory( mm, pages);
+{
+  return sc_check_vm_enough_memory( mm, pages);
 }
+
 static int sc_bprm_set_creds(struct linux_binprm * bprm)
-{	return sc_check_bprm_set_creds( bprm);
+{
+  return sc_check_bprm_set_creds( bprm);
 }
+
 static int sc_bprm_check_security(struct linux_binprm * bprm)
-{	return sc_check_bprm_check_security( bprm);
+{
+  return sc_check_bprm_check_security( bprm);
 }
+
 static int sc_bprm_secureexec(struct linux_binprm * bprm)
-{	return sc_check_bprm_secureexec( bprm);
+{
+  const struct cred *cred = current_cred();
+
+  if (cred->uid != 0) {
+    if (bprm->cap_effective)
+      return 1;
+    if (!cap_isclear(cred->cap_permitted))
+      return 1;
+  }
+
+  return (cred->euid != cred->uid ||
+	  cred->egid != cred->gid);
+
+  //  return sc_check_bprm_secureexec( bprm);
 }
 static void sc_bprm_committing_creds(struct linux_binprm * bprm)
 {	return sc_check_bprm_committing_creds( bprm);
@@ -258,17 +311,32 @@ static int sc_inode_permission(struct inode * inode,int mask)
 {	return sc_check_inode_permission( inode, mask);
 }
 static int sc_inode_setattr(struct dentry * dentry,struct iattr * attr)
-{	return sc_check_inode_setattr( dentry, attr);
+{
+  return sc_check_inode_setattr( dentry, attr);
 }
 static int sc_inode_getattr(struct vfsmount * mnt,struct dentry * dentry)
-{	return sc_check_inode_getattr( mnt, dentry);
+{
+
+  return sc_check_inode_getattr( mnt, dentry);
 }
 static void sc_inode_delete(struct inode * inode)
 {	return sc_check_inode_delete( inode);
 }
 static int sc_inode_setxattr(struct dentry * dentry,const char * name,const void * value,size_t size,int flags)
-{	return sc_check_inode_setxattr( dentry, name, value, size, flags);
+{
+  if (!strcmp(name, XATTR_NAME_CAPS)) {
+    if (!capable(CAP_SETFCAP))
+      return -EPERM;
+    return sc_check_inode_setxattr( dentry, name, value, size, flags);
+  }
+  
+  if (!strncmp(name, XATTR_SECURITY_PREFIX,
+	       sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
+      !capable(CAP_SYS_ADMIN))
+    return -EPERM;
+  return sc_check_inode_setxattr( dentry, name, value, size, flags);
 }
+
 static void sc_inode_post_setxattr(struct dentry * dentry,const char * name,const void * value,size_t size,int flags)
 {	return sc_check_inode_post_setxattr( dentry, name, value, size, flags);
 }
@@ -279,7 +347,22 @@ static int sc_inode_listxattr(struct dentry * dentry)
 {	return sc_check_inode_listxattr( dentry);
 }
 static int sc_inode_removexattr(struct dentry * dentry,const char * name)
-{	return sc_check_inode_removexattr( dentry, name);
+{
+  if (!strcmp(name, XATTR_NAME_CAPS)) {
+    if (!capable(CAP_SETFCAP))
+      return -EPERM;
+  return sc_check_inode_removexattr( dentry, name);
+
+  }
+  
+  if (!strncmp(name, XATTR_SECURITY_PREFIX,
+	       sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
+      !capable(CAP_SYS_ADMIN))
+    return -EPERM;
+  return sc_check_inode_removexattr( dentry, name);
+
+
+
 }
 static int sc_inode_need_killpriv(struct dentry * dentry)
 {
@@ -456,11 +539,23 @@ static void sc_task_getsecid(struct task_struct * p,u32 * secid)
 static int sc_task_setgroups(struct group_info * group_info)
 {	return sc_check_task_setgroups( group_info);
 }
+
+extern int cap_safe_nice (struct task_struct *p);
+
 static int sc_task_setnice(struct task_struct * p,int nice)
-{	return sc_check_task_setnice( p, nice);
+{
+  int ret;
+  if ((ret = cap_safe_nice(p)) == 0) 
+	return sc_check_task_setnice( p, nice);
+  return ret;
 }
+
 static int sc_task_setioprio(struct task_struct * p,int ioprio)
-{	return sc_check_task_setioprio( p, ioprio);
+{
+  int ret;
+  if ((ret = cap_safe_nice(p)) == 0) 
+	return sc_check_task_setioprio( p, ioprio);
+  return ret;
 }
 static int sc_task_getioprio(struct task_struct * p)
 {	return sc_check_task_getioprio( p);
@@ -468,11 +563,19 @@ static int sc_task_getioprio(struct task_struct * p)
 static int sc_task_setrlimit(unsigned int resource,struct rlimit * new_rlim)
 {	return sc_check_task_setrlimit( resource, new_rlim);
 }
+
+
 static int sc_task_setscheduler(struct task_struct * p,int policy,struct sched_param * lp)
-{	return sc_check_task_setscheduler( p, policy, lp);
+{
+  int ret;
+  if((ret = cap_safe_nice(p)) == 0)
+    return sc_check_task_setscheduler( p, policy, lp);
+  return ret;
 }
+
 static int sc_task_getscheduler(struct task_struct * p)
-{	return sc_check_task_getscheduler( p);
+{
+	return sc_check_task_getscheduler( p);
 }
 static int sc_task_movememory(struct task_struct * p)
 {	return sc_check_task_movememory( p);
@@ -484,7 +587,8 @@ static int sc_task_wait(struct task_struct * p)
 {	return sc_check_task_wait( p);
 }
 static int sc_task_prctl(int option,unsigned long arg2,unsigned long arg3,unsigned long arg4,unsigned long arg5)
-{	return sc_check_task_prctl( option, arg2, arg3, arg4, arg5);
+{
+  return sc_check_task_prctl( option, arg2, arg3, arg4, arg5);
 }
 static void sc_task_to_inode(struct task_struct * p,struct inode * inode)
 {	return sc_check_task_to_inode( p, inode);
@@ -579,7 +683,7 @@ static int sc_secid_to_secctx(u32 secid,char ** secdata,u32 * seclen)
 static int sc_secctx_to_secid(const char * secdata,u32 seclen,u32 * secid)
 {
   return -EOPNOTSUPP;
-	return sc_check_secctx_to_secid( secdata, seclen, secid);
+  //	return sc_check_secctx_to_secid( secdata, seclen, secid);
 }
 static void sc_release_secctx(char * secdata,u32 seclen)
 {	return sc_check_release_secctx( secdata, seclen);
@@ -751,29 +855,33 @@ static void sc_audit_rule_free(void * lsmrule)
 
 struct security_operations sc_ops = {
   .name = "scube",
-  /*
+
 .ptrace_may_access = sc_ptrace_may_access,
+
 .ptrace_traceme = sc_ptrace_traceme,
+
 .capget = sc_capget,
+
 .capset = sc_capset,
+
 .capable = sc_capable,
-  */
+
 .acct = sc_acct,
 .sysctl = sc_sysctl,
 .quotactl = sc_quotactl,
 .quota_on = sc_quota_on,
-  /*
+
 .syslog = sc_syslog,
-  */
+
 .settime = sc_settime,
   /*
 .vm_enough_memory = sc_vm_enough_memory,
   */
 .bprm_set_creds = sc_bprm_set_creds,
 .bprm_check_security = sc_bprm_check_security,
-  //.bprm_secureexec = sc_bprm_secureexec,
-  //.bprm_committing_creds = sc_bprm_committing_creds,
-  //.bprm_committed_creds = sc_bprm_committed_creds,
+.bprm_secureexec = sc_bprm_secureexec,
+.bprm_committing_creds = sc_bprm_committing_creds,
+.bprm_committed_creds = sc_bprm_committed_creds,
 
 .sb_alloc_security = sc_sb_alloc_security,
 .sb_free_security = sc_sb_free_security,
@@ -827,18 +935,17 @@ struct security_operations sc_ops = {
 .inode_getxattr = sc_inode_getxattr,
 .inode_listxattr = sc_inode_listxattr,
 
-  /*
 .inode_removexattr = sc_inode_removexattr,
 .inode_need_killpriv = sc_inode_need_killpriv,
-.inode_killpriv = sc_inode_killpriv,
-  */
+  //.inode_killpriv = sc_inode_killpriv,
+
 
 .inode_getsecurity = sc_inode_getsecurity,
 .inode_setsecurity = sc_inode_setsecurity,
 .inode_listsecurity = sc_inode_listsecurity,
 .inode_getsecid = sc_inode_getsecid,
 
-.file_permission = sc_file_permission,
+  //.file_permission = sc_file_permission,
 .file_alloc_security = sc_file_alloc_security,
 .file_free_security = sc_file_free_security,
 .file_ioctl = sc_file_ioctl,
@@ -850,7 +957,7 @@ struct security_operations sc_ops = {
 .file_send_sigiotask = sc_file_send_sigiotask,
 .file_receive = sc_file_receive,
 
-.dentry_open = sc_dentry_open,
+  //.dentry_open = sc_dentry_open,
 .task_create = sc_task_create,
 .cred_free = sc_cred_free,
 .cred_prepare = sc_cred_prepare,
@@ -867,11 +974,11 @@ struct security_operations sc_ops = {
 .task_getsid = sc_task_getsid,
 .task_getsecid = sc_task_getsecid,
 .task_setgroups = sc_task_setgroups,
-  //.task_setnice = sc_task_setnice,
-  //.task_setioprio = sc_task_setioprio,
+.task_setnice = sc_task_setnice,
+.task_setioprio = sc_task_setioprio,
 .task_getioprio = sc_task_getioprio,
 .task_setrlimit = sc_task_setrlimit,
-  //.task_setscheduler = sc_task_setscheduler,
+.task_setscheduler = sc_task_setscheduler,
 .task_getscheduler = sc_task_getscheduler,
 .task_movememory = sc_task_movememory,
 .task_kill = sc_task_kill,
@@ -899,8 +1006,8 @@ struct security_operations sc_ops = {
 .sem_semctl = sc_sem_semctl,
 .sem_semop = sc_sem_semop,
 
-  //.netlink_send = sc_netlink_send,
-  //.netlink_recv = sc_netlink_recv,
+  .netlink_send = sc_netlink_send,
+  .netlink_recv = sc_netlink_recv,
 
 .d_instantiate = sc_d_instantiate,
 .getprocattr = sc_getprocattr,
