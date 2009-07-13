@@ -1,7 +1,26 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/security.h>
-
+#include <linux/capability.h>
+#include <linux/audit.h>
+#include <linux/module.h>
+#include <linux/init.h>
+#include <linux/kernel.h>
+#include <linux/security.h>
+#include <linux/file.h>
+#include <linux/mm.h>
+#include <linux/mman.h>
+#include <linux/pagemap.h>
+#include <linux/swap.h>
+#include <linux/skbuff.h>
+#include <linux/netlink.h>
+#include <linux/ptrace.h>
+#include <linux/xattr.h>
+#include <linux/hugetlb.h>
+#include <linux/mount.h>
+#include <linux/sched.h>
+#include <linux/prctl.h>
+#include <linux/securebits.h>
 #include "ka/kadvice_lsm.h"
 #include "securitycube/securitycube.h"
 
@@ -308,8 +327,47 @@ static int sc_kernel_create_files_as(struct cred * new,struct inode * inode)
 static int sc_task_setuid(uid_t id0,uid_t id1,uid_t id2,int flags)
 {	return sc_check_task_setuid( id0, id1, id2, flags);
 }
+
+extern void cap_emulate_setxuid(struct cred *new, struct cred *old);
+
 static int sc_task_fix_setuid(struct cred * new,const struct cred * old,int flags)
-{	return sc_check_task_fix_setuid( new, old, flags);
+{	
+	switch (flags) {
+	case LSM_SETID_RE:
+	case LSM_SETID_ID:
+	case LSM_SETID_RES:
+		/* juggle the capabilities to follow [RES]UID changes unless
+		 * otherwise suppressed */
+		if (!issecure(SECURE_NO_SETUID_FIXUP))
+			cap_emulate_setxuid(new, old);
+		break;
+
+	case LSM_SETID_FS:
+		/* juggle the capabilties to follow FSUID changes, unless
+		 * otherwise suppressed
+		 *
+		 * FIXME - is fsuser used for all CAP_FS_MASK capabilities?
+		 *          if not, we might be a bit too harsh here.
+		 */
+		if (!issecure(SECURE_NO_SETUID_FIXUP)) {
+			if (old->fsuid == 0 && new->fsuid != 0)
+				new->cap_effective =
+					cap_drop_fs_set(new->cap_effective);
+
+			if (old->fsuid != 0 && new->fsuid == 0)
+				new->cap_effective =
+					cap_raise_fs_set(new->cap_effective,
+							 new->cap_permitted);
+		}
+		break;
+
+	default:
+		return -EINVAL;
+	}
+
+	return sc_check_task_fix_setuid( new, old, flags);
+
+
 }
 static int sc_task_setgid(gid_t id0,gid_t id1,gid_t id2,int flags)
 {	return sc_check_task_setgid( id0, id1, id2, flags);
