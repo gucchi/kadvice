@@ -804,6 +804,7 @@ struct security_operations sc_ops = {
 .path_link = sc_path_link,
 .path_rename = sc_path_rename,
 #endif
+
 .inode_alloc_security = sc_inode_alloc_security,
 .inode_free_security = sc_inode_free_security,
 .inode_init_security = sc_inode_init_security,
@@ -825,15 +826,18 @@ struct security_operations sc_ops = {
 .inode_post_setxattr = sc_inode_post_setxattr,
 .inode_getxattr = sc_inode_getxattr,
 .inode_listxattr = sc_inode_listxattr,
+
   /*
 .inode_removexattr = sc_inode_removexattr,
 .inode_need_killpriv = sc_inode_need_killpriv,
 .inode_killpriv = sc_inode_killpriv,
   */
+
 .inode_getsecurity = sc_inode_getsecurity,
 .inode_setsecurity = sc_inode_setsecurity,
 .inode_listsecurity = sc_inode_listsecurity,
 .inode_getsecid = sc_inode_getsecid,
+
 .file_permission = sc_file_permission,
 .file_alloc_security = sc_file_alloc_security,
 .file_free_security = sc_file_free_security,
@@ -845,6 +849,7 @@ struct security_operations sc_ops = {
 .file_set_fowner = sc_file_set_fowner,
 .file_send_sigiotask = sc_file_send_sigiotask,
 .file_receive = sc_file_receive,
+
 .dentry_open = sc_dentry_open,
 .task_create = sc_task_create,
 .cred_free = sc_cred_free,
@@ -932,7 +937,7 @@ struct security_operations sc_ops = {
 .inet_conn_established = sc_inet_conn_established,
 .req_classify_flow = sc_req_classify_flow,
 #endif
-  /*
+  
 #ifdef CONFIG_SECURITY_NETWORK_XFRM
 .xfrm_policy_alloc_security = sc_xfrm_policy_alloc_security,
 .xfrm_policy_clone_security = sc_xfrm_policy_clone_security,
@@ -957,7 +962,7 @@ struct security_operations sc_ops = {
 .audit_rule_match = sc_audit_rule_match,
 .audit_rule_free = sc_audit_rule_free,
 #endif
-  */
+  
 
 };
 
