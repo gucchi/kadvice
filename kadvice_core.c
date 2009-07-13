@@ -17,7 +17,6 @@ long lsm_acc[LSMIDMAX + 1][AOIDMAX][FUNCMAX];
 
 MODULE_LICENSE("GPL");
 
-
 #define KA_SHOW(gid, acc, max)									\
   static int ka_show##gid(struct seq_file *m, void *p){		\
     int n = (int)p-1;											\

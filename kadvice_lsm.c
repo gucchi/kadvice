@@ -820,6 +820,7 @@ struct security_operations sc_ops = {
 
 
 extern int register_security (struct security_operations*);
+extern int unregister_security (struct security_operations*);
 
 static int __init kadvicelsm_init(void){
   if(register_security(&sc_ops)){
@@ -829,12 +830,11 @@ static int __init kadvicelsm_init(void){
   return 0;
 }
 
-
 static void __exit kadvicelsm_exit(void){
 
-  //  if(unregister_security(&lsm_security_ops)){
-  //    printk(KERN_INFO "failure unregister\n");
-  //  }
+  if(unregister_security(&sc_ops)){
+     printk(KERN_INFO "failure unregister\n");
+  }
   printk(KERN_INFO "addhookbase module remove\n");
 }
 
