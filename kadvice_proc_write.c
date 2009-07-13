@@ -9,43 +9,43 @@
 
 MODULE_LICENSE("GPL");
 
-extern int kadvice_put_advice_str(struct ka_query *);
-extern int kadvice_post_advice_str(struct ka_query *);
-extern int kadvice_delete_advice(struct ka_query *);
+extern int kadvice_put_advice_str(struct sc_query *);
+extern int kadvice_post_advice_str(struct sc_query *);
+extern int kadvice_delete_advice(struct sc_query *);
 
 
-// echo "post http://localhost/1.1.1 weavepoint" > /proc/kadvice
-int ka_parse_uri(char *uri, struct ka_query *query){
-  char *acc, *weavepoint, *aoidp, *priorityp;
-  int aoid, priority;
+// echo "post http://localhost/1.1.1 hookpoint" > /proc/kadvice
+int ka_parse_uri(char *uri, struct sc_query *query){
+  char *acc, *hookpoint, *gidp, *priorityp;
+  int gid, priority;
   acc = strstr(uri, "://");
   if(!acc)
     return -1;
   acc += 3;
-  weavepoint = strstr(acc, "/");
-  // http://localhost/(*.*.*)->weavepoint
-  if(!weavepoint)
+  hookpoint = strstr(acc, "/");
+  // http://localhost/(*.*.*)->hookpoint
+  if(!hookpoint)
     return -1;
-  *weavepoint = '\0';
-  weavepoint++;
-  aoidp = strstr(weavepoint, ".");
-  if(!aoidp)
+  *hookpoint = '\0';
+  hookpoint++;
+  gidp = strstr(hookpoint, ".");
+  if(!gidp)
     return -1;
-  *aoidp = '\0';
-  aoidp++;
-  priorityp = strstr(aoidp, ".");
+  *gidp = '\0';
+  gidp++;
+  priorityp = strstr(gidp, ".");
   if(!priorityp)
     return -1;
   *priorityp = '\0';
   priorityp++;
 
-  aoid = simple_strtol(aoidp, NULL, 10);
+  gid = simple_strtol(gidp, NULL, 10);
   priority = simple_strtol(priorityp, NULL, 10);
-  printk("acc:%s weavepint:%s aoid:%d priority:%d\n", acc, weavepoint, aoid, priority);
+  printk("acc:%s weavepint:%s gid:%d priority:%d\n", acc, hookpoint, gid, priority);
 
   query->acc = acc;
-  query->weavepoint = weavepoint;
-  query->aoid = aoid;
+  query->hookpoint = hookpoint;
+  query->gid = gid;
   query->priority = priority;
 
   return 0;
@@ -54,7 +54,7 @@ int ka_parse_uri(char *uri, struct ka_query *query){
 int ka_proc_write(struct file *file, const char *buffer, unsigned long count, void *data){
   char buf[128];
   char *method, *uri, *funcname, *br;
-  struct ka_query *query = (struct ka_query *)kmalloc(sizeof(struct ka_query), GFP_KERNEL);
+  struct sc_query *query = (struct sc_query *)kmalloc(sizeof(struct sc_query), GFP_KERNEL);
   unsigned long len = count;
   int ret = -1;
   if(len >= sizeof(buf))

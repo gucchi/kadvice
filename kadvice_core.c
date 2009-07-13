@@ -18,14 +18,14 @@ long lsm_acc[LSMIDMAX + 1][AOIDMAX][FUNCMAX];
 MODULE_LICENSE("GPL");
 
 
-#define KA_SHOW(aoid, acc, max)									\
-  static int ka_show##aoid(struct seq_file *m, void *p){		\
+#define KA_SHOW(gid, acc, max)									\
+  static int ka_show##gid(struct seq_file *m, void *p){		\
     int n = (int)p-1;											\
     int i;														\
     seq_printf(m, "[%3d]", n);									\
     for(i = 0; i < max; i++){									\
-      if((void *)acc[n][aoid][i] != NULL){						\
-		void *ptr = (void *)lsm_acc[n][aoid][i];				\
+      if((void *)acc[n][gid][i] != NULL){						\
+		void *ptr = (void *)lsm_acc[n][gid][i];				\
 		char symname[32];										\
 		char modname[32];												\
 		lookup_module_symbol_attrs((unsigned long)ptr, NULL, NULL, modname, symname); \
@@ -37,53 +37,53 @@ MODULE_LICENSE("GPL");
   }																		\
 
 /* seq_file handler */
-#define CREATE_SEQ_OPS(aoid)							\
-  static struct seq_operations lsmacc_seq_op##aoid = {	\
+#define CREATE_SEQ_OPS(gid)							\
+  static struct seq_operations lsmacc_seq_op##gid = {	\
     .start = ka_start,									\
     .next = ka_next,									\
     .stop = ka_stop,									\
-    .show = ka_show##aoid,								\
+    .show = ka_show##gid,								\
   };													\
 
-#define CREATE_PROC_OPEN(aoid)											\
-  static int lsmacc_proc_open##aoid(struct inode *inode, struct file *file) \
+#define CREATE_PROC_OPEN(gid)											\
+  static int lsmacc_proc_open##gid(struct inode *inode, struct file *file) \
   {																		\
-    return seq_open(file, &lsmacc_seq_op##aoid);						\
+    return seq_open(file, &lsmacc_seq_op##gid);						\
   }																		\
 
 /* procfs handler */
-#define CREATE_FILE_OPS(aoid)					\
-  static struct file_operations lsmacc_file_ops##aoid = {	\
-    .open = lsmacc_proc_open##aoid,							\
+#define CREATE_FILE_OPS(gid)					\
+  static struct file_operations lsmacc_file_ops##gid = {	\
+    .open = lsmacc_proc_open##gid,							\
     .read = seq_read,										\
     .llseek = seq_lseek,									\
     .release = seq_release,									\
   };														\
   
-#define CREATE_ENTRY(aoid, entry, parent)		\
+#define CREATE_ENTRY(gid, entry, parent)		\
   do{												\
-    entry = create_proc_entry(#aoid, 0666, parent);	\
+    entry = create_proc_entry(#gid, 0666, parent);	\
     if(entry)										\
-      entry->proc_fops = &lsmacc_file_ops##aoid;	\
+      entry->proc_fops = &lsmacc_file_ops##gid;	\
   }while(0)											\
 	
-#define REMOVE_ENTRY(aoid)				\
+#define REMOVE_ENTRY(gid)				\
   do{									\
-    remove_proc_entry(#aoid, NULL);		\
+    remove_proc_entry(#gid, NULL);		\
   }while(0)								\
 	
 
-#define CREATE_SEQ(aoid)			\
-  CREATE_SEQ_OPS(aoid)				\
-  CREATE_PROC_OPEN(aoid)			\
-  CREATE_FILE_OPS(aoid)				\
+#define CREATE_SEQ(gid)			\
+  CREATE_SEQ_OPS(gid)				\
+  CREATE_PROC_OPEN(gid)			\
+  CREATE_FILE_OPS(gid)				\
 
 
 static void *ka_start(struct seq_file *m, loff_t *pos){	
   loff_t n = *pos;						
   int i;							
   if(n == 0){							
-    seq_printf(m, "%-35s", "## access control cube ## aoid");	
+    seq_printf(m, "%-35s", "## access control cube ## gid");	
     seq_puts(m, "\n\n");					
   }								
   for(i = 0; lsm_acc[i][0]; i++){		
@@ -189,19 +189,19 @@ int kadvice_register_advice(int gid, int lsmid, void *func, int priority){
   return -1;
 }
 
-int kadvice_register_advice_over(int aoid, int lsmid, void *func, int priority){
-  if(lsm_acc[lsmid][aoid][priority] == 0)
+int kadvice_register_advice_over(int gid, int lsmid, void *func, int priority){
+  if(lsm_acc[lsmid][gid][priority] == 0)
     return -1;
-  lsm_acc[lsmid][aoid][priority] = (unsigned long)func;
-  printk("register advice lsmid:%d aoid:%d [%d] %p\n", lsmid, aoid, priority, func);
+  lsm_acc[lsmid][gid][priority] = (unsigned long)func;
+  printk("register advice lsmid:%d gid:%d [%d] %p\n", lsmid, gid, priority, func);
   return 0;
 }
 
-int kadvice_unregister_advice(int aoid, int lsmid, void *func){
+int kadvice_unregister_advice(int gid, int lsmid, void *func){
   int i;
   for(i = 0; i < 8; i++){
-    if(lsm_acc[lsmid][aoid][i] == (unsigned long)func){
-      lsm_acc[lsmid][aoid][i] = 0;
+    if(lsm_acc[lsmid][gid][i] == (unsigned long)func){
+      lsm_acc[lsmid][gid][i] = 0;
       printk("unregister advice %p", func);
       return 0;
     }
@@ -209,15 +209,15 @@ int kadvice_unregister_advice(int aoid, int lsmid, void *func){
   return -1;
 }
 
-int kadvice_unregister_advice_point(int aoid, int lsmid, int priority){
-  lsm_acc[lsmid][aoid][priority] = 0;
+int kadvice_unregister_advice_point(int gid, int lsmid, int priority){
+  lsm_acc[lsmid][gid][priority] = 0;
   return 0;
 }
 
-int kadvice_clear_advice(int aoid, int lsmid){
+int kadvice_clear_advice(int gid, int lsmid){
   int i;
   for(i = 0; i < 8; i++){
-    lsm_acc[lsmid][aoid][i] = 0;
+    lsm_acc[lsmid][gid][i] = 0;
   }
   printk("advice cleared\n");
   return 0;
@@ -254,32 +254,32 @@ int ka_find_lsmid_from_str(char *name){
 }
 
 
-#define SET_QUERY(head, name, aoid, priority)		\
-  struct ka_query *query_##name;			\
+#define SET_QUERY(head, name, gid, priority)		\
+  struct sc_query *query_##name;			\
   query_##name->funcname = (##head_##name);		\
-  query_##name->aoid = aoid;				\
+  query_##name->gid = gid;				\
   query_##name->priority = priority;			\
-  query_##name->weavepoint = #name
+  query_##name->hookpoint = #name
   
-#define POST(head, name, aoid, priority)	\
-  SET_QUERY(head, name, aoid, priority);	\
+#define POST(head, name, gid, priority)	\
+  SET_QUERY(head, name, gid, priority);	\
   return kadvice_post_advice_str(query_##name)
 
 
 
 
-int kadvice_post_advice(struct ka_query *query){
-  int lsmid = ka_find_lsmid_from_str(query->weavepoint);
+int scube_post_query(struct sc_query *query){
+  int lsmid = ka_find_lsmid_from_str(query->hookpoint);
   if(lsmid < 0) {
-    printk("cannot find lsm name :%s\n", query->weavepoint);
+    printk("cannot find lsm name :%s\n", query->hookpoint);
     return -1;
   }
-  return kadvice_register_advice(query->aoid, lsmid, (void *)query->funcaddr, query->priority);
+  return kadvice_register_advice(query->gid, lsmid, (void *)query->funcaddr, query->priority);
 }
-EXPORT_SYMBOL(kadvice_post_advice);
+EXPORT_SYMBOL(scube_post_query);
 
 
-int kadvice_post_advice_str(struct ka_query *query){
+int kadvice_post_advice_str(struct sc_query *query){
   unsigned long addr;
   addr = kallsyms_lookup_name(query->funcname);
   if(addr == 0) {
@@ -288,21 +288,21 @@ int kadvice_post_advice_str(struct ka_query *query){
     return -EFAULT;
   }
   query->funcaddr = addr;
-  return kadvice_post_advice(query);
+  return scube_post_query(query);
 }
 EXPORT_SYMBOL(kadvice_post_advice_str);
 
 
-int kadvice_delete_advice(struct ka_query *query){
-  int lsmid = ka_find_lsmid_from_str(query->weavepoint);
+int kadvice_delete_advice(struct sc_query *query){
+  int lsmid = ka_find_lsmid_from_str(query->hookpoint);
   if(lsmid < 0)
     return -1;
-  return kadvice_unregister_advice_point(query->aoid, lsmid, query->priority);
+  return kadvice_unregister_advice_point(query->gid, lsmid, query->priority);
 }
 EXPORT_SYMBOL(kadvice_delete_advice);
 
 /*
-int kadvice_delete_advice_str(struct ka_query *query){
+int kadvice_delete_advice_str(struct sc_query *query){
   unsigned long addr;
   addr = kallsyms_lookup_name(query->funcname);
   if(addr == 0)
@@ -313,16 +313,16 @@ int kadvice_delete_advice_str(struct ka_query *query){
 EXPORT_SYMBOL(kadvice_delete_advice_str);
 */
 
-int kadvice_put_advice(struct ka_query *query){
-  int lsmid = ka_find_lsmid_from_str(query->weavepoint);
+int kadvice_put_advice(struct sc_query *query){
+  int lsmid = ka_find_lsmid_from_str(query->hookpoint);
   if(lsmid < 0)
     return -1;
-  return kadvice_register_advice_over(query->aoid, lsmid, (void *)query->funcaddr, query->priority);
+  return kadvice_register_advice_over(query->gid, lsmid, (void *)query->funcaddr, query->priority);
 }
 EXPORT_SYMBOL(kadvice_put_advice);
 
 
-int kadvice_put_advice_str(struct ka_query *query){
+int kadvice_put_advice_str(struct sc_query *query){
   unsigned long addr;
   addr = kallsyms_lookup_name(query->funcname);
   if(addr == 0){
@@ -334,9 +334,9 @@ int kadvice_put_advice_str(struct ka_query *query){
 }
 EXPORT_SYMBOL(kadvice_put_advice_str);
 
-int kadvice_post(char *head, char *name, int aoid, int priority){
+int kadvice_post(char *head, char *name, int gid, int priority){
   int ret;
-  struct ka_query *query = (struct ka_query *)kmalloc(sizeof(struct ka_query), GFP_KERNEL);
+  struct sc_query *query = (struct sc_query *)kmalloc(sizeof(struct sc_query), GFP_KERNEL);
   int namelen = strlen(head) + strlen(name) + 1;
   char *funcname = (char *)kmalloc(namelen + 1, GFP_KERNEL);
   memset(funcname, 0, namelen + 1);
@@ -347,9 +347,9 @@ int kadvice_post(char *head, char *name, int aoid, int priority){
   funcname[namelen] = '\0';
   //  printk("func %s\n",funcname);
   query->funcname = funcname;
-  query->aoid = aoid;
+  query->gid = gid;
   query->priority = priority;
-  query->weavepoint = name;
+  query->hookpoint = name;
   ret = kadvice_post_advice_str(query);
   //  printk("post %d\n",ret);
   kfree(query);

@@ -6,10 +6,10 @@
 
 typedef unsigned long ka_ptr;
 
-struct ka_query{
+struct sc_query {
   char *acc;
-  char *weavepoint;
-  int aoid;
+  char *hookpoint;
+  int gid;
   int priority;
   char *funcname;
   unsigned long funcaddr;
