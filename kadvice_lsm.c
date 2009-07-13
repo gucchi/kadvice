@@ -41,10 +41,48 @@ static int sc_ptrace_traceme(struct task_struct * parent)
 {	return sc_check_ptrace_traceme( parent);
 }
 static int sc_capget(struct task_struct * target,kernel_cap_t * effective,kernel_cap_t * inheritable,kernel_cap_t * permitted)
-{	return sc_check_capget( target, effective, inheritable, permitted);
+{
+	const struct cred *cred;
+
+	/* Derived from kernel/capability.c:sys_capget. */
+	rcu_read_lock();
+	cred = __task_cred(target);
+	*effective   = cred->cap_effective;
+	*inheritable = cred->cap_inheritable;
+	*permitted   = cred->cap_permitted;
+	rcu_read_unlock();
+	return sc_check_capget( target, effective, inheritable, permitted);
 }
+
+extern int cap_inh_is_capped(void);
+
 static int sc_capset(struct cred * new,const struct cred * old,const kernel_cap_t * effective,const kernel_cap_t * inheritable,const kernel_cap_t * permitted)
-{	return sc_check_capset( new, old, effective, inheritable, permitted);
+{
+	if (cap_inh_is_capped() &&
+	    !cap_issubset(*inheritable,
+			  cap_combine(old->cap_inheritable,
+				      old->cap_permitted)))
+		/* incapable of using this inheritable set */
+		return -EPERM;
+
+	if (!cap_issubset(*inheritable,
+			  cap_combine(old->cap_inheritable,
+				      old->cap_bset)))
+		/* no new pI capabilities outside bounding set */
+		return -EPERM;
+
+	/* verify restrictions on target's new Permitted set */
+	if (!cap_issubset(*permitted, old->cap_permitted))
+		return -EPERM;
+
+	/* verify the _new_Effective_ is a subset of the _new_Permitted_ */
+	if (!cap_issubset(*effective, *permitted))
+		return -EPERM;
+
+	new->cap_effective   = *effective;
+	new->cap_inheritable = *inheritable;
+	new->cap_permitted   = *permitted;
+	return sc_check_capset( new, old, effective, inheritable, permitted);
 }
 static int sc_capable(struct task_struct * tsk,const struct cred * cred,int cap,int audit)
 {	return sc_check_capable( tsk, cred, cap, audit);
@@ -65,7 +103,10 @@ static int sc_syslog(int type)
 {	return sc_check_syslog( type);
 }
 static int sc_settime(struct timespec * ts,struct timezone * tz)
-{	return sc_check_settime( ts, tz);
+{	
+  if (!capable(CAP_SYS_TIME))
+    return -EPERM;
+  return sc_check_settime( ts, tz);
 }
 static int sc_vm_enough_memory(struct mm_struct * mm,long pages)
 {	return sc_check_vm_enough_memory( mm, pages);
@@ -179,7 +220,9 @@ static void sc_inode_free_security(struct inode * inode)
 {	return sc_check_inode_free_security( inode);
 }
 static int sc_inode_init_security(struct inode * inode,struct inode * dir,char ** name,void ** value,size_t * len)
-{	return sc_check_inode_init_security( inode, dir, name, value, len);
+{
+  return -EOPNOTSUPP;
+  //return sc_check_inode_init_security( inode, dir, name, value, len);
 }
 static int sc_inode_create(struct inode * dir,struct dentry * dentry,int mode)
 {	return sc_check_inode_create( dir, dentry, mode);
@@ -239,16 +282,38 @@ static int sc_inode_removexattr(struct dentry * dentry,const char * name)
 {	return sc_check_inode_removexattr( dentry, name);
 }
 static int sc_inode_need_killpriv(struct dentry * dentry)
-{	return sc_check_inode_need_killpriv( dentry);
+{
+	struct inode *inode = dentry->d_inode;
+	int error;
+
+	if (!inode->i_op->getxattr)
+	  return sc_check_inode_need_killpriv( dentry);
+
+	error = inode->i_op->getxattr(dentry, XATTR_NAME_CAPS, NULL, 0);
+	if (error <= 0)
+	  return sc_check_inode_need_killpriv( dentry);
+	return 1;
+
+
 }
 static int sc_inode_killpriv(struct dentry * dentry)
-{	return sc_check_inode_killpriv( dentry);
+{
+	struct inode *inode = dentry->d_inode;
+
+	if (!inode->i_op->removexattr)
+	  return sc_check_inode_killpriv( dentry);
+	return inode->i_op->removexattr(dentry, XATTR_NAME_CAPS);
+
 }
 static int sc_inode_getsecurity(const struct inode * inode,const char * name,void ** buffer,bool alloc)
-{	return sc_check_inode_getsecurity( inode, name, buffer, alloc);
+{
+  return -EOPNOTSUPP;
+  //	return sc_check_inode_getsecurity( inode, name, buffer, alloc);
 }
 static int sc_inode_setsecurity(struct inode * inode,const char * name,const void * value,size_t size,int flags)
-{	return sc_check_inode_setsecurity( inode, name, value, size, flags);
+{
+  return -EOPNOTSUPP;
+  //	return sc_check_inode_setsecurity( inode, name, value, size, flags);
 }
 static int sc_inode_listsecurity(struct inode * inode,char * buffer,size_t buffer_size)
 {	return sc_check_inode_listsecurity( inode, buffer, buffer_size);
@@ -256,7 +321,7 @@ static int sc_inode_listsecurity(struct inode * inode,char * buffer,size_t buffe
 static void sc_inode_getsecid(const struct inode * inode,u32 * secid)
 {
 
-  // *secid = 0;
+  *secid = 0;
   return sc_check_inode_getsecid( inode, secid);
 
 
@@ -384,7 +449,9 @@ static int sc_task_getsid(struct task_struct * p)
 {	return sc_check_task_getsid( p);
 }
 static void sc_task_getsecid(struct task_struct * p,u32 * secid)
-{	return sc_check_task_getsecid( p, secid);
+{
+  *secid = 0;
+  return sc_check_task_getsecid( p, secid);
 }
 static int sc_task_setgroups(struct group_info * group_info)
 {	return sc_check_task_setgroups( group_info);
@@ -426,7 +493,9 @@ static int sc_ipc_permission(struct kern_ipc_perm * ipcp,short flag)
 {	return sc_check_ipc_permission( ipcp, flag);
 }
 static void sc_ipc_getsecid(struct kern_ipc_perm * ipcp,u32 * secid)
-{	return sc_check_ipc_getsecid( ipcp, secid);
+{
+  *secid = 0;
+  return sc_check_ipc_getsecid( ipcp, secid);
 }
 static int sc_msg_msg_alloc_security(struct msg_msg * msg)
 {	return sc_check_msg_msg_alloc_security( msg);
@@ -492,16 +561,25 @@ static void sc_d_instantiate(struct dentry * dentry,struct inode * inode)
 {	return sc_check_d_instantiate( dentry, inode);
 }
 static int sc_getprocattr(struct task_struct * p,char * name,char ** value)
-{	return sc_check_getprocattr( p, name, value);
+{
+  return -EINVAL;
+  //	return sc_check_getprocattr( p, name, value);
 }
+
 static int sc_setprocattr(struct task_struct * p,char * name,void * value,size_t size)
-{	return sc_check_setprocattr( p, name, value, size);
+{
+  return -EINVAL;
+  //	return sc_check_setprocattr( p, name, value, size);
 }
 static int sc_secid_to_secctx(u32 secid,char ** secdata,u32 * seclen)
-{	return sc_check_secid_to_secctx( secid, secdata, seclen);
+{
+  return -EOPNOTSUPP;
+  //	return sc_check_secid_to_secctx( secid, secdata, seclen);
 }
 static int sc_secctx_to_secid(const char * secdata,u32 seclen,u32 * secid)
-{	return sc_check_secctx_to_secid( secdata, seclen, secid);
+{
+  return -EOPNOTSUPP;
+	return sc_check_secctx_to_secid( secdata, seclen, secid);
 }
 static void sc_release_secctx(char * secdata,u32 seclen)
 {	return sc_check_release_secctx( secdata, seclen);
@@ -557,10 +635,14 @@ static int sc_socket_sock_rcv_skb(struct sock * sk,struct sk_buff * skb)
 {	return sc_check_socket_sock_rcv_skb( sk, skb);
 }
 static int sc_socket_getpeersec_stream(struct socket * sock,char * optval,int * optlen,unsigned int len)
-{	return sc_check_socket_getpeersec_stream( sock, optval, optlen, len);
+{
+  return -ENOPROTOOPT;
+  //return sc_check_socket_getpeersec_stream( sock, optval, optlen, len);
 }
 static int sc_socket_getpeersec_dgram(struct socket * sock,struct sk_buff * skb,u32 * secid)
-{	return sc_check_socket_getpeersec_dgram( sock, skb, secid);
+{
+  return -ENOPROTOOPT;
+  //	return sc_check_socket_getpeersec_dgram( sock, skb, secid);
 }
 static int sc_sk_alloc_security(struct sock * sk,int family,gfp_t priority)
 {	return sc_check_sk_alloc_security( sk, family, priority);
@@ -675,14 +757,16 @@ struct security_operations sc_ops = {
 .capget = sc_capget,
 .capset = sc_capset,
 .capable = sc_capable,
-.acct = sc_acct,
   */
+.acct = sc_acct,
 .sysctl = sc_sysctl,
-  /*
 .quotactl = sc_quotactl,
 .quota_on = sc_quota_on,
+  /*
 .syslog = sc_syslog,
+  */
 .settime = sc_settime,
+  /*
 .vm_enough_memory = sc_vm_enough_memory,
   */
 .bprm_set_creds = sc_bprm_set_creds,
@@ -690,7 +774,7 @@ struct security_operations sc_ops = {
   //.bprm_secureexec = sc_bprm_secureexec,
   //.bprm_committing_creds = sc_bprm_committing_creds,
   //.bprm_committed_creds = sc_bprm_committed_creds,
-  /*
+
 .sb_alloc_security = sc_sb_alloc_security,
 .sb_free_security = sc_sb_free_security,
 .sb_copy_data = sc_sb_copy_data,
@@ -709,7 +793,7 @@ struct security_operations sc_ops = {
 .sb_set_mnt_opts = sc_sb_set_mnt_opts,
 .sb_clone_mnt_opts = sc_sb_clone_mnt_opts,
 .sb_parse_opts_str = sc_sb_parse_opts_str,
-*/
+
 #ifdef CONFIG_SECURITY_PATH
 .path_unlink = sc_path_unlink,
 .path_mkdir = sc_path_mkdir,
@@ -720,7 +804,6 @@ struct security_operations sc_ops = {
 .path_link = sc_path_link,
 .path_rename = sc_path_rename,
 #endif
-  /*
 .inode_alloc_security = sc_inode_alloc_security,
 .inode_free_security = sc_inode_free_security,
 .inode_init_security = sc_inode_init_security,
@@ -742,9 +825,11 @@ struct security_operations sc_ops = {
 .inode_post_setxattr = sc_inode_post_setxattr,
 .inode_getxattr = sc_inode_getxattr,
 .inode_listxattr = sc_inode_listxattr,
+  /*
 .inode_removexattr = sc_inode_removexattr,
 .inode_need_killpriv = sc_inode_need_killpriv,
 .inode_killpriv = sc_inode_killpriv,
+  */
 .inode_getsecurity = sc_inode_getsecurity,
 .inode_setsecurity = sc_inode_setsecurity,
 .inode_listsecurity = sc_inode_listsecurity,
@@ -756,42 +841,37 @@ struct security_operations sc_ops = {
 .file_mmap = sc_file_mmap,
 .file_mprotect = sc_file_mprotect,
 .file_lock = sc_file_lock,
-  */
 .file_fcntl = sc_file_fcntl,
-  /*
 .file_set_fowner = sc_file_set_fowner,
 .file_send_sigiotask = sc_file_send_sigiotask,
 .file_receive = sc_file_receive,
-  */
 .dentry_open = sc_dentry_open,
-  /*
 .task_create = sc_task_create,
 .cred_free = sc_cred_free,
-  */
 .cred_prepare = sc_cred_prepare,
-/*
 .cred_commit = sc_cred_commit,
 .kernel_act_as = sc_kernel_act_as,
 .kernel_create_files_as = sc_kernel_create_files_as,
-
 .task_setuid = sc_task_setuid,
-.task_fix_setuid = sc_task_fix_setuid,
+
+  .task_fix_setuid = sc_task_fix_setuid,
+
 .task_setgid = sc_task_setgid,
 .task_setpgid = sc_task_setpgid,
 .task_getpgid = sc_task_getpgid,
 .task_getsid = sc_task_getsid,
 .task_getsecid = sc_task_getsecid,
 .task_setgroups = sc_task_setgroups,
-.task_setnice = sc_task_setnice,
-.task_setioprio = sc_task_setioprio,
+  //.task_setnice = sc_task_setnice,
+  //.task_setioprio = sc_task_setioprio,
 .task_getioprio = sc_task_getioprio,
 .task_setrlimit = sc_task_setrlimit,
-.task_setscheduler = sc_task_setscheduler,
+  //.task_setscheduler = sc_task_setscheduler,
 .task_getscheduler = sc_task_getscheduler,
 .task_movememory = sc_task_movememory,
 .task_kill = sc_task_kill,
 .task_wait = sc_task_wait,
-.task_prctl = sc_task_prctl,
+  //.task_prctl = sc_task_prctl,
 .task_to_inode = sc_task_to_inode,
 .ipc_permission = sc_ipc_permission,
 .ipc_getsecid = sc_ipc_getsecid,
@@ -813,14 +893,17 @@ struct security_operations sc_ops = {
 .sem_associate = sc_sem_associate,
 .sem_semctl = sc_sem_semctl,
 .sem_semop = sc_sem_semop,
-.netlink_send = sc_netlink_send,
-.netlink_recv = sc_netlink_recv,
+
+  //.netlink_send = sc_netlink_send,
+  //.netlink_recv = sc_netlink_recv,
+
 .d_instantiate = sc_d_instantiate,
 .getprocattr = sc_getprocattr,
 .setprocattr = sc_setprocattr,
 .secid_to_secctx = sc_secid_to_secctx,
 .secctx_to_secid = sc_secctx_to_secid,
 .release_secctx = sc_release_secctx,
+#ifdef CONFIG_SECURITY_NETWORK
 .unix_stream_connect = sc_unix_stream_connect,
 .unix_may_send = sc_unix_may_send,
 .socket_create = sc_socket_create,
@@ -848,6 +931,8 @@ struct security_operations sc_ops = {
 .inet_csk_clone = sc_inet_csk_clone,
 .inet_conn_established = sc_inet_conn_established,
 .req_classify_flow = sc_req_classify_flow,
+#endif
+  /*
 #ifdef CONFIG_SECURITY_NETWORK_XFRM
 .xfrm_policy_alloc_security = sc_xfrm_policy_alloc_security,
 .xfrm_policy_clone_security = sc_xfrm_policy_clone_security,
