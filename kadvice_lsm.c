@@ -874,10 +874,11 @@ struct security_operations sc_ops = {
 .syslog = sc_syslog,
 
 .settime = sc_settime,
-  /*
-.vm_enough_memory = sc_vm_enough_memory,
-  */
-.bprm_set_creds = sc_bprm_set_creds,
+
+//.vm_enough_memory = sc_vm_enough_memory,
+
+
+//.bprm_set_creds = sc_bprm_set_creds,  /* cannot sudo */
 .bprm_check_security = sc_bprm_check_security,
 .bprm_secureexec = sc_bprm_secureexec,
 .bprm_committing_creds = sc_bprm_committing_creds,
@@ -937,7 +938,7 @@ struct security_operations sc_ops = {
 
 .inode_removexattr = sc_inode_removexattr,
 .inode_need_killpriv = sc_inode_need_killpriv,
-  //.inode_killpriv = sc_inode_killpriv,
+  .inode_killpriv = sc_inode_killpriv,
 
 
 .inode_getsecurity = sc_inode_getsecurity,
@@ -945,8 +946,9 @@ struct security_operations sc_ops = {
 .inode_listsecurity = sc_inode_listsecurity,
 .inode_getsecid = sc_inode_getsecid,
 
-  //.file_permission = sc_file_permission,
-.file_alloc_security = sc_file_alloc_security,
+  .file_permission = sc_file_permission,
+
+  .file_alloc_security = sc_file_alloc_security,
 .file_free_security = sc_file_free_security,
 .file_ioctl = sc_file_ioctl,
 .file_mmap = sc_file_mmap,
@@ -957,13 +959,14 @@ struct security_operations sc_ops = {
 .file_send_sigiotask = sc_file_send_sigiotask,
 .file_receive = sc_file_receive,
 
-  //.dentry_open = sc_dentry_open,
+  .dentry_open = sc_dentry_open,
 .task_create = sc_task_create,
 .cred_free = sc_cred_free,
-.cred_prepare = sc_cred_prepare,
+  .cred_prepare = sc_cred_prepare,
 .cred_commit = sc_cred_commit,
 .kernel_act_as = sc_kernel_act_as,
 .kernel_create_files_as = sc_kernel_create_files_as,
+
 .task_setuid = sc_task_setuid,
 
   .task_fix_setuid = sc_task_fix_setuid,
@@ -1015,6 +1018,7 @@ struct security_operations sc_ops = {
 .secid_to_secctx = sc_secid_to_secctx,
 .secctx_to_secid = sc_secctx_to_secid,
 .release_secctx = sc_release_secctx,
+
 #ifdef CONFIG_SECURITY_NETWORK
 .unix_stream_connect = sc_unix_stream_connect,
 .unix_may_send = sc_unix_may_send,
@@ -1044,7 +1048,7 @@ struct security_operations sc_ops = {
 .inet_conn_established = sc_inet_conn_established,
 .req_classify_flow = sc_req_classify_flow,
 #endif
-  
+
 #ifdef CONFIG_SECURITY_NETWORK_XFRM
 .xfrm_policy_alloc_security = sc_xfrm_policy_alloc_security,
 .xfrm_policy_clone_security = sc_xfrm_policy_clone_security,
@@ -1057,19 +1061,23 @@ struct security_operations sc_ops = {
 .xfrm_state_pol_flow_match = sc_xfrm_state_pol_flow_match,
 .xfrm_decode_session = sc_xfrm_decode_session,
 #endif
+
 #ifdef CONFIG_KEYS
+
 .key_alloc = sc_key_alloc,
 .key_free = sc_key_free,
 .key_permission = sc_key_permission,
 .key_getsecurity = sc_key_getsecurity,
+
 #endif
+
 #ifdef CONFIG_AUDIT
 .audit_rule_init = sc_audit_rule_init,
 .audit_rule_known = sc_audit_rule_known,
 .audit_rule_match = sc_audit_rule_match,
 .audit_rule_free = sc_audit_rule_free,
 #endif
-  
+
 
 };
 
