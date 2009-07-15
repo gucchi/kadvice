@@ -170,11 +170,11 @@ int ka_check_inode_permission(struct inode * inode, int mask, struct nameidata *
 EXPORT_SYMBOL(ka_check_inode_permission);
 */
 
-int kadvice_register_advice(int gid, int lsmid, void *func, int priority){
+int scube_register_function(int gid, int lsmid, void *func, int priority){
   int i = priority;
   if(lsm_acc[lsmid][gid][priority] == 0){
     lsm_acc[lsmid][gid][priority] = (unsigned long)func;
-    printk("register advice lsmid:%d gid:%d [%d] %p\n", lsmid, gid, i, func);
+    printk("register function lsmid:%d gid:%d [%d] %p\n", lsmid, gid, i, func);
     return 0;
   }
   /*  for(i += 1; i < 8; i++){
@@ -237,13 +237,14 @@ int kadvice_clear_func(unsigned long addr){
 }
 EXPORT_SYMBOL(kadvice_clear_func);
 
-EXPORT_SYMBOL(kadvice_register_advice);
+EXPORT_SYMBOL(scube_register_function);
 EXPORT_SYMBOL(kadvice_unregister_advice);
 EXPORT_SYMBOL(kadvice_clear_advice);
 
 extern unsigned long kallsyms_lookup_name(const char *);
 
-int ka_find_lsmid_from_str(char *name){
+
+int sc_find_lsmid_from_str(char *name){
   int i;
   for(i = 0; i < LSMIDMAX; i++){
     if(strcmp(sc_security_str[i], name) == 0)
@@ -268,17 +269,17 @@ int ka_find_lsmid_from_str(char *name){
 
 
 int scube_post_query(struct sc_query *query){
-  int lsmid = ka_find_lsmid_from_str(query->hookpoint);
+  int lsmid = sc_find_lsmid_from_str(query->hookpoint);
   if(lsmid < 0) {
     printk("cannot find lsm name :%s\n", query->hookpoint);
     return -1;
   }
-  return kadvice_register_advice(query->gid, lsmid, (void *)query->funcaddr, query->priority);
+  return scube_register_function(query->gid, lsmid, (void *)query->funcaddr, query->priority);
 }
 EXPORT_SYMBOL(scube_post_query);
 
 
-int kadvice_post_advice_str(struct sc_query *query){
+int scube_post_query_str(struct sc_query *query){
   unsigned long addr;
   addr = kallsyms_lookup_name(query->funcname);
   if(addr == 0) {
@@ -289,11 +290,11 @@ int kadvice_post_advice_str(struct sc_query *query){
   query->funcaddr = addr;
   return scube_post_query(query);
 }
-EXPORT_SYMBOL(kadvice_post_advice_str);
+EXPORT_SYMBOL(scube_post_query_str);
 
 
 int kadvice_delete_advice(struct sc_query *query){
-  int lsmid = ka_find_lsmid_from_str(query->hookpoint);
+  int lsmid = sc_find_lsmid_from_str(query->hookpoint);
   if(lsmid < 0)
     return -1;
   return kadvice_unregister_advice_point(query->gid, lsmid, query->priority);
@@ -313,7 +314,7 @@ EXPORT_SYMBOL(kadvice_delete_advice_str);
 */
 
 int kadvice_put_advice(struct sc_query *query){
-  int lsmid = ka_find_lsmid_from_str(query->hookpoint);
+  int lsmid = sc_find_lsmid_from_str(query->hookpoint);
   if(lsmid < 0)
     return -1;
   return kadvice_register_advice_over(query->gid, lsmid, (void *)query->funcaddr, query->priority);
@@ -349,7 +350,7 @@ int kadvice_post(char *head, char *name, int gid, int priority){
   query->gid = gid;
   query->priority = priority;
   query->hookpoint = name;
-  ret = kadvice_post_advice_str(query);
+  ret = scube_post_query_str(query);
   //  printk("post %d\n",ret);
   kfree(query);
   kfree(funcname);

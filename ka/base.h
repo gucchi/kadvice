@@ -11,7 +11,7 @@ extern int lookup_module_symbol_attrs(unsigned long, unsigned long *, unsigned l
 #ifdef CHECK
 #define CHECK_MSG(name) printk(#name " security check\n")
 #else
-#define CHECK_MSG(name) printk(#name "security check\n")
+#define CHECK_MSG(name) 
 #endif  
 
 //extern struct security_operations default_security_ops;

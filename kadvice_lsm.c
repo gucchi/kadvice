@@ -424,7 +424,9 @@ static int sc_file_ioctl(struct file * file,unsigned int cmd,unsigned long arg)
 {	return sc_check_file_ioctl( file, cmd, arg);
 }
 
+#ifndef CONFIG_SECURITY_SECURITYCUBE
 unsigned long mmap_min_addr = 65539;
+#endif
 static int sc_file_mmap(struct file * file,unsigned long reqprot,unsigned long prot,unsigned long flags,unsigned long addr,unsigned long addr_only)
 {
   if ((addr < mmap_min_addr) && !capable(CAP_SYS_RAWIO))
@@ -1075,23 +1077,69 @@ struct security_operations sc_ops = {
 
 extern int register_security (struct security_operations*);
 extern int unregister_security (struct security_operations*);
+extern void tomoyo_realpath_init(void);
 
-static int __init kadvicelsm_init(void){
-  if(register_security(&sc_ops)){
-    printk(KERN_INFO "failure register\n");
-  }
-  printk(KERN_INFO "addhookbase module init\n");
+#include "ka/securitycube.h"
+
+static int __init securitycube_init(void){
+#ifdef CONFIG_SECURITY_SECURITYCUBE
+    if (!security_module_enable(&sc_ops))
+  	return 0;
+#endif
+    if(register_security(&sc_ops)){
+      printk(KERN_INFO "failure register\n");
+    }
+
+
+
+  //inserting TOMOYO
+
+  DEF_SC_QUERY("tomoyo", cred_prepare);
+  DEF_SC_QUERY("tomoyo", bprm_set_creds);
+  DEF_SC_QUERY("tomoyo", sysctl);
+  DEF_SC_QUERY("tomoyo", bprm_check_security);
+  DEF_SC_QUERY("tomoyo", path_truncate);
+  DEF_SC_QUERY("tomoyo", path_unlink);
+  DEF_SC_QUERY("tomoyo", path_mkdir);
+  DEF_SC_QUERY("tomoyo", path_rmdir);
+  DEF_SC_QUERY("tomoyo", path_symlink);
+  DEF_SC_QUERY("tomoyo", path_mknod);
+  DEF_SC_QUERY("tomoyo", path_link);
+  DEF_SC_QUERY("tomoyo", path_rename);
+  DEF_SC_QUERY("tomoyo", file_fcntl);
+  DEF_SC_QUERY("tomoyo", dentry_open);
+
+  scube_post_query_str(&scq_cred_prepare);
+  scube_post_query_str(&scq_bprm_set_creds);
+  scube_post_query_str(&scq_sysctl);
+  scube_post_query_str(&scq_bprm_check_security);
+  scube_post_query_str(&scq_path_truncate);
+  scube_post_query_str(&scq_path_unlink);
+  scube_post_query_str(&scq_path_mkdir);
+  scube_post_query_str(&scq_path_rmdir);
+  scube_post_query_str(&scq_path_symlink);
+  scube_post_query_str(&scq_path_mknod);
+  scube_post_query_str(&scq_path_link);
+  scube_post_query_str(&scq_path_rename);
+  scube_post_query_str(&scq_file_fcntl);
+  scube_post_query_str(&scq_dentry_open);
+
+  tomoyo_realpath_init();
+
+  printk(KERN_INFO "SECURITY CUBE INITIALIZED.\n");
   return 0;
 }
 
-static void __exit kadvicelsm_exit(void){
+static void __exit securitycube_exit(void){
 
   if(unregister_security(&sc_ops)){
      printk(KERN_INFO "failure unregister\n");
   }
   printk(KERN_INFO "addhookbase module remove\n");
 }
-
-//security_initcall(kadvicelsm_init);
-module_init(kadvicelsm_init);
-module_exit(kadvicelsm_exit);
+#ifdef CONFIG_SECURITY_SECURITYCUBE
+security_initcall(securitycube_init);
+#else
+module_init(securitycube_init);
+module_exit(securitycube_exit);
+#endif
