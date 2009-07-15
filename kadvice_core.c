@@ -143,32 +143,7 @@ static void lsmacc_module_exit(void)
 module_init(lsmacc_module_init);
 module_exit(lsmacc_module_exit);
 
-//FUNC2(lsm_acc, int, file_permission, struct file *, file, int, mask);
-//FUNC3(lsm_acc, int, inode_permission, struct inode *, inode, int, mask, struct nameidata *, nd);
-//FUNC3(lsm_acc, int, socket_sendmsg, struct socket *, sock, struct msghdr *, msg, int, size);
 
-/*
-int ka_check_inode_permission(struct inode * inode, int mask, struct nameidata * nd)
-{									
-  struct cabi_account *cabi_ac;					
-  int cabiid, i;								
-  if(!(cabi_ac = (struct cabi_account *)(current->cabi_info)))	
-    return 0;					
-  cabiid = cabi_ac->cabi_id;						
-  int (*p)(struct inode *inode, int mask, struct nameidata *nd);
-  for(i = 0; i < 8; i++){			
-    if(lsm_acc[__KA_inode_permission][cabiid][i] != 0){
-      int ret;
-      printk("security check\n");
-      p = (void *)lsm_acc[__KA_inode_permission][cabiid][i];
-      if((ret = p(inode, mask, nd)) != 0)
-	return ret;							
-    }									
-  }									
-  return 0;								
-}									
-EXPORT_SYMBOL(ka_check_inode_permission);
-*/
 
 int scube_register_function(int gid, int lsmid, void *func, int priority){
   int i = priority;
