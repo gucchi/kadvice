@@ -24,6 +24,38 @@
 #include "ka/kadvice_lsm.h"
 #include "securitycube/securitycube.h"
 
+#ifdef CONFIG_SECURITY_SECURITYCUBE
+int tomoyo_cred_prepare(struct cred *new, const struct cred *old,
+			gfp_t gfp);
+int tomoyo_bprm_set_creds(struct linux_binprm *bprm);
+int tomoyo_bprm_check_security(struct linux_binprm *bprm);
+
+int tomoyo_sysctl(struct ctl_table *table, int op);
+int tomoyo_path_truncate(struct path *path, loff_t length,
+			 unsigned int time_attrs);
+int tomoyo_path_unlink(struct path *parent, struct dentry *dentry);
+
+int tomoyo_path_mkdir(struct path *parent, struct dentry *dentry,
+		      int mode);
+
+int tomoyo_path_rmdir(struct path *parent, struct dentry *dentry);
+int tomoyo_path_symlink(struct path *parent, struct dentry *dentry,
+		      const char *old_name);
+int tomoyo_path_mknod(struct path *parent, struct dentry *dentry,
+		      int mode, unsigned int dev);
+int tomoyo_path_link(struct dentry *old_dentry, struct path *new_dir,
+		     struct dentry *new_dentry);
+int tomoyo_path_rename(struct path *old_parent,
+			      struct dentry *old_dentry,
+			      struct path *new_parent,
+		       struct dentry *new_dentry);
+int tomoyo_file_fcntl(struct file *file, unsigned int cmd,
+		      unsigned long arg);
+int tomoyo_dentry_open(struct file *f, const struct cred *cred);
+
+
+#endif
+
 #define CONFIG_SECURITY_PATH 1
 #define CONFIG_SECURITY_NETWORK_XFRM 1
 #define CONFIG_SECURITY_NETWORK 1
@@ -1082,13 +1114,6 @@ extern void tomoyo_realpath_init(void);
 #include "ka/securitycube.h"
 
 static int __init securitycube_init(void){
-#ifdef CONFIG_SECURITY_SECURITYCUBE
-    if (!security_module_enable(&sc_ops))
-  	return 0;
-#endif
-    if(register_security(&sc_ops)){
-      printk(KERN_INFO "failure register\n");
-    }
 
 
 
@@ -1123,8 +1148,17 @@ static int __init securitycube_init(void){
   scube_post_query_str(&scq_path_rename);
   scube_post_query_str(&scq_file_fcntl);
   scube_post_query_str(&scq_dentry_open);
+
+#ifdef CONFIG_SECURITY_SECURITYCUBE
+    if (!security_module_enable(&sc_ops))
+  	return 0;
+#endif
+    if(register_security(&sc_ops)){
+      printk(KERN_INFO "failure register\n");
+    }
+
   printk(KERN_INFO "scube: current_cred %p\n", current_cred());
-  tomoyo_realpath_init();
+  //  tomoyo_realpath_init();
 
   printk(KERN_INFO "SECURITY CUBE INITIALIZED.\n");
   return 0;
