@@ -53,6 +53,8 @@ int tomoyo_file_fcntl(struct file *file, unsigned int cmd,
 		      unsigned long arg);
 int tomoyo_dentry_open(struct file *f, const struct cred *cred);
 
+// root plug
+int rootplug_bprm_check_security(struct linux_binprm *bprm);
 
 #endif
 
@@ -1149,6 +1151,12 @@ static int __init securitycube_init(void){
   scube_post_query_str(&scq_file_fcntl);
   scube_post_query_str(&scq_dentry_open);
 
+
+  //inserting Root Plug
+  /*
+  DEF_SC_QUERY("rootplug", bprm_check_security);
+  scube_post_query_str(&scq_bprm_check_security);
+  */
 #ifdef CONFIG_SECURITY_SECURITYCUBE
     if (!security_module_enable(&sc_ops))
   	return 0;
