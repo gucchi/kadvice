@@ -1114,6 +1114,7 @@ extern int unregister_security (struct security_operations*);
 extern void tomoyo_realpath_init(void);
 
 #include "ka/securitycube.h"
+extern struct tomoyo_domain tomoyo_kernel_domain;
 
 static int __init securitycube_init(void){
 
@@ -1157,17 +1158,20 @@ static int __init securitycube_init(void){
   DEF_SC_QUERY("rootplug", bprm_check_security);
   scube_post_query_str(&scq_bprm_check_security);
   */
+
 #ifdef CONFIG_SECURITY_SECURITYCUBE
-    if (!security_module_enable(&sc_ops))
-  	return 0;
+  //    if (!security_module_enable(&sc_ops))
+  //  	return 0;
 #endif
-    if(register_security(&sc_ops)){
-      printk(KERN_INFO "failure register\n");
-    }
+  //    if(register_security(&sc_ops)){
+  //      printk(KERN_INFO "failure register\n");
+  //    }
 
-  printk(KERN_INFO "scube: current_cred %p\n", current_cred());
+  //  printk(KERN_INFO "scube: current_cred %p\n", current_cred());
   //  tomoyo_realpath_init();
-
+  struct cred *cred = current_cred();
+  cred->security = &tomoyo_kernel_domain;
+  printk(KERN_INFO "scube: current_cred %p\n", current_cred());
   printk(KERN_INFO "SECURITY CUBE INITIALIZED.\n");
   return 0;
 }
