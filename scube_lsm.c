@@ -913,7 +913,7 @@ struct security_operations sc_ops = {
 
   //.vm_enough_memory = sc_vm_enough_memory,
 
-  //.bprm_set_creds = sc_bprm_set_creds,  /* cannot sudo */
+  .bprm_set_creds = sc_bprm_set_creds,  /* cannot sudo */
   .bprm_check_security = sc_bprm_check_security,
   .bprm_secureexec = sc_bprm_secureexec,
   .bprm_committing_creds = sc_bprm_committing_creds,
@@ -1160,18 +1160,17 @@ static int __init securitycube_init(void){
 
 
   //inserting Root Plug
-  /*
-  DEF_SC_QUERY("rootplug", bprm_check_security);
-  scube_post_query_str(&scq_bprm_check_security);
-  */
+  
+ // DEF_SC_QUERY("rootplug", bprm_check_security);
+ // scube_post_query_str(&scq_bprm_check_security);
 
 #ifdef CONFIG_SECURITY_SECURITYCUBE
-  //    if (!security_module_enable(&sc_ops))
-  //  	return 0;
+      if (!security_module_enable(&sc_ops))
+    	return 0;
 #endif
-  //    if(register_security(&sc_ops)){
-  //      printk(KERN_INFO "failure register\n");
-  //    }
+      if(register_security(&sc_ops)){
+        printk(KERN_INFO "failure register\n");
+      }
 
   //  printk(KERN_INFO "scube: current_cred %p\n", current_cred());
   //  tomoyo_realpath_init();
@@ -1182,6 +1181,7 @@ static int __init securitycube_init(void){
   return 0;
 }
 
+#ifdef CONFIG_SECURITY_SECURITYCUBE
 static void __exit securitycube_exit(void){
 
   if(unregister_security(&sc_ops)){
@@ -1189,9 +1189,12 @@ static void __exit securitycube_exit(void){
   }
   printk(KERN_INFO "addhookbase module remove\n");
 }
+module_exit(securitycube_exit);
+#endif
+
+
 #ifdef CONFIG_SECURITY_SECURITYCUBE
 security_initcall(securitycube_init);
 #else
 module_init(securitycube_init);
-module_exit(securitycube_exit);
 #endif
