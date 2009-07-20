@@ -24,4 +24,6 @@ print ''
 
 for i in hooks:
     print 'scube_post_query_str(&scq_' + i + ');'
-        
+
+for i in hooks:
+    print 'EXPORT_SYMBOL(smack_' + i + ');'
