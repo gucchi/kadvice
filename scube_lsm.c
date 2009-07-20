@@ -183,7 +183,14 @@ static int sc_vm_enough_memory(struct mm_struct * mm,long pages)
 
 static int sc_bprm_set_creds(struct linux_binprm * bprm)
 {
-  return sc_check_bprm_set_creds( bprm);
+  int rc;
+  rc = cap_bprm_set_creds(bprm);
+  if (rc)
+    return rc;
+
+  rc = sc_check_bprm_set_creds(bprm);
+
+  return rc;
 }
 
 static int sc_bprm_check_security(struct linux_binprm * bprm)
@@ -1117,7 +1124,6 @@ extern void tomoyo_realpath_init(void);
 extern struct tomoyo_domain tomoyo_kernel_domain;
 
 static int __init securitycube_init(void){
-
 
 
   //inserting TOMOYO
