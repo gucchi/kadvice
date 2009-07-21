@@ -1119,7 +1119,7 @@ struct security_operations sc_ops = {
 
 extern int register_security (struct security_operations*);
 extern int unregister_security (struct security_operations*);
-extern void tomoyo_realpath_init(void);
+extern int scube_smack_init(void);
 
 #include "ka/securitycube.h"
 
@@ -1158,14 +1158,15 @@ static int __init securitycube_init(void){
   scube_post_query_str(&scq_path_rename);
   scube_post_query_str(&scq_file_fcntl);
   scube_post_query_str(&scq_dentry_open);
-
+  */
 
   //inserting Root Plug
   
  // DEF_SC_QUERY("rootplug", bprm_check_security);
  // scube_post_query_str(&scq_bprm_check_security);
 
-
+  #include "smack.out"
+  scube_smack_init();
 
 #ifdef CONFIG_SECURITY_SECURITYCUBE
       if (!security_module_enable(&sc_ops))
@@ -1176,12 +1177,13 @@ static int __init securitycube_init(void){
       }
 
   //  printk(KERN_INFO "scube: current_cred %p\n", current_cred());
-  //  tomoyo_realpath_init();
+      /* TOMOYO CONFIG
   struct cred *cred = current_cred();
   cred->security = &tomoyo_kernel_domain;
+      */
   printk(KERN_INFO "scube: current_cred %p\n", current_cred());
   printk(KERN_INFO "SECURITY CUBE INITIALIZED.\n");
-  */
+
   return 0;
 }
 
