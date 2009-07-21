@@ -23,6 +23,7 @@
 #include <linux/securebits.h>
 #include "ka/kadvice_lsm.h"
 #include "securitycube/securitycube.h"
+#include "kdbus.h"
 
 #ifdef CONFIG_SECURITY_TOMOYO
 int tomoyo_cred_prepare(struct cred *new, const struct cred *old,
@@ -1128,7 +1129,7 @@ static int __init securitycube_init(void){
 
 
   //inserting TOMOYO
-  /*
+
   DEF_SC_QUERY("tomoyo", cred_prepare);
   DEF_SC_QUERY("tomoyo", bprm_set_creds);
   DEF_SC_QUERY("tomoyo", sysctl);
@@ -1158,15 +1159,18 @@ static int __init securitycube_init(void){
   scube_post_query_str(&scq_path_rename);
   scube_post_query_str(&scq_file_fcntl);
   scube_post_query_str(&scq_dentry_open);
-  */
+
 
   //inserting Root Plug
   
  // DEF_SC_QUERY("rootplug", bprm_check_security);
  // scube_post_query_str(&scq_bprm_check_security);
 
-  #include "smack.out"
-  scube_smack_init();
+  //  #include "smack.out"
+  //  scube_smack_init();
+
+  /* init kdbus first */
+  register_kdbus(NULL);
 
 #ifdef CONFIG_SECURITY_SECURITYCUBE
       if (!security_module_enable(&sc_ops))
@@ -1177,10 +1181,10 @@ static int __init securitycube_init(void){
       }
 
   //  printk(KERN_INFO "scube: current_cred %p\n", current_cred());
-      /* TOMOYO CONFIG
+
   struct cred *cred = current_cred();
   cred->security = &tomoyo_kernel_domain;
-      */
+
   printk(KERN_INFO "scube: current_cred %p\n", current_cred());
   printk(KERN_INFO "SECURITY CUBE INITIALIZED.\n");
 
