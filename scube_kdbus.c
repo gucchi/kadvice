@@ -13,6 +13,17 @@ void *kdbus_get_task_cred_security(struct cred *locred)
 EXPORT_SYMBOL(kdbus_get_task_cred_security);
 
 /*
+void kdbus_set_task_cred_security(struct cred *locred, 
+				 void *value)
+{
+  printk("set cred->security to %p\n", value);
+  locred->security = value;
+  //  return 0;
+}
+EXPORT_SYMBOL(kdbus_set_task_cred_security);
+*/
+
+/*
 int kdbus_init(void)
 {
   

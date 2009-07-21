@@ -24,7 +24,7 @@
 #include "ka/kadvice_lsm.h"
 #include "securitycube/securitycube.h"
 
-#ifdef CONFIG_SECURITY_SECURITYCUBE
+#ifdef CONFIG_SECURITY_TOMOYO
 int tomoyo_cred_prepare(struct cred *new, const struct cred *old,
 			gfp_t gfp);
 int tomoyo_bprm_set_creds(struct linux_binprm *bprm);
@@ -53,10 +53,11 @@ int tomoyo_file_fcntl(struct file *file, unsigned int cmd,
 		      unsigned long arg);
 int tomoyo_dentry_open(struct file *f, const struct cred *cred);
 
-// root plug
-int rootplug_bprm_check_security(struct linux_binprm *bprm);
+extern struct tomoyo_domain tomoyo_kernel_domain;
 
 #endif
+// root plug
+int rootplug_bprm_check_security(struct linux_binprm *bprm);
 
 #define CONFIG_SECURITY_PATH 1
 #define CONFIG_SECURITY_NETWORK_XFRM 1
@@ -1121,13 +1122,13 @@ extern int unregister_security (struct security_operations*);
 extern void tomoyo_realpath_init(void);
 
 #include "ka/securitycube.h"
-extern struct tomoyo_domain tomoyo_kernel_domain;
+
 
 static int __init securitycube_init(void){
 
 
   //inserting TOMOYO
-
+  /*
   DEF_SC_QUERY("tomoyo", cred_prepare);
   DEF_SC_QUERY("tomoyo", bprm_set_creds);
   DEF_SC_QUERY("tomoyo", sysctl);
@@ -1164,6 +1165,8 @@ static int __init securitycube_init(void){
  // DEF_SC_QUERY("rootplug", bprm_check_security);
  // scube_post_query_str(&scq_bprm_check_security);
 
+
+
 #ifdef CONFIG_SECURITY_SECURITYCUBE
       if (!security_module_enable(&sc_ops))
     	return 0;
@@ -1178,6 +1181,7 @@ static int __init securitycube_init(void){
   cred->security = &tomoyo_kernel_domain;
   printk(KERN_INFO "scube: current_cred %p\n", current_cred());
   printk(KERN_INFO "SECURITY CUBE INITIALIZED.\n");
+  */
   return 0;
 }
 
