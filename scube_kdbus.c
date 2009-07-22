@@ -2,23 +2,33 @@
 #include <linux/kernel.h>
 #include <linux/security.h>
 #include "kdbus.h"
-
+#include "scube.h"
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Shinpei NAKATA");
 
-
+/*
 struct kdbus_operations *kdbus_ops;
 
 static void *default_get_task_cred_security(struct cred *locred)
 {
-  return locred->security;
+  //  if (!locred->security){
+  //    printk("scube: BUG!!!");
+  //    return locred->security;
+  //  }
+  struct scube_security *scsec = locred->security;
+  return (void*)scsec->secvec[0];
+  //return locred->security;
 }
 
 static void default_set_task_cred_security(struct cred *locred,
 					   void * value)
 {
-  /* should not inline this function */
-  locred->security = value;
+  if (!locred->security){
+    struct scube_security *scsec = scube_alloc_security();
+  }
+  scsec->secvec[0] = (unsigned long)value;
+  locred->security = scsec;
+  //locred->security = value;
 }
 
 void *kdbus_get_task_cred_security(struct cred *locred)
@@ -38,7 +48,6 @@ static struct kdbus_operations default_kdbus_ops =
 int register_kdbus(struct kdbus_operations *ops)
 {
 
-  /* if ops is null, setup with default security */
   if (!ops) {
     kdbus_ops = &default_kdbus_ops;
     printk("success to register default ops\n");
@@ -71,5 +80,5 @@ int kdbus_init(void)
 
 module_init(kdbus_init);
 
-
+*/
 

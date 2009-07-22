@@ -2,7 +2,7 @@
 #include <linux/init.h>
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
-
+#include <linux/mm.h>
 //#include "ka/secops.h"
 
 #include <linux/security.h>
@@ -12,6 +12,7 @@
 #include "ka/base.h"
 #include "ka_def.h"
 #include "sc_lsm_strdef.h"
+#include "scube.h"
 
 long lsm_acc[LSMIDMAX + 1][AOIDMAX][FUNCMAX];
 
@@ -334,22 +335,19 @@ int kadvice_post(char *head, char *name, int gid, int priority){
 EXPORT_SYMBOL(kadvice_post);
 
 
+/* alloc security */
 
-/*
-  
-FUNC3INT(lsm_acc, cred_prepare, struct cred *, new, struct cred *, old, gfp_t, gfp);
-FUNC2INT(lsm_acc, sysctl, struct ctl_table *, table, int, op);
-FUNC2INT(lsm_acc, bprm_set_creds, struct ctl_table *, table, int, op);
-FUNC1INT(lsm_acc, bprm_check_security, struct linux_binprm *, bprm);
+struct scube_security *scube_alloc_security()
+{
+  struct scube_security *ret;
+  ret = (struct scube_security *)kzalloc(sizeof(struct scube_security), GFP_KERNEL);
+  if (!ret)
+    return -ENOMEM;
 
-FUNC4INT(lsm_acc, path_mknod, struct path *, path, struct dentry *, dentry, int, mode, unsigned int, dev);
-FUNC3INT(lsm_acc, path_mkdir, struct path *, path, struct dentry *, dentry, int, mode);
-FUNC2INT(lsm_acc, path_rmdir, struct path *, path, struct dentry *, dentry);
-FUNC2INT(lsm_acc, path_unlink, struct path *, path, struct dentry *, dentry);
-FUNC3INT(lsm_acc, path_symlink, struct path *, path, struct dentry *, dentry, const char *, old_name);
-FUNC3INT(lsm_acc, path_link, struct dentry *, old_dentry, struct path *, new_dir, struct dentry *, new_dentry);
-FUNC4INT(lsm_acc, path_rename, struct path *, old_dir, struct dentry *, old_dentry, struct path *, new_dir, struct dentry *, new_dentry);
-FUNC3INT(lsm_acc, path_truncate, struct path *, path, loff_t, length, unsigned int, time_attrs);
-*/
+  return ret;
+}
+EXPORT_SYMBOL(scube_alloc_security);
+
+
 
 #include "func.c"

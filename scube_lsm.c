@@ -24,6 +24,7 @@
 #include "ka/kadvice_lsm.h"
 #include "securitycube/securitycube.h"
 #include "kdbus.h"
+#include "scube.h"
 
 #ifdef CONFIG_SECURITY_TOMOYO
 int tomoyo_cred_prepare(struct cred *new, const struct cred *old,
@@ -502,10 +503,14 @@ static int sc_task_create(unsigned long clone_flags)
 {	return sc_check_task_create( clone_flags);
 }
 static void sc_cred_free(struct cred * cred)
-{	return sc_check_cred_free( cred);
+{
+	return sc_check_cred_free( cred);
 }
 static int sc_cred_prepare(struct cred * new,const struct cred * old,gfp_t gfp)
-{	return sc_check_cred_prepare( new, old, gfp);
+{
+
+
+	return sc_check_cred_prepare( new, old, gfp);
 }
 static void sc_cred_commit(struct cred * new,const struct cred * old)
 {	return sc_check_cred_commit( new, old);
@@ -1124,6 +1129,31 @@ extern int scube_smack_init(void);
 
 #include "ka/securitycube.h"
 
+static void *scube_kdbus_get_task_cred_security(struct cred *locred)
+{
+  //  if (!locred->security){
+  //    printk("scube: BUG!!!");
+  //    return locred->security;
+  //  }
+  struct scube_security *scsec = locred->security;
+  return (void*)scsec->secvec;
+  //return locred->security;
+}
+
+static void scube_kdbus_set_task_cred_security(struct cred *locred,
+					   void * value)
+{
+  struct scube_security *scsec= NULL;
+  scsec = scube_alloc_security();
+  scsec->secvec = (unsigned long)value;
+  locred->security = scsec;
+  //locred->security = value;
+}
+
+struct kdbus_operations scube_kdbus_ops= {
+  .kdbus_get_task_cred_security = scube_kdbus_get_task_cred_security,
+  .kdbus_set_task_cred_security = scube_kdbus_set_task_cred_security,
+};
 
 static int __init securitycube_init(void){
 
@@ -1170,7 +1200,7 @@ static int __init securitycube_init(void){
   //  scube_smack_init();
 
   /* init kdbus first */
-  register_kdbus(NULL);
+  //  register_kdbus(NULL);
 
 #ifdef CONFIG_SECURITY_SECURITYCUBE
       if (!security_module_enable(&sc_ops))
@@ -1183,8 +1213,8 @@ static int __init securitycube_init(void){
   //  printk(KERN_INFO "scube: current_cred %p\n", current_cred());
 
   struct cred *cred = current_cred();
-  cred->security = &tomoyo_kernel_domain;
-
+  //  kdbus_ops->kdbus_set_task_cred_security(cred, &tomoyo_kernel_domain);
+  scube_kdbus_ops.kdbus_set_task_cred_security(cred, &tomoyo_kernel_domain);
   printk(KERN_INFO "scube: current_cred %p\n", current_cred());
   printk(KERN_INFO "SECURITY CUBE INITIALIZED.\n");
 
