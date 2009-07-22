@@ -20,7 +20,7 @@ extern int lookup_module_symbol_attrs(unsigned long, unsigned long *, unsigned l
 #define FUNC1INT(acc, name,type1, arg1)		\
   int FUNCNAME(name)(type1 arg1)		\
   {						\
-    int group_id = 0;				\
+		    int i, group_id = 0;	\
     int (*func)(type1 arg1);			\
     struct cred *locred = get_current_cred();		\
     struct sc_task_security *tsec_current =		\
