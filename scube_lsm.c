@@ -1136,16 +1136,22 @@ static void *scube_kdbus_get_task_cred_security(struct cred *locred)
   //    return locred->security;
   //  }
   struct scube_security *scsec = locred->security;
-  return (void*)scsec->secvec;
+  return (void*)scsec->secvec[0];
   //return locred->security;
 }
+static int flag = 0;
 
 static void scube_kdbus_set_task_cred_security(struct cred *locred,
 					   void * value)
 {
   struct scube_security *scsec= NULL;
+  if (flag == 0) {
+	printk("scube:locred->sec %p %p\n", locred->security, value);
+	flag = 1;
+  }
+
   scsec = scube_alloc_security();
-  scsec->secvec = (unsigned long)value;
+  scsec->secvec[0] = (unsigned long)value;
   locred->security = scsec;
   //locred->security = value;
 }
@@ -1191,13 +1197,8 @@ static int __init securitycube_init(void){
   scube_post_query_str(&scq_dentry_open);
 
 
-  //inserting Root Plug
-  
- // DEF_SC_QUERY("rootplug", bprm_check_security);
- // scube_post_query_str(&scq_bprm_check_security);
-
-  //  #include "smack.out"
-  //  scube_smack_init();
+  #include "smack.out"
+  scube_smack_init();
 
   /* init kdbus first */
   //  register_kdbus(NULL);
