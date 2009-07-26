@@ -318,8 +318,8 @@ static void sc_inode_free_security(struct inode * inode)
 }
 static int sc_inode_init_security(struct inode * inode,struct inode * dir,char ** name,void ** value,size_t * len)
 {
-  //  return -EOPNOTSUPP;
-  return sc_check_inode_init_security( inode, dir, name, value, len);
+  return -EOPNOTSUPP;
+  //return sc_check_inode_init_security( inode, dir, name, value, len);
 }
 static int sc_inode_create(struct inode * dir,struct dentry * dentry,int mode)
 {	return sc_check_inode_create( dir, dentry, mode);
@@ -434,13 +434,13 @@ static int sc_inode_killpriv(struct dentry * dentry)
 }
 static int sc_inode_getsecurity(const struct inode * inode,const char * name,void ** buffer,bool alloc)
 {
-  //  return -EOPNOTSUPP;
-  return sc_check_inode_getsecurity( inode, name, buffer, alloc);
+  return -EOPNOTSUPP;
+  //return sc_check_inode_getsecurity( inode, name, buffer, alloc);
 }
 static int sc_inode_setsecurity(struct inode * inode,const char * name,const void * value,size_t size,int flags)
 {
-  //  return -EOPNOTSUPP;
-  return sc_check_inode_setsecurity( inode, name, value, size, flags);
+  return -EOPNOTSUPP;
+  //return sc_check_inode_setsecurity( inode, name, value, size, flags);
 }
 static int sc_inode_listsecurity(struct inode * inode,char * buffer,size_t buffer_size)
 {	return sc_check_inode_listsecurity( inode, buffer, buffer_size);
@@ -1126,27 +1126,28 @@ struct security_operations sc_ops = {
 extern int register_security (struct security_operations*);
 extern int unregister_security (struct security_operations*);
 extern int scube_smack_init(void);
+extern int scube_tomoyo_init(void);
 
 #include "ka/securitycube.h"
-
+/*
 static void *scube_kdbus_get_task_cred_security(struct cred *locred)
 {
   //  if (!locred->security){
   //    printk("scube: BUG!!!");
   //    return locred->security;
   //  }
-  /*  if (locred->security == NULL)
+  if (locred->security == NULL)
 	return NULL;
   struct scube_security *scsec = locred->security;
   return (void*)scsec->secvec[0];
-  */
-  return locred->security;
+  
+  //return locred->security;
 }
 
 static void scube_kdbus_set_task_cred_security(struct cred *locred,
 					   void * value)
 {
-  /*  struct scube_security *scsec = NULL;
+  struct scube_security *scsec = NULL;
  	//printk("scube: this is locred->security: %p %p\n", locred->security, value);
   if (value == NULL) {
 	locred->security = NULL;
@@ -1159,20 +1160,20 @@ static void scube_kdbus_set_task_cred_security(struct cred *locred,
   }
   scsec->secvec[0] = (unsigned long)value;
   locred->security = scsec;
-  */
-  locred->security = value;
+  
+  //  locred->security = value;
 }
 
 struct kdbus_operations scube_kdbus_ops= {
   .kdbus_get_task_cred_security = scube_kdbus_get_task_cred_security,
   .kdbus_set_task_cred_security = scube_kdbus_set_task_cred_security,
 };
-
+*/
 static int __init securitycube_init(void){
 
 
   //inserting TOMOYO
-
+/*
   DEF_SC_QUERY("tomoyo", cred_prepare);
   DEF_SC_QUERY("tomoyo", bprm_set_creds);
   DEF_SC_QUERY("tomoyo", sysctl);
@@ -1203,26 +1204,22 @@ static int __init securitycube_init(void){
   scube_post_query_str(&scq_file_fcntl);
   scube_post_query_str(&scq_dentry_open);
 
-  //#include "smack.out"
-  //scube_smack_init();
 
-  /* init kdbus first */
-  //  register_kdbus(NULL);
+  scube_tomoyo_init();
+  #include "smack.out"
+  scube_smack_init();
+*/
 
 #ifdef CONFIG_SECURITY_SECURITYCUBE
-      if (!security_module_enable(&sc_ops))
-    	return 0;
+  if (!security_module_enable(&sc_ops))
+    return 0;
 #endif
-      if(register_security(&sc_ops)){
-        printk(KERN_INFO "failure register\n");
-      }
+  if(register_security(&sc_ops)){
+    printk(KERN_INFO "failure register\n");
+  }
 
   //  printk(KERN_INFO "scube: current_cred %p\n", current_cred());
 
-      struct cred *cred = current_cred();
-  //  kdbus_ops->kdbus_set_task_cred_security(cred, &tomoyo_kernel_domain);
-  scube_kdbus_ops.kdbus_set_task_cred_security(cred, &tomoyo_kernel_domain);
-  printk(KERN_INFO "scube: current_cred %p\n", current_cred());
   printk(KERN_INFO "SECURITY CUBE INITIALIZED.\n");
 
   return 0;
